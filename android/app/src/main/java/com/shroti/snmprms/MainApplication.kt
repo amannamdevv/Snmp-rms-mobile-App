@@ -1,4 +1,4 @@
-package com.shroti.rmsapp
+package com.shroti.snmprms
 
 import android.app.Application
 import com.facebook.react.PackageList

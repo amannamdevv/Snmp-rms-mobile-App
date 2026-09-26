@@ -48,7 +48,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
   const isHistorySubActive = ['SiteLogs', 'HistoricalAlarms'].includes(activeRoute || '');
   const isMaintenanceSubActive = ['TTTool', 'SiteMaintenanceTool'].includes(activeRoute || '');
   const isOptimizationSubActive = ['OptimizationReports'].includes(activeRoute || '');
-  const isMqttSubActive = ['MqttWriteData'].includes(activeRoute || '');
+  const isMqttSubActive = ['MqttWriteData', 'SnmpTool'].includes(activeRoute || '');
 
   useEffect(() => {
     if (isSitesSubActive) {
@@ -455,6 +455,16 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
               >
                 <Icon name="terminal" size={20} color={activeRoute === 'MqttWriteData' ? "#61A5C2" : "#fff"} style={styles.icon} />
                 <Text style={[styles.text, activeRoute === 'MqttWriteData' && { color: '#61A5C2' }]}>MQTT Write Data</Text>
+              </TouchableOpacity>
+
+              {/* 21b. SNMP TOOL */}
+              <TouchableOpacity
+                style={[styles.item, activeRoute === 'SnmpTool' && styles.itemActive]}
+                onPress={() => navigateTo('SnmpTool')}
+                activeOpacity={0.7}
+              >
+                <Icon name="cpu" size={20} color={activeRoute === 'SnmpTool' ? "#61A5C2" : "#fff"} style={styles.icon} />
+                <Text style={[styles.text, activeRoute === 'SnmpTool' && { color: '#61A5C2' }]}>SNMP Tool</Text>
               </TouchableOpacity>
 
               {/* 22. HISTORY LOGS DROP-DOWN */}

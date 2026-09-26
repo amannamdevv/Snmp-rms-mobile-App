@@ -391,7 +391,7 @@ export default function ResourceMappingScreen({ navigation }: any) {
           <View style={styles.mapCard}>
             <Text style={styles.sectionTitle}>
               <AppIcon name="map-pin" size={16} color="#1e3c72" />
-              {'  '}RMS Installed Across India
+              {'  '}SNMP-RMS Installed Across India
             </Text>
             <Text style={styles.mapHint}>Tap a state to see site count</Text>
             {mapData.length > 0 ? (

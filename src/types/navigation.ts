@@ -42,4 +42,5 @@ export type RootStackParamList = {
   SupportRequired: undefined;
   RoboticCallStatus: undefined;
   MqttWriteData: undefined;
+  SnmpTool: undefined;
 };

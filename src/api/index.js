@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Constants & Configuration ──────────────────────────────────────────────────────────
-const DJANGO_BASE_URL = 'https://rms.shrotitele.com';
+const DJANGO_BASE_URL = 'https://snmp-rms.shrotitele.com';
 const DJANGO_AUTH_URL = `${DJANGO_BASE_URL}/api/auth`;
 
 const KEYS = {
@@ -429,6 +429,28 @@ export const api = {
   },
   getAllMqttMessages: async (imei, limit = 50) => {
     const response = await djangoApi.get('/get_all_mqtt_messages/', { params: { imei, limit } });
+    return response.data;
+  },
+
+  // ── SNMP Related ──
+  getSnmpSites: async (params = {}) => {
+    const response = await djangoApi.get('/api/sites/', { params });
+    return response.data;
+  },
+  getSnmpDeviceParameters: async (imei) => {
+    const response = await djangoApi.get('/snmp/api/device-parameters/', { params: { imei } });
+    return response.data;
+  },
+  getSnmpCurrentValues: async (imei) => {
+    const response = await djangoApi.get('/snmp/api/current-values/', { params: { imei } });
+    return response.data;
+  },
+  sendSnmpGet: async (formData) => {
+    const response = await djangoApi.post('/snmp/api/get/', formData);
+    return response.data;
+  },
+  sendSnmpSet: async (formData) => {
+    const response = await djangoApi.post('/snmp/api/set/', formData);
     return response.data;
   },
 };

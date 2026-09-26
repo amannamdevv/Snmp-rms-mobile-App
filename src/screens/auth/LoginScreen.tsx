@@ -86,7 +86,7 @@ export default function LoginScreen({ navigation }: Props) {
               <View style={styles.logoCircle}>
                 <Image source={require('../../assets/splash.png')} style={styles.logoImage} resizeMode="contain" />
               </View>
-              <Text style={styles.brandTitle}>Remote Monitoring System</Text>
+              <Text style={styles.brandTitle}>SNMP-Remote Monitoring System</Text>
               <Text style={styles.brandSubtitle}>Shroti Telecom Pvt. Ltd.</Text>
             </View>
 

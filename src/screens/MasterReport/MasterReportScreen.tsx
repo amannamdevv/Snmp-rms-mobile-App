@@ -101,7 +101,7 @@ export default function MasterReport({ navigation }: any) {
                 ...activeFilters,
             }).toString();
 
-            const url = `http://rms.shrotitele.com/api/rms/master-report/?${params}&format=csv`;
+            const url = `https://snmp-rms.shrotitele.com/api/rms/master-report/?${params}&format=csv`;
             
             // For Master Report, since it's a large dataset, we'll fetch the CSV URL and download it or just link it.
             // But the user wants consistency, so we'll try to fetch the CSV content if possible.
@@ -232,7 +232,7 @@ export default function MasterReport({ navigation }: any) {
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1, alignSelf: 'center', width: '100%', maxWidth: 650 }}>
                 <AppHeader
-                    title="RMS Master Report"
+                    title="SNMP-RMS Master Report"
                     leftAction="menu"
                     onLeftPress={() => setSidebarVisible(true)}
                     rightActions={[

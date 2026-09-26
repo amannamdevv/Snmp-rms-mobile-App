@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shroti.rmsapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shroti.snmprms">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -25,7 +25,7 @@
       </activity>
       <provider
         android:name="androidx.core.content.FileProvider"
-        android:authorities="com.shroti.rmsapp.rnshare.fileprovider"
+        android:authorities="com.shroti.snmprms.rnshare.fileprovider"
         android:exported="false"
         android:grantUriPermissions="true">
         <meta-data

@@ -1,4 +1,4 @@
-package com.shroti.rmsapp
+package com.shroti.snmprms
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

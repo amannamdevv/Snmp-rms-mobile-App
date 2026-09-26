@@ -65,6 +65,7 @@ import HistoricalAlarmsScreen from './src/screens/History/HistoricalAlarmsScreen
 import SupportRequiredScreen from './src/screens/Support/SupportRequiredScreen';
 import RoboticCallStatusScreen from './src/screens/Robotic/RoboticCallStatusScreen';
 import MqttWriteDataScreen from './src/screens/Mqtt/MqttWriteDataScreen';
+import SnmpToolScreen from './src/screens/Snmp/SnmpToolScreen';
 
 
 
@@ -130,6 +131,7 @@ export default function App() {
           <Stack.Screen name="SupportRequired" component={SupportRequiredScreen} />
           <Stack.Screen name="RoboticCallStatus" component={RoboticCallStatusScreen} />
           <Stack.Screen name="MqttWriteData" component={MqttWriteDataScreen} />
+          <Stack.Screen name="SnmpTool" component={SnmpToolScreen} />
 
         </Stack.Navigator>
       </NavigationContainer>

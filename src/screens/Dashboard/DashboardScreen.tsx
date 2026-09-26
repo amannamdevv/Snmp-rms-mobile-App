@@ -65,29 +65,38 @@ export default function DashboardScreen({ navigation }: Props) {
     setLoading(true);
     try {
       let results = await Promise.all([
-        api.getSiteHealthCounts({}),
-        api.getBatteryVitalsCounts({}),
-        api.getAutomationStatus({}),
-        api.getUptimeSummary({}),
-        api.getSiteDistributionCounts({}),
-        api.getDgPresence({}),
-        api.getEbPresence({}),
-        api.getBatteryHealthAnalytics({}).catch(() => null),
+        api.getSiteHealthCounts({}).catch((e) => { console.log('Err getSiteHealthCounts', e); return null; }),
+        api.getBatteryVitalsCounts({}).catch((e) => { console.log('Err getBatteryVitalsCounts', e); return null; }),
+        api.getAutomationStatus({}).catch((e) => { console.log('Err getAutomationStatus', e); return null; }),
+        api.getUptimeSummary({}).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
+        api.getSiteDistributionCounts({}).catch((e) => { console.log('Err getSiteDistributionCounts', e); return null; }),
+        api.getDgPresence({}).catch((e) => { console.log('Err getDgPresence', e); return null; }),
+        api.getEbPresence({}).catch((e) => { console.log('Err getEbPresence', e); return null; }),
+        api.getBatteryHealthAnalytics({}).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
       ]);
 
       const [healthRes, vitalsRes, autoRes, uptimeRes, distRes, dgRes, ebRes, batteryRes] = results;
 
+      const extractData = (res: any) => {
+        if (!res) return null;
+        let data = res;
+        if (res.status === 'success' || res.success === true) {
+          data = res.data || res.counts || res;
+        }
+        return data.counts || data.battery_analytics || data;
+      };
+
       if (healthRes) {
-        setHealthKpi(healthRes.status === 'success' ? (healthRes.data || healthRes) : healthRes);
+        setHealthKpi(extractData(healthRes));
       }
       if (vitalsRes) {
-        setVitalsCounts(vitalsRes);
+        setVitalsCounts(extractData(vitalsRes));
       }
       if (autoRes) {
-        setAutoKpi(autoRes.status === 'success' ? (autoRes.data || autoRes) : autoRes);
+        setAutoKpi(extractData(autoRes));
       }
       if (uptimeRes) {
-        const upMain = uptimeRes.status === 'success' ? (uptimeRes.data || uptimeRes) : uptimeRes;
+        const upMain = extractData(uptimeRes);
         const report = upMain.state_report || uptimeRes.state_report || [];
         const summary = upMain.summary || uptimeRes.summary || upMain;
         setUptimeKpi({
@@ -99,25 +108,26 @@ export default function DashboardScreen({ navigation }: Props) {
       }
 
       // Distribution
-      let distRaw = distRes.counts || (distRes.status === 'success' ? (distRes.data?.counts || distRes.data) : (distRes.data || distRes));
+      let distRaw = extractData(distRes);
       let mergedDist: any = {};
       if (distRaw && typeof distRaw === 'object' && !Array.isArray(distRaw)) {
         Object.values(distRaw).forEach(val => { if (val && typeof val === 'object' && !Array.isArray(val)) mergedDist = { ...mergedDist, ...val }; });
         mergedDist = { ...mergedDist, ...distRaw };
       }
       if (dgRes) {
-        const dgRaw = dgRes.counts || (dgRes.status === 'success' ? (dgRes.data?.counts || dgRes.data) : (dgRes.data || dgRes));
+        const dgRaw = extractData(dgRes);
         mergedDist.dg = dgRaw.dg_sites ?? dgRaw.dg ?? dgRaw.total_dg ?? dgRaw.dg_count ?? 0;
       }
       if (ebRes) {
-        const ebRaw = ebRes.counts || (ebRes.status === 'success' ? (ebRes.data?.counts || ebRes.data) : (ebRes.data || ebRes));
+        const ebRaw = extractData(ebRes);
         mergedDist.eb = ebRaw.eb_sites ?? ebRaw.eb ?? ebRaw.total_eb ?? ebRaw.eb_count ?? 0;
       }
       setDistKpi(mergedDist);
 
       // Battery Health KPI
-      if (batteryRes && batteryRes.status === 'success') {
-        const cats = batteryRes.categories || {};
+      if (batteryRes) {
+        const battData = extractData(batteryRes);
+        const cats = battData.categories || battData || {};
         setBatteryKpi({
           healthy: cats.healthy?.count || 0,
           critically_replace: cats.critically_replace?.count || 0,
