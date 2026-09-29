@@ -1,4 +1,4 @@
-/**
+﻿/**
  * alarmUtils.ts
  * Shared alarm helpers — import in BOTH HomeScreen and LiveAlarmsScreen
  * so counts are always identical.
@@ -98,14 +98,7 @@ export function isDoorAlarm(field: string, name: string): boolean {
 
 /** Returns true for noise alarms that should be hidden (LLOP, MAINS_AVAILABLE) */
 export function shouldFilterOut(alarm: any): boolean {
-    if ((alarm._alarmSource || 'smps') !== 'smps') return false;
-    const allAlarms = [...(alarm.active_alarms || []), ...(alarm.closed_alarms || [])];
-    return allAlarms.some(
-        (a: any) =>
-            a.field === 'LLOP_FAULT' ||
-            a.field === 'MAINS_AVAILABLE' ||
-            a.name === 'MAINS_AVAILABLE'
-    );
+    return false; // Return false to ensure parity with backend API counts
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -151,7 +144,17 @@ export function getSeverity(alarm: any): 'Fire' | 'NightDoor' | 'Major' | 'Minor
 // getAlarmStatus
 // ─────────────────────────────────────────────────────────────────
 export function getAlarmStatus(alarm: any): 'Open' | 'Closed' {
-    if (alarm.alarm_status) return alarm.alarm_status as 'Open' | 'Closed';
+    // Direct status field - SMPS API sends 'OPEN'/'CLOSED' uppercase
+    if (alarm.status) {
+        const s = String(alarm.status).toUpperCase();
+        if (s === 'OPEN' || s === 'ACTIVE') return 'Open';
+        if (s === 'CLOSED' || s === 'CLOSE') return 'Closed';
+    }
+    if (alarm.alarm_status) {
+        const s = String(alarm.alarm_status).toUpperCase();
+        if (s === 'OPEN' || s === 'ACTIVE') return 'Open';
+        if (s === 'CLOSED' || s === 'CLOSE') return 'Closed';
+    }
     if (alarm.current_status) return alarm.current_status as 'Open' | 'Closed';
     return alarm.end_time ? 'Closed' : 'Open';
 }
@@ -169,6 +172,10 @@ export function getAlarmName(alarm: any): string {
         ) name += ` (${alarm.room_temperature_display})`;
         return name;
     }
+    // SNMP API: alarm_name returned directly on the record
+    if (alarm.alarm_name && alarm.alarm_name !== 'Unknown') {
+        return alarm.alarm_name;
+    }
     const allAlarms = [...(alarm.active_alarms || []), ...(alarm.closed_alarms || [])];
     if (allAlarms.length > 0) {
         return allAlarms.map((a: any) => {
@@ -179,7 +186,7 @@ export function getAlarmName(alarm: any): string {
             return n;
         }).join(', ');
     }
-    const field = alarm.alarm_desc || '';
+    const field = alarm.alarm_desc || alarm.alarm_type || alarm.trap_name || alarm.trap_type || '';
     return smpsAlarmFieldMapping[field] || field || 'Unknown';
 }
 
@@ -196,6 +203,9 @@ export function getAlarmKey(alarm: any): string {
         if (alarm.alarm_id) return `tpms-${alarm.alarm_id}`;
         return `tpms-${siteId}-${imei}-${alarm.alarm_name || alarm.alarm_desc}-${ts}`;
     }
+
+    // Use backend unique ID first (prevents any merging of distinct records)
+    if (alarm.id) return `smps-${alarm.id}`;
 
     const allAlarms = [...(alarm.active_alarms || []), ...(alarm.closed_alarms || [])];
     const fields = allAlarms.map((a: any) => a.field).sort().join(',');
@@ -225,7 +235,7 @@ export function normaliseAndMerge(smpsRes: any, rmsRes: any): any[] {
     else if (Array.isArray(rmsRes?.alarms)) rmsRaw = rmsRes.alarms;
 
     const smpsTagged = smpsRaw.map(a => ({ ...a, _alarmSource: 'smps' }));
-    const rmsTagged  = rmsRaw.map(a => ({ ...a, _alarmSource: 'tpms' }));
+    const rmsTagged = rmsRaw.map(a => ({ ...a, _alarmSource: 'tpms' }));
 
     // ── Dedup ──
     const uniqueMap = new Map<string, any>();
@@ -237,7 +247,7 @@ export function normaliseAndMerge(smpsRes: any, rmsRes: any): any[] {
             uniqueMap.set(key, alarm);
         } else {
             const existTs = new Date(existing.start_time || existing.create_dt || 0).getTime();
-            const newTs   = new Date(alarm.start_time   || alarm.create_dt    || 0).getTime();
+            const newTs = new Date(alarm.start_time || alarm.create_dt || 0).getTime();
             if (newTs > existTs) uniqueMap.set(key, alarm);
         }
     });
@@ -272,3 +282,5 @@ export function calcAlarmKpi(mergedAlarms: any[]) {
     });
     return counts;
 }
+
+

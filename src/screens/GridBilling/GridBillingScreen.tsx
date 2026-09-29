@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -37,7 +38,7 @@ function daysAgoStr(n: number) {
 
 // ─── Mini bar component (replaces Chart.js bars) ─────────────
 function TrendBar({ values, labels, colors }: { values: number[]; labels: string[]; colors: string[] }) {
-    if (!values.length) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: 20 }}>No Data</Text>;
+    if (!values.length) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>;
     
     return (
         <BarChart
@@ -59,14 +60,14 @@ function TrendBar({ values, labels, colors }: { values: number[]; labels: string
                 style: { borderRadius: 16 },
             }}
             verticalLabelRotation={30}
-            style={{ marginVertical: 8, borderRadius: 16 }}
+            style={{ marginVertical: verticalScale(8), borderRadius: 16 }}
         />
     );
 }
 
 // ─── Mini line chart (SVG-like with View) ────────────────────
 function TrendLine({ values, labels, color }: { values: number[]; labels: string[]; color: string }) {
-    if (!values.length) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: 20 }}>No Data</Text>;
+    if (!values.length) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>;
     
     return (
         <LineChart
@@ -87,7 +88,7 @@ function TrendLine({ values, labels, color }: { values: number[]; labels: string
                 propsForDots: { r: "5", strokeWidth: "2", stroke: color }
             }}
             bezier
-            style={{ marginVertical: 8, borderRadius: 16 }}
+            style={{ marginVertical: verticalScale(8), borderRadius: 16 }}
         />
     );
 }
@@ -105,10 +106,10 @@ function KpiCard({ label, value, icon, color }: { label: string; value: string; 
     );
 }
 const KS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: 4 },
-    iconBox: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-    val: { fontSize: 22, fontWeight: '800', marginBottom: 4 },
-    lab: { fontSize: 9, color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: moderateScale(4) },
+    iconBox: { width: moderateScale(36), height: verticalScale(36), borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: verticalScale(8) },
+    val: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
+    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // ─── Section Card wrapper ─────────────────────────────────────
@@ -121,8 +122,8 @@ function SectionCard({ title, children }: { title: string; children: React.React
     );
 }
 const SCS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
-    title: { fontSize: 12, fontWeight: '800', color: '#1e293b', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+    card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
+    title: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
 });
 
 // ─── Alert badge ──────────────────────────────────────────────
@@ -160,21 +161,21 @@ function AbnCard({ item, type }: { item: any; type: 'spike' | 'offhours' | 'week
     );
 }
 const ACS = StyleSheet.create({
-    card: { borderLeftWidth: 4, borderRadius: 10, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
-    name: { fontSize: 12, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    id: { fontSize: 9, color: '#64748b', marginBottom: 3 },
-    stats: { fontSize: 10, color: '#64748b' },
-    badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-    badgeTxt: { fontSize: 9, color: '#fff', fontWeight: '800' },
+    card: { borderLeftWidth: 4, borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: 10 },
+    name: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    id: { fontSize: responsiveFontSize(9), color: '#64748b', marginBottom: verticalScale(3) },
+    stats: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 8 },
+    badgeTxt: { fontSize: responsiveFontSize(9), color: '#fff', fontWeight: '800' },
 });
 
 // ─── Phase badge ──────────────────────────────────────────────
 function PhaseBadge({ count, phase }: { count: number; phase: 'R' | 'Y' | 'B' }) {
     const colors = { R: '#e63946', Y: '#f4a261', B: '#457b9d' };
-    if (!count) return <Text style={{ color: '#94a3b8', fontSize: 11 }}>0</Text>;
+    if (!count) return <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(11) }}>0</Text>;
     return (
-        <View style={{ backgroundColor: colors[phase], borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 }}>
-            <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>{count}</Text>
+        <View style={{ backgroundColor: colors[phase], borderRadius: 10, paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2) }}>
+            <Text style={{ color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '800' }}>{count}</Text>
         </View>
     );
 }
@@ -221,14 +222,14 @@ function DropPicker({ label, value, options, onChange, placeholder }: {
 }
 const DP = StyleSheet.create({
     wrap: { flex: 1 },
-    label: { fontSize: 9, fontWeight: '800', color: '#5da3fa', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-    trigger: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, borderWidth: 1.5, borderColor: '#d0e4f7', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    triggerTxt: { fontSize: 11, color: '#1c3d5a', fontWeight: '600', flex: 1, marginRight: 4 },
-    backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 },
-    modal: { backgroundColor: '#fff', borderRadius: 16, padding: 16, maxHeight: 400 },
-    modalTitle: { fontSize: 13, fontWeight: '800', color: '#0f172a', marginBottom: 12 },
-    option: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optTxt: { fontSize: 13, color: '#334155' },
+    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5da3fa', marginBottom: verticalScale(4), textTransform: 'uppercase', letterSpacing: 0.5 },
+    trigger: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), borderWidth: 1.5, borderColor: '#d0e4f7', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    triggerTxt: { fontSize: responsiveFontSize(11), color: '#1c3d5a', fontWeight: '600', flex: 1, marginRight: moderateScale(4) },
+    backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(24) },
+    modal: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), maxHeight: 400 },
+    modalTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(12) },
+    option: { paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    optTxt: { fontSize: responsiveFontSize(13), color: '#334155' },
 });
 
 // ─── OVERVIEW TAB ─────────────────────────────────────────────
@@ -243,11 +244,11 @@ function OverviewTab({ data, refreshing, onRefresh }: { data: any, refreshing: b
     return (
         <ScrollView 
             showsVerticalScrollIndicator={false} 
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5da3fa']} />}
         >
             {/* KPIs */}
-            <View style={{ flexDirection: 'row', marginBottom: 14 }}>
+            <View style={{ flexDirection: 'row', marginBottom: verticalScale(14) }}>
                 <KpiCard label="AC Uptime" value={`${kpis.ac_uptime || 0}%`} icon="zap" color="#5da3fa" />
                 <KpiCard label="Phase Missing" value={String(kpis.phase_missing_incidents || 0)} icon="alert-circle" color="#ef4444" />
                 <KpiCard label="Low Voltage Alerts" value={String(kpis.low_voltage_alerts || 0)} icon="eye-off" color="#f59e0b" />
@@ -314,7 +315,7 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
     return (
         <ScrollView 
             showsVerticalScrollIndicator={false} 
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5da3fa']} />}
         >
 
@@ -326,24 +327,24 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
                             const vals = [ryb.r_phase, ryb.y_phase, ryb.b_phase][idx];
                             const colors = ['#e63946', '#f4a261', '#457b9d'];
                             return (
-                                <View key={label} style={{ marginBottom: 10 }}>
-                                    <Text style={{ fontSize: 10, fontWeight: '700', color: colors[idx], marginBottom: 4 }}>{label}</Text>
+                                <View key={label} style={{ marginBottom: verticalScale(10) }}>
+                                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: colors[idx], marginBottom: verticalScale(4) }}>{label}</Text>
                                     <TrendLine values={vals || []} labels={ryb.labels} color={colors[idx]} />
                                 </View>
                             );
                         })}
                     </View>
                 ) : (
-                    <Text style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No voltage data</Text>
+                    <Text style={{ color: '#94a3b8', textAlign: 'center', padding: moderateScale(20) }}>No voltage data</Text>
                 )}
             </SectionCard>
 
             {/* Phase Missing Table */}
             <SectionCard title={`Sites with Phase Missing (${filteredSiteData.length})`}>
                 {filteredSiteData.length === 0 ? (
-                    <View style={{ alignItems: 'center', padding: 20 }}>
+                    <View style={{ alignItems: 'center', padding: moderateScale(20) }}>
                         <AppIcon name="search" size={24} color="#cbd5e1" />
-                        <Text style={{ color: '#94a3b8', fontWeight: '700', marginTop: 6 }}>No matches found</Text>
+                        <Text style={{ color: '#94a3b8', fontWeight: '700', marginTop: verticalScale(6) }}>No matches found</Text>
                     </View>
                 ) : (
                     filteredSiteData.map((s: any, i: number) => (
@@ -378,9 +379,9 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
                             <AppIcon name="alert-circle" size={14} color="#ef4444" />
                             <View style={{ flex: 1 }}>
                                 <Text style={QTS.alertSite}>{a.global_id || a.site_id} — {a.site_name}</Text>
-                                <Text style={{ fontSize: 10, color: '#ef4444', fontWeight: '600' }}>{a.alert_type}</Text>
+                                <Text style={{ fontSize: responsiveFontSize(10), color: '#ef4444', fontWeight: '600' }}>{a.alert_type}</Text>
                                 {a.timestamp && (
-                                    <Text style={{ fontSize: 9, color: '#94a3b8' }}>{new Date(a.timestamp).toLocaleString()}</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(9), color: '#94a3b8' }}>{new Date(a.timestamp).toLocaleString()}</Text>
                                 )}
                             </View>
                         </View>
@@ -391,12 +392,12 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
     );
 }
 const QTS = StyleSheet.create({
-    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    siteName: { fontSize: 12, fontWeight: '700', color: '#0f172a' },
-    siteId: { fontSize: 9, color: '#64748b', marginTop: 2 },
-    uptime: { fontSize: 11, fontWeight: '800', minWidth: 45, textAlign: 'right' },
-    alertRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    alertSite: { fontSize: 11, fontWeight: '700', color: '#0f172a' },
+    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    siteName: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#0f172a' },
+    siteId: { fontSize: responsiveFontSize(9), color: '#64748b', marginTop: verticalScale(2) },
+    uptime: { fontSize: responsiveFontSize(11), fontWeight: '800', minWidth: 45, textAlign: 'right' },
+    alertRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    alertSite: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#0f172a' },
 });
 
 // ─── TOD TAB ──────────────────────────────────────────────────
@@ -434,7 +435,7 @@ function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searc
     return (
         <ScrollView 
             showsVerticalScrollIndicator={false} 
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5da3fa']} />}
         >
 
@@ -445,8 +446,8 @@ function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searc
                         const vals = slots.map((sl: string) => bySite[name]?.[sl] || 0);
                         const colors = ['#5da3fa', '#1c3d5a', '#4dc9f6', '#f4a261', '#a9d6e5'];
                         return (
-                            <View key={name} style={{ marginBottom: 12 }}>
-                                <Text style={{ fontSize: 10, fontWeight: '700', color: colors[idx % colors.length], marginBottom: 4 }}>{name}</Text>
+                            <View key={name} style={{ marginBottom: verticalScale(12) }}>
+                                <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: colors[idx % colors.length], marginBottom: verticalScale(4) }}>{name}</Text>
                                 <TrendBar values={vals} labels={slots} colors={[colors[idx % colors.length]]} />
                             </View>
                         );
@@ -460,7 +461,7 @@ function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searc
                 <Text style={TODS.abnSub}>3 independent detection methods</Text>
 
                 {/* Tab buttons */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(12) }}>
                     {[
                         { key: 'spike', label: 'Period Spike/Drop' },
                         { key: 'offhours', label: 'Off-Hours (00-06 & 18-24)' },
@@ -501,14 +502,14 @@ function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searc
     );
 }
 const TODS = StyleSheet.create({
-    abnWrap: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2 },
-    abnTitle: { fontSize: 14, fontWeight: '800', color: '#1e293b', marginBottom: 4 },
-    abnSub: { fontSize: 10, color: '#94a3b8', marginBottom: 12 },
-    tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', marginRight: 8, borderWidth: 2, borderColor: '#5da3fa' },
+    abnWrap: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
+    abnTitle: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(4) },
+    abnSub: { fontSize: responsiveFontSize(10), color: '#94a3b8', marginBottom: verticalScale(12) },
+    tab: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 2, borderColor: '#5da3fa' },
     tabActive: { backgroundColor: '#5da3fa' },
-    tabTxt: { fontSize: 11, fontWeight: '700', color: '#5da3fa' },
+    tabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#5da3fa' },
     tabTxtActive: { color: '#fff' },
-    noData: { fontSize: 12, color: '#94a3b8', fontWeight: '600', padding: 16, textAlign: 'center' },
+    noData: { fontSize: responsiveFontSize(12), color: '#94a3b8', fontWeight: '600', padding: moderateScale(16), textAlign: 'center' },
 });
 
 // ─── FILTER DRAWER ────────────────────────────────────────────
@@ -532,7 +533,7 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
                             <AppIcon name="x" size={22} color="#1e293b" />
                         </TouchableOpacity>
                     </View>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: verticalScale(20) }}>
                         {/* Date From */}
                         <Text style={FDS.label}>DATE FROM</Text>
                         <TouchableOpacity style={FDS.input} onPress={() => setShowFrom(true)}>
@@ -570,7 +571,7 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
                         )}
 
                         {/* State */}
-                        <View style={{ marginBottom: 12 }}>
+                        <View style={{ marginBottom: verticalScale(12) }}>
                             <DropPicker
                                 label="STATE / CIRCLE"
                                 value={filters.state_id}
@@ -581,7 +582,7 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
                         </View>
 
                         {/* District */}
-                        <View style={{ marginBottom: 12 }}>
+                        <View style={{ marginBottom: verticalScale(12) }}>
                             <DropPicker
                                 label="DISTRICT"
                                 value={filters.dist_id}
@@ -592,7 +593,7 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
                         </View>
 
                         {/* Site */}
-                        <View style={{ marginBottom: 12 }}>
+                        <View style={{ marginBottom: verticalScale(12) }}>
                             <DropPicker
                                 label="SITE"
                                 value={filters.site_id}
@@ -603,7 +604,7 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
                         </View>
 
                         {/* Technology */}
-                        <View style={{ marginBottom: 16 }}>
+                        <View style={{ marginBottom: verticalScale(16) }}>
                             <DropPicker
                                 label="TECHNOLOGY"
                                 value={filters.technology}
@@ -631,15 +632,15 @@ function FilterDrawer({ visible, onClose, onApply, states, districts, sites, fil
 }
 const FDS = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '85%' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    headerTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
-    label: { fontSize: 9, fontWeight: '800', color: '#5da3fa', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 10 },
-    input: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: '#1c3d5a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: 4 },
-    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5da3fa', borderRadius: 12, paddingVertical: 14, marginBottom: 10 },
-    applyBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
-    resetBtn: { alignItems: 'center', paddingVertical: 10 },
-    resetBtnTxt: { color: '#5da3fa', fontWeight: '700', fontSize: 13 },
+    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: moderateScale(20), maxHeight: '85%' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(20) },
+    headerTitle: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#0f172a' },
+    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5da3fa', marginBottom: verticalScale(4), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(10) },
+    input: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#1c3d5a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(4) },
+    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5da3fa', borderRadius: 12, paddingVertical: verticalScale(14), marginBottom: verticalScale(10) },
+    applyBtnTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    resetBtn: { alignItems: 'center', paddingVertical: verticalScale(10) },
+    resetBtnTxt: { color: '#5da3fa', fontWeight: '700', fontSize: responsiveFontSize(13) },
 });
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────
@@ -880,34 +881,34 @@ export default function GridBillingScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#5da3fa', fontWeight: '600', fontSize: 13 },
+    loaderTxt: { marginTop: verticalScale(12), color: '#5da3fa', fontWeight: '600', fontSize: responsiveFontSize(13) },
     tabBar: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-    tabBtn: { flex: 1, alignItems: 'center', paddingVertical: 12 },
+    tabBtn: { flex: 1, alignItems: 'center', paddingVertical: verticalScale(12) },
     tabBtnActive: { borderBottomWidth: 3, borderBottomColor: '#5da3fa' },
-    tabTxt: { fontSize: 12, fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: '#5da3fa' },
 
     searchContainer: { 
         backgroundColor: '#fff', 
-        paddingHorizontal: 14, 
-        paddingVertical: 6, 
+        paddingHorizontal: moderateScale(14), 
+        paddingVertical: verticalScale(6), 
         flexDirection: 'row', 
         alignItems: 'center',
-        marginHorizontal: 16,
-        marginVertical: 10,
+        marginHorizontal: moderateScale(16),
+        marginVertical: verticalScale(10),
         borderRadius: 12,
         elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: verticalScale(2) },
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-    searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 13, color: '#1e293b', height: 38, padding: 0, fontWeight: '500' },
+    searchIcon: { marginRight: moderateScale(10) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 
-    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#edf2fb' },
-    emptyTxtMain: { fontSize: 18, fontWeight: '800', color: '#1e293b', marginTop: 12 },
-    emptyTxtSub: { fontSize: 13, color: '#64748b', textAlign: 'center', marginTop: 8, lineHeight: 20 },
-    retryBtn: { marginTop: 20, backgroundColor: '#5da3fa', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 10 },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
+    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(40), backgroundColor: '#edf2fb' },
+    emptyTxtMain: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e293b', marginTop: verticalScale(12) },
+    emptyTxtSub: { fontSize: responsiveFontSize(13), color: '#64748b', textAlign: 'center', marginTop: verticalScale(8), lineHeight: 20 },
+    retryBtn: { marginTop: verticalScale(20), backgroundColor: '#5da3fa', paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10), borderRadius: 10 },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
 });

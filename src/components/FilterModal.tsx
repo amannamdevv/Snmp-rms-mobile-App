@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, ScrollView, 
-  Platform, ActivityIndicator 
+import {
+  View, Text, StyleSheet, Modal, TextInput, TouchableOpacity,
+  ScrollView, ActivityIndicator
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
 import { api } from '../api';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../utils/responsive';
+import { moderateScale, responsiveFontSize, verticalScale } from '../utils/responsive';
 
 interface FilterModalProps {
   visible: boolean;
@@ -15,328 +15,418 @@ interface FilterModalProps {
   initialFilters?: any;
 }
 
-const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterModalProps) => {
-  const [states, setStates] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [clusters, setClusters] = useState<any[]>([]);
-  
-  // Metadata for dropdowns
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [operators, setOperators] = useState<any[]>([]);
-  const [siteStatuses, setSiteStatuses] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [subCategories, setSubCategories] = useState<any[]>([]);
-  const [technicians, setTechnicians] = useState<any[]>([]);
-  const [tenants, setTenants] = useState<any[]>([]);
+type Option = { id: string; name: string };
 
-  // Selection States
+// Local date -> YYYY-MM-DD (avoids the toISOString timezone shift)
+const formatDate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+// Inline Dropdown to avoid nested Modals on Android
+const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
+  label: string;
+  value: string;
+  options: Option[];
+  onSelect: (id: string, name: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find(o => String(o.id) === String(value))?.name || '';
+
+  return (
+    <View style={ddStyles.container}>
+      <Text style={ddStyles.label}>{label}</Text>
+      <TouchableOpacity
+        style={[ddStyles.trigger, disabled && ddStyles.triggerDisabled]}
+        onPress={() => !disabled && setOpen(!open)}
+        activeOpacity={disabled ? 1 : 0.7}
+      >
+        <Text style={[ddStyles.triggerText, !selectedLabel && ddStyles.placeholder]}>
+          {selectedLabel || placeholder || 'Select ' + label}
+        </Text>
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={disabled ? '#bbb' : '#1e3c72'} />
+      </TouchableOpacity>
+
+      {open && !disabled && (
+        <View style={ddStyles.listContainer}>
+          {/* ScrollView so long lists (states/clients) can scroll */}
+          <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
+            <TouchableOpacity
+              style={[ddStyles.option, !value && ddStyles.optionActive]}
+              onPress={() => { onSelect('', ''); setOpen(false); }}
+            >
+              <Text style={[ddStyles.optionText, !value && ddStyles.optionTextActive]}>All {label}s</Text>
+            </TouchableOpacity>
+
+            {options.length === 0 && (
+              <View style={ddStyles.option}>
+                <Text style={ddStyles.emptyText}>No options available</Text>
+              </View>
+            )}
+
+            {options.map(o => (
+              <TouchableOpacity
+                key={o.id}
+                style={[ddStyles.option, String(value) === String(o.id) && ddStyles.optionActive]}
+                onPress={() => { onSelect(String(o.id), o.name); setOpen(false); }}
+              >
+                <Text style={[ddStyles.optionText, String(value) === String(o.id) && ddStyles.optionTextActive]}>
+                  {o.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const ddStyles = StyleSheet.create({
+  container: { marginBottom: verticalScale(14) },
+  label: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#475569', marginBottom: verticalScale(6), textTransform: 'uppercase' },
+  trigger: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10),
+    paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(11),
+    backgroundColor: '#f8fafc',
+  },
+  triggerDisabled: { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' },
+  triggerText: { fontSize: responsiveFontSize(14), color: '#1e293b', fontWeight: '500', flex: 1 },
+  placeholder: { color: '#94a3b8' },
+  listContainer: {
+    marginTop: verticalScale(4),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: moderateScale(10),
+    backgroundColor: '#fff',
+    maxHeight: verticalScale(200),
+    overflow: 'hidden',
+  },
+  option: { paddingVertical: verticalScale(12), paddingHorizontal: moderateScale(16), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  optionActive: { backgroundColor: '#eff6ff' },
+  optionText: { fontSize: responsiveFontSize(13), color: '#334155' },
+  optionTextActive: { color: '#1e3c72', fontWeight: '700' },
+  emptyText: { fontSize: responsiveFontSize(13), color: '#94a3b8', fontStyle: 'italic' },
+});
+
+const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterModalProps) => {
+  const [states, setStates] = useState<Option[]>([]);
+  const [districts, setDistricts] = useState<Option[]>([]);
+  const [clusters, setClusters] = useState<Option[]>([]);
+  const [clients, setClients] = useState<Option[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [distLoading, setDistLoading] = useState(false);
+  const [clustLoading, setClustLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
   const [selectedState, setSelectedState] = useState(initialFilters?.state_id || '');
+  const [selectedStateName, setSelectedStateName] = useState(initialFilters?.state_name || '');
   const [selectedDistrict, setSelectedDistrict] = useState(initialFilters?.district_id || '');
+  const [selectedDistrictName, setSelectedDistrictName] = useState(initialFilters?.district_name || '');
   const [selectedCluster, setSelectedCluster] = useState(initialFilters?.cluster_id || '');
-  
-  const [searchType, setSearchType] = useState(initialFilters?.search_type || '');
-  const [siteId, setSiteId] = useState(initialFilters?.site_id || '');
-  const [imei, setImei] = useState(initialFilters?.imei || '');
-  const [globalId, setGlobalId] = useState(initialFilters?.global_id || '');
-  const [siteName, setSiteName] = useState(initialFilters?.site_name || '');
-  
-  // New Fields
-  const [alarmType, setAlarmType] = useState(initialFilters?.alarm_t || 'all');
-  const [selectedCustomer, setSelectedCustomer] = useState(initialFilters?.customer_id || '');
-  const [selectedOperator, setSelectedOperator] = useState(initialFilters?.operator_id || '');
-  const [selectedStatus, setSelectedStatus] = useState(initialFilters?.site_status || '');
-  const [selectedCategory, setSelectedCategory] = useState(initialFilters?.site_category || '');
-  const [selectedSubCategory, setSelectedSubCategory] = useState(initialFilters?.site_sub_category || '');
-  const [customerSiteId, setCustomerSiteId] = useState(initialFilters?.customer_site_id || '');
-  const [selectedTechnician, setSelectedTechnician] = useState(initialFilters?.technician_id || '');
-  const [selectedTenant, setSelectedTenant] = useState(initialFilters?.tenant_id || '');
-  const [selectedSiteType, setSelectedSiteType] = useState(initialFilters?.site_type || '');
-  const [selectedSiteOn, setSelectedSiteOn] = useState(initialFilters?.site_on || '');
+  const [selectedClusterName, setSelectedClusterName] = useState(initialFilters?.cluster_name || '');
+
+  const [selectedClient, setSelectedClient] = useState(initialFilters?.customer_id || '');
+
+  const [searchBy, setSearchBy] = useState(initialFilters?.search_type || 'imei');
+  const [searchValue, setSearchValue] = useState(
+    initialFilters?.imei || initialFilters?.site_id || initialFilters?.global_id || initialFilters?.site_name || ''
+  );
 
   const [fromDate, setFromDate] = useState<Date | null>(initialFilters?.date_from ? new Date(initialFilters.date_from) : null);
   const [toDate, setToDate] = useState<Date | null>(initialFilters?.date_to ? new Date(initialFilters.date_to) : null);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      loadAllMetadata();
+      loadInitialData();
       if (initialFilters?.state_id) loadDistricts(initialFilters.state_id);
       if (initialFilters?.district_id) loadClusters(initialFilters.district_id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  const loadAllMetadata = async () => {
-    try {
-      setLoading(true);
-      const [st, cust, op, stat, cat, sub, tech, ten] = await Promise.all([
-        api.getStates(),
-        api.getMetadata('customer'),
-        api.getMetadata('operator'),
-        api.getMetadata('status'),
-        api.getMetadata('category'),
-        api.getMetadata('sub_category'),
-        api.getMetadata('technician'),
-        api.getMetadata('tenant'),
-      ]);
+  const loadInitialData = async () => {
+    setLoading(true);
+    setErrorMsg('');
 
-      if (st.status === 'success') setStates(st.data);
-      if (cust.status === 'success') setCustomers(cust.data);
-      if (op.status === 'success') setOperators(op.data);
-      if (stat.status === 'success') setSiteStatuses(stat.data);
-      if (cat.status === 'success') setCategories(cat.data);
-      if (sub.status === 'success') setSubCategories(sub.data);
-      if (tech.status === 'success') setTechnicians(tech.data);
-      if (ten.status === 'success') setTenants(ten.data);
-    } catch (error) { 
-      console.error('Error loading metadata:', error); 
-    } finally { 
-      setLoading(false); 
+    const [stateRes, clientRes] = await Promise.all([
+      api.getStates().catch((e: any) => {
+        console.error('[FilterModal] getStates failed:', e?.response?.status, e?.message);
+        return null;
+      }),
+      api.getClients().catch((e: any) => {
+        console.error('[FilterModal] getClients failed:', e?.response?.status, e?.message);
+        return null;
+      }),
+    ]);
+
+    if (stateRes?.data) {
+      const mapped = stateRes.data
+        .map((s: any) => ({ id: String(s.state_id ?? s.id), name: s.state_name ?? s.name }))
+        .filter((s: Option) => s.id !== 'undefined' && s.name);
+      console.log('[FilterModal] states loaded:', mapped.length);
+      setStates(mapped);
+    } else {
+      setErrorMsg('States load nahi hue. Login/session check karo.');
+    }
+
+    if (clientRes?.data) {
+      const mapped = clientRes.data
+        .map((c: any) => ({ id: String(c.client_id ?? c.id), name: c.client_name ?? c.name }))
+        .filter((c: Option) => c.id !== 'undefined' && c.name);
+      console.log('[FilterModal] clients loaded:', mapped.length);
+      setClients(mapped);
+    }
+
+    setLoading(false);
+  };
+
+  const loadDistricts = async (stateId: string) => {
+    try {
+      setDistLoading(true);
+      setDistricts([]);
+      setClusters([]);
+      const res = await api.getDistricts(stateId);
+      const data = (res?.data || [])
+        .map((d: any) => ({ id: String(d.district_id), name: d.district_name }))
+        .filter((d: Option) => d.id !== 'undefined' && d.name);
+      console.log('[FilterModal] districts loaded:', data.length);
+      setDistricts(data);
+    } catch (e: any) {
+      console.error('[FilterModal] getDistricts failed:', e?.response?.status, e?.message);
+    } finally {
+      setDistLoading(false);
     }
   };
 
-  const loadDistricts = async (state_id: string) => {
-    if (!state_id) { setDistricts([]); return; }
+  const loadClusters = async (distId: string) => {
     try {
-      const response = await api.getDistricts(state_id);
-      if (response.status === 'success') setDistricts(response.data);
-    } catch (error) { console.error('Error loading districts:', error); }
+      setClustLoading(true);
+      setClusters([]);
+      const res = await api.getClusters(distId);
+      const data = (res?.data || [])
+        .map((c: any) => ({ id: String(c.cluster_id), name: c.cluster_name }))
+        .filter((c: Option) => c.id !== 'undefined' && c.name);
+      console.log('[FilterModal] clusters loaded:', data.length);
+      setClusters(data);
+    } catch (e: any) {
+      console.error('[FilterModal] getClusters failed:', e?.response?.status, e?.message);
+    } finally {
+      setClustLoading(false);
+    }
   };
 
-  const loadClusters = async (district_id: string) => {
-    if (!district_id) { setClusters([]); return; }
-    try {
-      const response = await api.getClusters(district_id);
-      if (response.status === 'success') setClusters(response.data);
-    } catch (error) { console.error('Error loading clusters:', error); }
-  };
-
-  const handleStateChange = (state_id: string) => {
-    setSelectedState(state_id); 
-    setSelectedDistrict(''); 
+  const handleStateChange = (id: string, name: string) => {
+    setSelectedState(id);
+    setSelectedStateName(name);
+    setSelectedDistrict('');
+    setSelectedDistrictName('');
     setSelectedCluster('');
-    setDistricts([]); 
+    setSelectedClusterName('');
+    setDistricts([]);
     setClusters([]);
-    if (state_id) {
-      loadDistricts(state_id);
-    }
+    if (id) loadDistricts(id);
   };
 
-  const handleDistrictChange = (district_id: string) => {
-    setSelectedDistrict(district_id); 
-    setSelectedCluster(''); 
+  const handleDistrictChange = (id: string, name: string) => {
+    setSelectedDistrict(id);
+    setSelectedDistrictName(name);
+    setSelectedCluster('');
+    setSelectedClusterName('');
     setClusters([]);
-    if (district_id) {
-      loadClusters(district_id);
-    }
-  };
-
-  const handleSearchTypeChange = (type: string) => {
-    setSearchType(type);
-    if (type !== 'site_id') setSiteId('');
-    if (type !== 'imei') setImei('');
-    if (type !== 'global_id') setGlobalId('');
-    if (type !== 'site_name') setSiteName('');
+    if (id) loadClusters(id);
   };
 
   const handleApply = () => {
-    const filters = {
-      state_id: selectedState, district_id: selectedDistrict, cluster_id: selectedCluster,
-      search_type: searchType, site_id: siteId, imei: imei, global_id: globalId, site_name: siteName,
-      alarm_t: alarmType,
-      customer_id: selectedCustomer,
-      operator_id: selectedOperator,
-      site_status: selectedStatus,
-      site_category: selectedCategory,
-      site_sub_category: selectedSubCategory,
-      customer_site_id: customerSiteId,
-      technician_id: selectedTechnician,
-      tenant_id: selectedTenant,
-      site_type: selectedSiteType,
-      site_on: selectedSiteOn,
-      date_from: fromDate ? fromDate.toISOString().split('T')[0] : '',
-      date_to: toDate ? toDate.toISOString().split('T')[0] : '',
+    const filters: any = {
+      state_id: selectedState,
+      state_name: selectedStateName,
+      district_id: selectedDistrict,
+      district_name: selectedDistrictName,
+      cluster_id: selectedCluster,
+      cluster_name: selectedClusterName,
+      customer_id: selectedClient,
+      date_from: fromDate ? formatDate(fromDate) : '',
+      date_to: toDate ? formatDate(toDate) : '',
+      search_type: searchValue ? searchBy : '',
     };
+    if (searchValue) {
+      filters[searchBy] = searchValue;
+    }
     onApply(filters);
-    onClose();
   };
 
   const handleReset = () => {
-    setSelectedState(''); setSelectedDistrict(''); setSelectedCluster('');
-    setSearchType(''); setSiteId(''); setImei(''); setGlobalId(''); setSiteName('');
-    setAlarmType('all'); setSelectedCustomer(''); setSelectedOperator('');
-    setSelectedStatus(''); setSelectedCategory(''); setSelectedSubCategory('');
-    setCustomerSiteId(''); setSelectedTechnician(''); setSelectedTenant('');
-    setSelectedSiteType(''); setSelectedSiteOn('');
-    setFromDate(null); setToDate(null); setDistricts([]); setClusters([]);
+    setSelectedState(''); setSelectedStateName('');
+    setSelectedDistrict(''); setSelectedDistrictName('');
+    setSelectedCluster(''); setSelectedClusterName('');
+    setDistricts([]); setClusters([]);
+    setSelectedClient('');
+    setFromDate(null); setToDate(null);
+    setSearchBy('imei');
+    setSearchValue('');
     onApply({});
-    onClose();
   };
 
-  const RenderChipList = ({ data, selectedId, onSelect, idKey, nameKey, label }: any) => (
-    <View style={styles.filterGroup}>
-      <Text style={styles.label}>{label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <TouchableOpacity style={[styles.chip, !selectedId && styles.chipActive]} onPress={() => onSelect('')}>
-          <Text style={[styles.chipText, !selectedId && styles.chipTextActive]}>All</Text>
-        </TouchableOpacity>
-        {data.map((item: any) => (
-          <TouchableOpacity 
-            key={item[idKey]} 
-            style={[styles.chip, selectedId === item[idKey] && styles.chipActive]} 
-            onPress={() => onSelect(item[idKey])}
-          >
-            <Text style={[styles.chipText, selectedId === item[idKey] && styles.chipTextActive]}>{item[nameKey]}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
+  const searchOptions = [
+    { type: 'imei', label: 'IMEI', placeholder: 'Enter IMEI number', keyboardType: 'numeric' },
+    { type: 'site_id', label: 'Site ID', placeholder: 'Enter Site ID', keyboardType: 'default' },
+    { type: 'global_id', label: 'Global ID', placeholder: 'Enter Global ID', keyboardType: 'default' },
+    { type: 'site_name', label: 'Site Name', placeholder: 'Enter site name', keyboardType: 'default' },
+  ];
+  const currentSearch = searchOptions.find(s => s.type === searchBy) || searchOptions[0];
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filter Options</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon name="x" size={20} color="#666" />
+      <View style={styles.overlay}>
+        <View style={styles.sheet}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Icon name="sliders" size={18} color="#1e3c72" />
+            <Text style={styles.headerTitle}>Filters</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <Icon name="x" size={18} color="#64748b" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.body}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             {loading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#2189e5" />
-                <Text style={styles.loadingText}>Loading filters...</Text>
+              <View style={styles.loadRow}>
+                <ActivityIndicator size="small" color="#1e3c72" />
+                <Text style={styles.loadText}>Loading options...</Text>
               </View>
             ) : (
               <>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>📍 Location</Text>
-                  <RenderChipList data={states} selectedId={selectedState} onSelect={handleStateChange} idKey="state_id" nameKey="state_name" label="State" />
-                  {selectedState && districts.length > 0 && (
-                    <RenderChipList data={districts} selectedId={selectedDistrict} onSelect={handleDistrictChange} idKey="district_id" nameKey="district_name" label="District" />
-                  )}
-                  {selectedDistrict && clusters.length > 0 && (
-                    <RenderChipList data={clusters} selectedId={selectedCluster} onSelect={(id: string) => setSelectedCluster(id)} idKey="cluster_id" nameKey="cluster_name" label="Cluster" />
-                  )}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>🔍 Search Site</Text>
-                  <View style={styles.searchTypeContainer}>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      {[
-                        { type: 'site_id', label: 'Site ID' },
-                        { type: 'imei', label: 'IMEI' },
-                        { type: 'global_id', label: 'Global ID' },
-                        { type: 'site_name', label: 'Site Name' }
-                      ].map(({ type, label }) => (
-                        <TouchableOpacity key={type} style={[styles.searchTypeChip, searchType === type && styles.searchTypeChipActive]} onPress={() => handleSearchTypeChange(type)}>
-                          <Text style={[styles.searchTypeText, searchType === type && styles.searchTypeTextActive]}>{label}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                  {searchType === 'site_id' && <TextInput style={styles.input} placeholder="Enter Site ID" value={siteId} onChangeText={setSiteId} placeholderTextColor="#94a3b8" />}
-                  {searchType === 'imei' && <TextInput style={styles.input} placeholder="Enter IMEI" value={imei} onChangeText={setImei} keyboardType="numeric" placeholderTextColor="#94a3b8" />}
-                  {searchType === 'global_id' && <TextInput style={styles.input} placeholder="Enter Global ID" value={globalId} onChangeText={setGlobalId} placeholderTextColor="#94a3b8" />}
-                  {searchType === 'site_name' && <TextInput style={styles.input} placeholder="Enter Site Name" value={siteName} onChangeText={setSiteName} placeholderTextColor="#94a3b8" />}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>⚙️ Entity & Alarm</Text>
-                  <View style={styles.filterGroup}>
-                    <Text style={styles.label}>Alarm Type</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      {[{v:'all',l:'All'},{v:'smps',l:'SMPS'},{v:'tpms',l:'RMS'}].map(item => (
-                        <TouchableOpacity key={item.v} style={[styles.chip, alarmType === item.v && styles.chipActive]} onPress={() => setAlarmType(item.v)}>
-                           <Text style={[styles.chipText, alarmType === item.v && styles.chipTextActive]}>{item.l}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                  <RenderChipList data={customers} selectedId={selectedCustomer} onSelect={setSelectedCustomer} idKey="id" nameKey="name" label="Customer" />
-                  <RenderChipList data={operators} selectedId={selectedOperator} onSelect={setSelectedOperator} idKey="id" nameKey="name" label="Operator" />
-                  <RenderChipList data={siteStatuses} selectedId={selectedStatus} onSelect={setSelectedStatus} idKey="id" nameKey="name" label="Site Status" />
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>🏷️ Categories</Text>
-                  <RenderChipList data={categories} selectedId={selectedCategory} onSelect={setSelectedCategory} idKey="id" nameKey="name" label="Category" />
-                  <RenderChipList data={subCategories} selectedId={selectedSubCategory} onSelect={setSelectedSubCategory} idKey="id" nameKey="name" label="Sub Category" />
-                  <View style={styles.filterGroup}>
-                    <Text style={styles.label}>Customer Site ID</Text>
-                    <TextInput style={styles.input} placeholder="Enter Customer Site ID" value={customerSiteId} onChangeText={setCustomerSiteId} placeholderTextColor="#94a3b8" />
-                  </View>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>👤 Assignments</Text>
-                  <RenderChipList data={technicians} selectedId={selectedTechnician} onSelect={setSelectedTechnician} idKey="id" nameKey="name" label="Technician" />
-                  <RenderChipList data={tenants} selectedId={selectedTenant} onSelect={setSelectedTenant} idKey="id" nameKey="name" label="Tenant" />
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>🏗️ Site Properties</Text>
-                  <View style={styles.filterGroup}>
-                    <Text style={styles.label}>Site Type</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      {[{v:'',l:'All'},{v:'indoor',l:'Indoor'},{v:'outdoor',l:'Outdoor'}].map(item => (
-                        <TouchableOpacity key={item.v} style={[styles.chip, selectedSiteType === item.v && styles.chipActive]} onPress={() => setSelectedSiteType(item.v)}>
-                           <Text style={[styles.chipText, selectedSiteType === item.v && styles.chipTextActive]}>{item.l || 'All'}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                  <View style={styles.filterGroup}>
-                    <Text style={styles.label}>Site On</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                      {['dg', 'non-dg', 'eb', 'non-eb', 'bb', 'non-bb', 'solar', 'non-solar'].map(v => (
-                        <TouchableOpacity key={v} style={[styles.chip, selectedSiteOn === v && styles.chipActive]} onPress={() => setSelectedSiteOn(selectedSiteOn === v ? '' : v)}>
-                           <Text style={[styles.chipText, selectedSiteOn === v && styles.chipTextActive]}>{v.toUpperCase()}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>📅 Date Range</Text>
-                  <View style={styles.dateRow}>
-                    <View style={styles.dateGroup}>
-                      <Text style={styles.label}>From</Text>
-                      <TouchableOpacity style={styles.dateButton} onPress={() => setShowFromPicker(true)}>
-                        <Text style={styles.dateButtonText}>{fromDate ? fromDate.toLocaleDateString() : 'Set Start'}</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.dateGroup}>
-                      <Text style={styles.label}>To</Text>
-                      <TouchableOpacity style={styles.dateButton} onPress={() => setShowToPicker(true)}>
-                        <Text style={styles.dateButtonText}>{toDate ? toDate.toLocaleDateString() : 'Set End'}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  {showFromPicker && (
-                    <DateTimePicker value={fromDate || new Date()} mode="date" display={Platform.OS === 'ios' ? 'spinner' : 'default'} onChange={(event, selectedDate) => { setShowFromPicker(false); if (selectedDate) setFromDate(selectedDate); }} />
-                  )}
-                  {showToPicker && (
-                    <DateTimePicker value={toDate || new Date()} mode="date" display={Platform.OS === 'ios' ? 'spinner' : 'default'} onChange={(event, selectedDate) => { setShowToPicker(false); if (selectedDate) setToDate(selectedDate); }} />
-                  )}
-                </View>
+                {!!errorMsg && (
+                  <TouchableOpacity onPress={loadInitialData} style={styles.errorBox}>
+                    <Text style={styles.errorText}>{errorMsg} (Tap to retry)</Text>
+                  </TouchableOpacity>
+                )}
+                <Dropdown
+                  label="State"
+                  value={selectedState}
+                  options={states}
+                  onSelect={handleStateChange}
+                  placeholder="Select State"
+                />
               </>
             )}
-            <View style={{height: 40}} />
+
+            {selectedState ? (
+              distLoading ? (
+                <View style={styles.loadRow}><ActivityIndicator size="small" color="#1e3c72" /></View>
+              ) : (
+                <Dropdown label="District" value={selectedDistrict} options={districts} onSelect={handleDistrictChange} placeholder="Select District" />
+              )
+            ) : null}
+
+            {selectedDistrict ? (
+              clustLoading ? (
+                <View style={styles.loadRow}><ActivityIndicator size="small" color="#1e3c72" /></View>
+              ) : (
+                <Dropdown
+                  label="Cluster"
+                  value={selectedCluster}
+                  options={clusters}
+                  onSelect={(id, name) => { setSelectedCluster(id); setSelectedClusterName(name); }}
+                  placeholder="Select Cluster"
+                />
+              )
+            ) : null}
+
+            {/* Client */}
+            <Dropdown
+              label="Client Name"
+              value={selectedClient}
+              options={clients}
+              onSelect={(id) => setSelectedClient(id)}
+              placeholder="All"
+            />
+
+            {/* Search By */}
+            <Text style={styles.sectionLabel}>SEARCH BY</Text>
+            <View style={styles.searchTypeRow}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {searchOptions.map(s => (
+                  <TouchableOpacity
+                    key={s.type}
+                    style={[styles.searchChip, searchBy === s.type && styles.searchChipActive]}
+                    onPress={() => { setSearchBy(s.type); setSearchValue(''); }}
+                  >
+                    <Text style={[styles.searchChipText, searchBy === s.type && styles.searchChipTextActive]}>
+                      {s.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+            <TextInput
+              style={styles.searchInput}
+              placeholder={currentSearch.placeholder}
+              value={searchValue}
+              onChangeText={setSearchValue}
+              keyboardType={currentSearch.keyboardType as any}
+              placeholderTextColor="#94a3b8"
+              autoCorrect={false}
+            />
+
+            {/* Dates */}
+            <View style={styles.dateRow}>
+              <View style={styles.dateGroup}>
+                <Text style={ddStyles.label}>From Date</Text>
+                <TouchableOpacity style={styles.dateBtn} onPress={() => setShowFromPicker(true)}>
+                  <Text style={styles.dateBtnText}>{fromDate ? fromDate.toLocaleDateString() : 'mm/dd/yyyy'}</Text>
+                  <Icon name="calendar" size={14} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.dateGroup}>
+                <Text style={ddStyles.label}>To Date</Text>
+                <TouchableOpacity style={styles.dateBtn} onPress={() => setShowToPicker(true)}>
+                  <Text style={styles.dateBtnText}>{toDate ? toDate.toLocaleDateString() : 'mm/dd/yyyy'}</Text>
+                  <Icon name="calendar" size={14} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {showFromPicker && (
+              <DateTimePicker
+                value={fromDate || new Date()}
+                mode="date"
+                display="default"
+                onChange={(_, date) => { setShowFromPicker(false); if (date) setFromDate(date); }}
+              />
+            )}
+            {showToPicker && (
+              <DateTimePicker
+                value={toDate || new Date()}
+                mode="date"
+                display="default"
+                onChange={(_, date) => { setShowToPicker(false); if (date) setToDate(date); }}
+              />
+            )}
+
+            <View style={{ height: 40 }} />
           </ScrollView>
 
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-              <Text style={styles.resetButtonText}>Reset All</Text>
+          {/* Buttons */}
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
+              <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
+            <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+              <Text style={styles.applyText}>Search</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -346,104 +436,32 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'flex-end' },
-  modalContent: { 
-    backgroundColor: '#fff', 
-    borderTopLeftRadius: moderateScale(30), 
-    borderTopRightRadius: moderateScale(30), 
-    maxHeight: '90%', 
-    paddingBottom: verticalScale(10) 
-  },
-  modalHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    padding: moderateScale(20), 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#f1f5f9' 
-  },
-  modalTitle: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#1e3c72' },
-  closeButton: { padding: moderateScale(8), backgroundColor: '#f1f5f9', borderRadius: moderateScale(20) },
-  scrollContent: { paddingHorizontal: moderateScale(20), paddingTop: verticalScale(20) },
-  loadingContainer: { padding: moderateScale(60), alignItems: 'center' },
-  loadingText: { marginTop: verticalScale(15), fontSize: responsiveFontSize(14), color: '#64748b' },
-  section: { marginBottom: verticalScale(30), backgroundColor: '#fff' },
-  sectionTitle: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e3c72', marginBottom: verticalScale(15), letterSpacing: 0.5 },
-  filterGroup: { marginBottom: verticalScale(20) },
-  label: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#64748b', marginBottom: verticalScale(10), textTransform: 'uppercase' },
-  chip: { 
-    paddingHorizontal: moderateScale(16), 
-    paddingVertical: verticalScale(10), 
-    borderRadius: moderateScale(25), 
-    backgroundColor: '#f8fafc', 
-    marginRight: moderateScale(10), 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0' 
-  },
-  chipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  chipText: { fontSize: responsiveFontSize(14), color: '#475569', fontWeight: '600' },
-  chipTextActive: { color: '#fff' },
-  searchTypeContainer: { marginBottom: verticalScale(15) },
-  searchTypeChip: { 
-    paddingHorizontal: moderateScale(16), 
-    paddingVertical: verticalScale(10), 
-    borderRadius: moderateScale(25), 
-    backgroundColor: '#f1f5f9', 
-    marginRight: moderateScale(8), 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0' 
-  },
-  searchTypeChipActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
-  searchTypeText: { fontSize: responsiveFontSize(14), color: '#475569', fontWeight: '600' },
-  searchTypeTextActive: { color: '#fff' },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0', 
-    borderRadius: moderateScale(12), 
-    padding: moderateScale(14), 
-    fontSize: responsiveFontSize(16), 
-    color: '#1e293b', 
-    backgroundColor: '#f8fafc' 
-  },
-  dateRow: { flexDirection: 'row', gap: moderateScale(15) }, 
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: { backgroundColor: '#fff', borderTopLeftRadius: moderateScale(22), borderTopRightRadius: moderateScale(22), maxHeight: '85%', paddingBottom: verticalScale(10) },
+  header: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(8), padding: moderateScale(16), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  headerTitle: { flex: 1, fontSize: responsiveFontSize(17), fontWeight: '700', color: '#1e3c72' },
+  closeBtn: { padding: moderateScale(6), backgroundColor: '#f1f5f9', borderRadius: 20 },
+  body: { paddingHorizontal: moderateScale(16), paddingTop: verticalScale(16) },
+  loadRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(14) },
+  loadText: { fontSize: responsiveFontSize(13), color: '#64748b' },
+  errorBox: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: moderateScale(8), padding: moderateScale(10), marginBottom: verticalScale(12) },
+  errorText: { fontSize: responsiveFontSize(12), color: '#b91c1c' },
+  sectionLabel: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(8) },
+  searchTypeRow: { flexDirection: 'row', gap: moderateScale(8), marginBottom: verticalScale(12) },
+  searchChip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: moderateScale(8), backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0', marginRight: moderateScale(8) },
+  searchChipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
+  searchChipText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '600' },
+  searchChipTextActive: { color: '#fff' },
+  searchInput: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10), paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(11), fontSize: responsiveFontSize(14), color: '#1e293b', backgroundColor: '#f8fafc', marginBottom: verticalScale(16) },
+  dateRow: { flexDirection: 'row', gap: moderateScale(16), marginBottom: verticalScale(16) },
   dateGroup: { flex: 1 },
-  dateButton: { 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0', 
-    borderRadius: moderateScale(12), 
-    padding: moderateScale(14), 
-    backgroundColor: '#f8fafc', 
-    alignItems: 'center' 
-  },
-  dateButtonText: { fontSize: responsiveFontSize(14), color: '#1e293b', fontWeight: '700' },
-  actionButtons: { 
-    flexDirection: 'row', 
-    padding: moderateScale(20), 
-    gap: moderateScale(15), 
-    borderTopWidth: 1, 
-    borderTopColor: '#f1f5f9' 
-  },
-  resetButton: { 
-    flex: 1, 
-    padding: verticalScale(16), 
-    borderRadius: moderateScale(12), 
-    backgroundColor: '#f1f5f9', 
-    alignItems: 'center' 
-  },
-  resetButtonText: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#64748b' },
-  applyButton: { 
-    flex: 2, 
-    padding: verticalScale(16), 
-    borderRadius: moderateScale(12), 
-    backgroundColor: '#1e3c72', 
-    alignItems: 'center', 
-    shadowColor: '#1e3c72', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.3, 
-    shadowRadius: 8, 
-    elevation: 4 
-  },
-  applyButtonText: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#fff' }
+  dateBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10), paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(11), backgroundColor: '#f8fafc' },
+  dateBtnText: { fontSize: responsiveFontSize(14), color: '#1e293b' },
+  footer: { flexDirection: 'row', gap: moderateScale(12), paddingHorizontal: moderateScale(16), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  resetBtn: { flex: 1, paddingVertical: verticalScale(14), borderRadius: moderateScale(12), backgroundColor: '#f1f5f9', alignItems: 'center' },
+  resetText: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#64748b' },
+  applyBtn: { flex: 1, paddingVertical: verticalScale(14), borderRadius: moderateScale(12), backgroundColor: '#1e3c72', alignItems: 'center' },
+  applyText: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#fff' },
 });
 
 export default FilterModal;

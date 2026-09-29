@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, Alert, TextInput
@@ -134,7 +135,7 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
                 <View style={styles.statsRow}>
                     <View style={styles.statBox}>
                         <AppIcon name="check-circle" size={18} color="#4caf50" />
-                        <View style={{ marginLeft: 8 }}>
+                        <View style={{ marginLeft: moderateScale(8) }}>
                             <Text style={styles.statVal}>{item.sites_met_sla}</Text>
                             <Text style={styles.statLab}>SLA Met</Text>
                         </View>
@@ -142,7 +143,7 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
                     <View style={styles.verticalDivider} />
                     <View style={styles.statBox}>
                         <AppIcon name="alert-circle" size={18} color="#f44336" />
-                        <View style={{ marginLeft: 8 }}>
+                        <View style={{ marginLeft: moderateScale(8) }}>
                             <Text style={styles.statVal}>{item.sites_not_met_sla}</Text>
                             <Text style={styles.statLab}>Not Met</Text>
                         </View>
@@ -244,54 +245,54 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
-    header: { padding: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 10 },
-    topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-    headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold', flex: 1, marginLeft: 15 },
+    header: { padding: moderateScale(20), borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 10 },
+    topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: verticalScale(20) },
+    headerTitle: { color: '#fff', fontSize: responsiveFontSize(18), fontWeight: 'bold', flex: 1, marginLeft: moderateScale(15) },
     headerIcons: { flexDirection: 'row', alignItems: 'center' },
-    headerIcon: { padding: 8, position: 'relative' },
-    filterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
-    summaryBox: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', borderRadius: 15, padding: 15, marginHorizontal: 15, marginTop: 15, elevation: 3 },
+    headerIcon: { padding: moderateScale(8), position: 'relative' },
+    filterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+    summaryBox: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', borderRadius: 15, padding: moderateScale(15), marginHorizontal: moderateScale(15), marginTop: verticalScale(15), elevation: 3 },
     summaryItem: { alignItems: 'center' },
-    summaryVal: { color: '#1e3c72', fontSize: 18, fontWeight: 'bold' },
-    summaryLab: { color: '#64748b', fontSize: 10, textTransform: 'uppercase', marginTop: 2 },
+    summaryVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), fontWeight: 'bold' },
+    summaryLab: { color: '#64748b', fontSize: responsiveFontSize(10), textTransform: 'uppercase', marginTop: verticalScale(2) },
     
     searchContainer: { 
         backgroundColor: '#fff', 
-        paddingHorizontal: 16, 
-        paddingVertical: 10, 
-        marginHorizontal: 15,
-        marginTop: 15,
+        paddingHorizontal: moderateScale(16), 
+        paddingVertical: verticalScale(10), 
+        marginHorizontal: moderateScale(15),
+        marginTop: verticalScale(15),
         borderRadius: 15,
         flexDirection: 'row', 
         alignItems: 'center',
         elevation: 2
     },
-    searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 13, color: '#1e293b', height: 40, padding: 0 },
+    searchIcon: { marginRight: moderateScale(10) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(40), padding: moderateScale(0) },
 
-    listContainer: { padding: 15 },
-    card: { backgroundColor: '#fff', borderRadius: 20, marginBottom: 15, elevation: 3, padding: 15, borderLeftWidth: 5, borderLeftColor: '#1e3c72' },
+    listContainer: { padding: moderateScale(15) },
+    card: { backgroundColor: '#fff', borderRadius: 20, marginBottom: verticalScale(15), elevation: 3, padding: moderateScale(15), borderLeftWidth: 5, borderLeftColor: '#1e3c72' },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     stateInfo: { flex: 1 },
-    stateName: { fontSize: 18, fontWeight: 'bold', color: '#1e3c72' },
-    totalSites: { fontSize: 12, color: '#64748b', marginTop: 2 },
+    stateName: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e3c72' },
+    totalSites: { fontSize: responsiveFontSize(12), color: '#64748b', marginTop: verticalScale(2) },
     percentageContainer: { alignItems: 'flex-end' },
-    percentageText: { fontSize: 22, fontWeight: 'bold' },
-    percentageLabel: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' },
+    percentageText: { fontSize: responsiveFontSize(22), fontWeight: 'bold' },
+    percentageLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase' },
     
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 12 },
-    statsRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', padding: 10, borderRadius: 12 },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(12) },
+    statsRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 12 },
     statBox: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-    statVal: { fontSize: 16, fontWeight: 'bold', color: '#334155' },
-    statLab: { fontSize: 10, color: '#64748b', marginLeft: 2 },
+    statVal: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#334155' },
+    statLab: { fontSize: responsiveFontSize(10), color: '#64748b', marginLeft: moderateScale(2) },
     verticalDivider: { width: 1, height: '60%', backgroundColor: '#e2e8f0' },
     
-    cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f8fafc' },
-    footerText: { fontSize: 10, color: '#64748b', fontStyle: 'italic' },
+    cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: verticalScale(12), paddingTop: verticalScale(10), borderTopWidth: 1, borderTopColor: '#f8fafc' },
+    footerText: { fontSize: responsiveFontSize(10), color: '#64748b', fontStyle: 'italic' },
     
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loadingText: { marginTop: 15, color: '#1e3c72', fontWeight: 'bold' },
-    emptyContainer: { alignItems: 'center', marginTop: 100 },
-    emptyText: { marginTop: 15, fontSize: 18, color: '#334155', fontWeight: 'bold' },
-    emptySubtitle: { marginTop: 5, fontSize: 14, color: '#94a3b8' }
+    loadingText: { marginTop: verticalScale(15), color: '#1e3c72', fontWeight: 'bold' },
+    emptyContainer: { alignItems: 'center', marginTop: verticalScale(100) },
+    emptyText: { marginTop: verticalScale(15), fontSize: responsiveFontSize(18), color: '#334155', fontWeight: 'bold' },
+    emptySubtitle: { marginTop: verticalScale(5), fontSize: responsiveFontSize(14), color: '#94a3b8' }
 });

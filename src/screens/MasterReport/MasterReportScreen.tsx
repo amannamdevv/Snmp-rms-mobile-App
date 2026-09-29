@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl, Platform, Modal, TextInput, Linking, Alert
@@ -11,6 +11,8 @@ import AppHeader from '../../components/AppHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
@@ -18,6 +20,7 @@ import Share from 'react-native-share';
 const screenWidth = Dimensions.get('window').width;
 
 export default function MasterReport({ navigation }: any) {
+    const { globalFilters, setGlobalFilters } = useGlobalFilter();
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -32,7 +35,12 @@ export default function MasterReport({ navigation }: any) {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [gIdFilter, setGIdFilter] = useState('');
 
-    const [activeFilters, setActiveFilters] = useState<any>({});
+    const [activeFilters, setActiveFilters] = useState<any>(globalFilters)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [expandedIds, setExpandedIds] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +94,7 @@ export default function MasterReport({ navigation }: any) {
     };
 
     const handleApplyFilters = (newFilters: any) => {
+    setGlobalFilters(newFilters); // persist globally
         setActiveFilters(newFilters);
         setCurrentPage(1);
         fetchReportData(1, newFilters);
@@ -301,7 +310,8 @@ export default function MasterReport({ navigation }: any) {
                 </View>
             </View>
 
-            <FilterModal
+            <GlobalFilterBanner />
+      <FilterModal
                 visible={filterModalVisible}
                 onClose={() => setFilterModalVisible(false)}
                 onApply={handleApplyFilters}
@@ -316,7 +326,7 @@ export default function MasterReport({ navigation }: any) {
 
                 <View style={styles.listContainer}>
                     {loading ? (
-                        <ActivityIndicator color="#1e3c72" size="large" style={{ marginTop: 50 }} />
+                        <ActivityIndicator color="#1e3c72" size="large" style={{ marginTop: verticalScale(50) }} />
                     ) : filteredData.length > 0 ? (
                         filteredData.map((item, idx) => renderItem(item, idx))
                     ) : (
@@ -350,7 +360,7 @@ export default function MasterReport({ navigation }: any) {
                     </View>
                 )}
 
-                <View style={{ height: 100 }} />
+                <View style={{ height: verticalScale(100) }} />
             </ScrollView>
 
 
@@ -366,23 +376,23 @@ export default function MasterReport({ navigation }: any) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
-    countBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 15, gap: 10 },
-    countText: { fontSize: 10, fontWeight: '800', color: '#64748b', letterSpacing: 0.5 },
+    countBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(20), marginTop: verticalScale(15), gap: 10 },
+    countText: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', letterSpacing: 0.5 },
     countLine: { flex: 1, height: 1, backgroundColor: '#cbd5e1' },
     headerStats: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: moderateScale(15), backgroundColor: '#fff', marginHorizontal: moderateScale(15), marginTop: moderateScale(15), borderRadius: moderateScale(15), elevation: 3 },
     searchContainer: { paddingHorizontal: moderateScale(15), marginTop: moderateScale(15) },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: moderateScale(12), paddingHorizontal: moderateScale(12), height: moderateScale(45), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: moderateScale(12), paddingHorizontal: moderateScale(12), height: moderateScale(45), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: verticalScale(2) }, shadowOpacity: 0.1, shadowRadius: 4 },
     searchIcon: { marginRight: moderateScale(8) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', paddingVertical: 0 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', paddingVertical: verticalScale(0) },
     statBox: { backgroundColor: '#f1f5f9', paddingHorizontal: moderateScale(15), paddingVertical: moderateScale(8), borderRadius: moderateScale(12) },
-    inlineFilterBar: { flexDirection: 'row', gap: 10, padding: 12, backgroundColor: '#fff', marginHorizontal: 15, marginTop: 15, borderRadius: 15, alignItems: 'flex-end', elevation: 3 },
+    inlineFilterBar: { flexDirection: 'row', gap: 10, padding: moderateScale(12), backgroundColor: '#fff', marginHorizontal: moderateScale(15), marginTop: verticalScale(15), borderRadius: 15, alignItems: 'flex-end', elevation: 3 },
     filterGroup: { gap: 4 },
-    filterLabel: { fontSize: 9, fontWeight: '800', color: '#64748b', textTransform: 'uppercase' },
-    datePickerBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: 10, height: 40, gap: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-    datePickerText: { fontSize: 13, fontWeight: '700', color: '#1e3c72' },
-    gIdInputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: 10, height: 40, borderWidth: 1, borderColor: '#e2e8f0' },
-    gIdInput: { flex: 1, fontSize: 13, fontWeight: '600', color: '#1e3c72', height: '100%', padding: 0 },
-    searchIconButton: { width: 40, height: 40, backgroundColor: '#1e3c72', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+    filterLabel: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', textTransform: 'uppercase' },
+    datePickerBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: moderateScale(10), height: verticalScale(40), gap: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+    datePickerText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e3c72' },
+    gIdInputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: moderateScale(10), height: verticalScale(40), borderWidth: 1, borderColor: '#e2e8f0' },
+    gIdInput: { flex: 1, fontSize: responsiveFontSize(13), fontWeight: '600', color: '#1e3c72', height: '100%', padding: moderateScale(0) },
+    searchIconButton: { width: moderateScale(40), height: verticalScale(40), backgroundColor: '#1e3c72', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
     statVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), fontWeight: 'bold' },
     statLab: { color: '#64748b', fontSize: responsiveFontSize(10), textTransform: 'uppercase' },
     listContainer: { padding: moderateScale(15) },
@@ -421,3 +431,4 @@ const styles = StyleSheet.create({
     noData: { alignItems: 'center', marginTop: moderateScale(50) },
     noDataText: { color: '#64748b', fontSize: responsiveFontSize(14), marginTop: moderateScale(10) }
 });
+

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, RefreshControl, Alert, TextInput
@@ -8,6 +9,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../types/navigation';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -53,12 +56,12 @@ const SiteCard = ({ item, onPress }: { item: any; onPress: () => void }) => {
     >
       {/* ── Header ──────────────────────────────────────────── */}
       <View style={styles.cardHeader}>
-        <View style={{ flex: 1, marginRight: 10 }}>
+        <View style={{ flex: 1, marginRight: moderateScale(10) }}>
           <Text style={styles.siteName} numberOfLines={2}>{item.site_name || '—'}</Text>
           <Text style={styles.siteId}>Global ID: {item.globel_id || item.global_id || item.site_id || '—'}</Text>
         </View>
         <View style={[styles.daysBadge, { backgroundColor: color + '18', borderColor: color }]}>
-          <AppIcon name="wifi-off" size={11} color={color} style={{ marginRight: 4 }} />
+          <AppIcon name="wifi-off" size={11} color={color} style={{ marginRight: moderateScale(4) }} />
           <Text style={[styles.daysBadgeText, { color }]}>{daysLabel}</Text>
         </View>
       </View>
@@ -77,10 +80,10 @@ const SiteCard = ({ item, onPress }: { item: any; onPress: () => void }) => {
         </View>
         <View style={styles.infoCell}>
           <View style={styles.labelRow}>
-            <AppIcon name="globe" size={12} color="#888" />
-            <Text style={styles.infoLabel}>Global ID</Text>
+            <AppIcon name="hash" size={12} color="#888" />
+            <Text style={styles.infoLabel}>Site ID</Text>
           </View>
-          <Text style={styles.infoValue}>{item.globel_id || item.global_id || '—'}</Text>
+          <Text style={styles.infoValue}>{item.site_id || '—'}</Text>
         </View>
         <View style={styles.infoCell}>
           <View style={styles.labelRow}>
@@ -90,6 +93,13 @@ const SiteCard = ({ item, onPress }: { item: any; onPress: () => void }) => {
           <Text style={[styles.infoValue, { color: isCritical ? '#dc2626' : '#333' }]}>
             {lastComm}
           </Text>
+        </View>
+        <View style={styles.infoCell}>
+          <View style={styles.labelRow}>
+            <AppIcon name="battery" size={12} color="#888" />
+            <Text style={styles.infoLabel}>Battery Voltage</Text>
+          </View>
+          <Text style={styles.infoValue}>{item.battery_v ? item.battery_v + ' V' : '—'}</Text>
         </View>
         <View style={styles.infoCell}>
           <View style={styles.labelRow}>
@@ -146,6 +156,7 @@ const SiteCard = ({ item, onPress }: { item: any; onPress: () => void }) => {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function NonCommSitesScreen({ navigation }: Props) {
+  const { globalFilters } = useGlobalFilter();
   const [sites, setSites] = useState<any[]>([]);
   const [buckets, setBuckets] = useState<any>(null);
   const [totalSites, setTotalSites] = useState(0);
@@ -157,7 +168,12 @@ export default function NonCommSitesScreen({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>(globalFilters as Record<string, string>)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const fetchData = async (
@@ -288,7 +304,8 @@ export default function NonCommSitesScreen({ navigation }: Props) {
           ]}
         />
 
-        <FilterModal
+        <GlobalFilterBanner />
+      <FilterModal
           visible={filterModalVisible}
           onClose={() => setFilterModalVisible(false)}
           onApply={(f: Record<string, string>) => setActiveFilters(f)}
@@ -348,7 +365,7 @@ export default function NonCommSitesScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('SiteDetails', { imei: item.imei, siteId: item.site_id })}
             />
           )}
-          contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+          contentContainerStyle={{ padding: moderateScale(16), paddingBottom: verticalScale(32) }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -367,7 +384,7 @@ export default function NonCommSitesScreen({ navigation }: Props) {
             ) : null
           }
           ListFooterComponent={
-            loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: 20 }} /> : null
+            loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: moderateScale(20) }} /> : null
           }
         />
       </View>
@@ -379,23 +396,23 @@ export default function NonCommSitesScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  iconBtn: { padding: 8, marginLeft: 4, position: 'relative' },
-  filterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444' },
+  iconBtn: { padding: moderateScale(8), marginLeft: moderateScale(4), position: 'relative' },
+  filterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444' },
 
-  bucketsSection: { backgroundColor: '#fff', paddingBottom: 12, elevation: 2 },
-  totalRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, gap: 8 },
-  totalText: { fontSize: 14, color: '#475569', fontWeight: '600' },
+  bucketsSection: { backgroundColor: '#fff', paddingBottom: verticalScale(12), elevation: 2 },
+  totalRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(16), paddingTop: verticalScale(14), paddingBottom: verticalScale(8), gap: 8 },
+  totalText: { fontSize: responsiveFontSize(14), color: '#475569', fontWeight: '600' },
   totalCount: { color: '#dc2626', fontWeight: '800' },
-  bucketsContainer: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
-  bucketCard: { backgroundColor: '#f8fafc', padding: 12, borderRadius: 10, minWidth: 88, alignItems: 'center', elevation: 1, borderTopWidth: 4, borderWidth: 1, borderColor: '#e2e8f0' },
-  bucketCount: { fontSize: 22, fontWeight: '800' },
-  bucketLabel: { fontSize: 10, color: '#64748b', marginTop: 4, fontWeight: '600', textAlign: 'center' },
+  bucketsContainer: { paddingHorizontal: moderateScale(16), gap: 10, paddingBottom: verticalScale(4) },
+  bucketCard: { backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 10, minWidth: 88, alignItems: 'center', elevation: 1, borderTopWidth: 4, borderWidth: 1, borderColor: '#e2e8f0' },
+  bucketCount: { fontSize: responsiveFontSize(22), fontWeight: '800' },
+  bucketLabel: { fontSize: responsiveFontSize(10), color: '#64748b', marginTop: verticalScale(4), fontWeight: '600', textAlign: 'center' },
 
   searchContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 12,
+    marginHorizontal: moderateScale(16),
+    marginTop: verticalScale(12),
+    paddingHorizontal: moderateScale(12),
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -404,45 +421,46 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    height: 48,
+    height: verticalScale(48),
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: '#1e293b',
     height: '100%',
-    padding: 0,
+    padding: moderateScale(0),
   },
-  emptyContainer: { alignItems: 'center', marginTop: 50 },
-  emptyText: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 12 },
-  emptySubtitle: { fontSize: 14, color: '#94a3b8', marginTop: 4 },
+  emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
+  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
 
   // Site card
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, marginBottom: 14, elevation: 3, borderLeftWidth: 5, borderLeftColor: '#89c2d9', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
+  card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 3, borderLeftWidth: 5, borderLeftColor: '#89c2d9', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
   cardCritical: { borderLeftColor: '#dc2626', backgroundColor: '#fffbfb' },
 
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
-  siteName: { fontSize: 15, fontWeight: '700', color: '#1e3c72', lineHeight: 20 },
-  siteId: { fontSize: 11, color: '#94a3b8', marginTop: 3, fontWeight: '500' },
-  daysBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1.5 },
-  daysBadgeText: { fontSize: 10, fontWeight: '700' },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(12) },
+  siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72', lineHeight: 20 },
+  siteId: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginTop: verticalScale(3), fontWeight: '500' },
+  daysBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(9), paddingVertical: verticalScale(5), borderRadius: 20, borderWidth: 1.5 },
+  daysBadgeText: { fontSize: responsiveFontSize(10), fontWeight: '700' },
 
-  divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 12 },
+  divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
 
   infoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  infoCell: { width: '50%', marginBottom: 10, paddingRight: 8 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2, gap: 4 },
-  infoLabel: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
-  infoValue: { fontSize: 13, color: '#334155', fontWeight: '600' },
+  infoCell: { width: '50%', marginBottom: verticalScale(10), paddingRight: moderateScale(8) },
+  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(2), gap: 4 },
+  infoLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
+  infoValue: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
 
-  durationRow: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  durationBarBg: { flex: 1, height: 5, backgroundColor: '#e2e8f0', borderRadius: 3, overflow: 'hidden' },
+  durationRow: { marginTop: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: 10 },
+  durationBarBg: { flex: 1, height: verticalScale(5), backgroundColor: '#e2e8f0', borderRadius: 3, overflow: 'hidden' },
   durationBarFill: { height: '100%', borderRadius: 3 },
-  durationLabel: { fontSize: 10, fontWeight: '700', width: 65, textAlign: 'right' },
-  alarmSec: { padding: 10, backgroundColor: '#fff5f5', borderRadius: 8, marginTop: 12, borderWidth: 1, borderColor: '#fee2e2' },
-  secTitle: { fontSize: 10, fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: 6, letterSpacing: 0.5 },
-  alarmRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 },
-  alarmName: { flex: 1, fontSize: 11, fontWeight: '600', color: '#450a0a' },
-  alarmTime: { fontSize: 10, color: '#991b1b', fontStyle: 'italic' },
+  durationLabel: { fontSize: responsiveFontSize(10), fontWeight: '700', width: moderateScale(65), textAlign: 'right' },
+  alarmSec: { padding: moderateScale(10), backgroundColor: '#fff5f5', borderRadius: 8, marginTop: verticalScale(12), borderWidth: 1, borderColor: '#fee2e2' },
+  secTitle: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: verticalScale(6), letterSpacing: 0.5 },
+  alarmRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4), gap: 6 },
+  alarmName: { flex: 1, fontSize: responsiveFontSize(11), fontWeight: '600', color: '#450a0a' },
+  alarmTime: { fontSize: responsiveFontSize(10), color: '#991b1b', fontStyle: 'italic' },
 });
+

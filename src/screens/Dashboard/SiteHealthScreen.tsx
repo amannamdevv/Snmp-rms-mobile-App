@@ -219,12 +219,12 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
 
       {/* Range Filters / Tabs */}
       <View style={styles.filterBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: moderateScale(12) }}>
           {[
             { label: 'All', value: 'all', count: counts.total || 0, color: '#3b82f6', icon: 'list' },
             { label: 'UP', value: 'up', count: counts.up || 0, color: '#10b981', icon: 'check-circle' },
             { label: 'DOWN', value: 'down', count: counts.down || 0, color: '#dc2626', icon: 'x-circle' },
-            { label: 'Offline', value: 'non_comm', count: counts.non_comm || 0, color: '#f59e0b', icon: 'wifi-off' },
+            { label: 'NON-COMM', value: 'non_comm', count: counts.non_comm || 0, color: '#f59e0b', icon: 'wifi-off' },
           ].map(t => {
             const isActive = statusFilter === t.value;
             return (
@@ -234,9 +234,9 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
                 onPress={() => setStatusFilter(t.value)}
                 activeOpacity={0.7}
               >
-                <AppIcon name={t.icon as any} size={13} color={isActive ? '#fff' : t.color} style={{ marginRight: 6 }} />
+                <AppIcon name={t.icon as any} size={13} color={isActive ? '#fff' : t.color} style={{ marginRight: moderateScale(6) }} />
                 <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
-                  {t.label} <Text style={{ fontSize: 10, fontWeight: '700' }}>({t.count})</Text>
+                  {t.label} <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700' }}>({t.count})</Text>
                 </Text>
               </TouchableOpacity>
             );
@@ -265,11 +265,11 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
         data={filteredData}
         keyExtractor={(item, index) => (item.imei || item.site_id || index).toString()}
         renderItem={renderCard}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: moderateScale(16) }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         onEndReached={() => hasNext && fetchData(page + 1, false)}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: 20 }} /> : null}
+        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: moderateScale(20) }} /> : null}
         ListEmptyComponent={
           !loading && filteredData.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -287,8 +287,8 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
-  iconBtn: { padding: 8, position: 'relative' },
-  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+  iconBtn: { padding: moderateScale(8), position: 'relative' },
+  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
   filterBar: { 
     backgroundColor: '#fff', 
@@ -313,9 +313,9 @@ const styles = StyleSheet.create({
 
   searchContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 12,
+    marginHorizontal: moderateScale(16),
+    marginTop: verticalScale(12),
+    paddingHorizontal: moderateScale(12),
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(14),
     color: '#1e293b',
     height: '100%',
-    padding: 0,
+    padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
   emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },

@@ -39,7 +39,8 @@ export default function DashboardScreen({ navigation }: Props) {
   const [vitalsCounts, setVitalsCounts] = useState<any>(null);
   const [autoKpi, setAutoKpi] = useState<any>(null);
   const [uptimeKpi, setUptimeKpi] = useState<any>(null);
-  const [distKpi, setDistKpi] = useState<any>({ bsc: 0, hub: 0, indoor: 0, outdoor: 0, eb: 0, dg: 0, rtt: 0, rtp: 0, gbt: 0, 'small-cell': 0 });
+  const [distKpi, setDistKpi] = useState<any>({ bsc: 0, hub: 0, indoor: 0, outdoor: 0, eb: 0, dg: 0, non_dg: 0, non_eb: 0, rtt: 0, rtp: 0, gbt: 0, 'small-cell': 0 });
+  const [nonCommAging, setNonCommAging] = useState<any>({ total_non_comm: 0, aging_buckets: { '0-7 days': 0, '8-30 days': 0, '31-60 days': 0, '61-90 days': 0, '90+ days': 0 } });
   const [batteryKpi, setBatteryKpi] = useState<any>({
     healthy: 0,
     critically_replace: 0,
@@ -65,7 +66,7 @@ export default function DashboardScreen({ navigation }: Props) {
     setLoading(true);
     try {
       let results = await Promise.all([
-        api.getSiteHealthCounts({}).catch((e) => { console.log('Err getSiteHealthCounts', e); return null; }),
+        api.getSiteHealth({}, 1, 1).then(r => r ? r.kpi_data || r : null).catch((e) => { console.log('Err getSiteHealth fallback', e); return null; }),
         api.getBatteryVitalsCounts({}).catch((e) => { console.log('Err getBatteryVitalsCounts', e); return null; }),
         api.getAutomationStatus({}).catch((e) => { console.log('Err getAutomationStatus', e); return null; }),
         api.getUptimeSummary({}).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
@@ -73,9 +74,10 @@ export default function DashboardScreen({ navigation }: Props) {
         api.getDgPresence({}).catch((e) => { console.log('Err getDgPresence', e); return null; }),
         api.getEbPresence({}).catch((e) => { console.log('Err getEbPresence', e); return null; }),
         api.getBatteryHealthAnalytics({}).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
+        api.getNonCommAging({}).catch((e) => { console.log('Err getNonCommAging', e); return null; }),
       ]);
 
-      const [healthRes, vitalsRes, autoRes, uptimeRes, distRes, dgRes, ebRes, batteryRes] = results;
+      const [healthRes, vitalsRes, autoRes, uptimeRes, distRes, dgRes, ebRes, batteryRes, nonCommRes] = results;
 
       const extractData = (res: any) => {
         if (!res) return null;
@@ -117,14 +119,19 @@ export default function DashboardScreen({ navigation }: Props) {
       if (dgRes) {
         const dgRaw = extractData(dgRes);
         mergedDist.dg = dgRaw.dg_sites ?? dgRaw.dg ?? dgRaw.total_dg ?? dgRaw.dg_count ?? 0;
+        mergedDist.non_dg = dgRaw.non_dg ?? 0;
       }
       if (ebRes) {
         const ebRaw = extractData(ebRes);
         mergedDist.eb = ebRaw.eb_sites ?? ebRaw.eb ?? ebRaw.total_eb ?? ebRaw.eb_count ?? 0;
+        mergedDist.non_eb = ebRaw.non_eb ?? 0;
       }
       setDistKpi(mergedDist);
 
       // Battery Health KPI
+      if (nonCommRes) {
+        setNonCommAging(extractData(nonCommRes));
+      }
       if (batteryRes) {
         const battData = extractData(batteryRes);
         const cats = battData.categories || battData || {};
@@ -176,15 +183,17 @@ export default function DashboardScreen({ navigation }: Props) {
 
           {/* 1. SITE HEALTH */}
           <TouchableOpacity style={styles.mainCard} onPress={() => navigation.navigate('SiteHealth')}>
-            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="heart" size={20} color="#10b981" style={{ marginRight: 10 }} /><Text style={styles.cardTitle}>Site Health</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
+            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="heart" size={20} color="#10b981" style={{ marginRight: moderateScale(10) }} /><Text style={styles.cardTitle}>Site Health</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
             <View style={styles.statsRow}>{renderMiniKPI('UP', healthKpi?.up_sites, '#10b981', 'SiteHealth', { status: 'up' })}{renderMiniKPI('DOWN', healthKpi?.down_sites, '#ef4444', 'SiteHealth', { status: 'down' })}{renderMiniKPI('NON-COMM', healthKpi?.non_comm_sites, '#f59e0b', 'SiteHealth', { status: 'non_comm' })}</View>
           </TouchableOpacity>
 
+          {/* Non Comm Aging hidden as requested */}
+
           {/* 2. SITE VITALS */}
           <TouchableOpacity style={styles.mainCard} onPress={() => navigation.navigate('SiteVitals', { range: 'all' })}>
-            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="activity" size={20} color="#3b82f6" style={{ marginRight: 10 }} /><Text style={styles.cardTitle}>Site Vitals</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
+            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="activity" size={20} color="#3b82f6" style={{ marginRight: moderateScale(10) }} /><Text style={styles.cardTitle}>Site Vitals</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
             <View style={styles.statsRow}>{renderMiniKPI('Critical', vitalsCounts?.critical?.count ?? vitalsCounts?.critical, '#ed4040', 'SiteVitals', { range: 'critical' })}{renderMiniKPI('At Risk', vitalsCounts?.low?.count ?? vitalsCounts?.low, '#014F86', 'SiteVitals', { range: 'low' })}{renderMiniKPI('Operational', vitalsCounts?.normal?.count ?? vitalsCounts?.normal, '#2A6F97', 'SiteVitals', { range: 'normal' })}</View>
-            <View style={{ height: 15 }} /><View style={styles.statsRow}>{renderMiniKPI('Normal', vitalsCounts?.high?.count ?? vitalsCounts?.high, '#61A5C2', 'SiteVitals', { range: 'high' })}{renderMiniKPI('NA', vitalsCounts?.nc?.count ?? vitalsCounts?.nc, '#9e9e9e', 'SiteVitals', { range: 'na' })}{renderMiniKPI('Offline', vitalsCounts?.noncomm?.count ?? vitalsCounts?.noncomm, '#ef4444', 'SiteVitals', { range: 'noncomm' })}</View>
+            <View style={{ height: verticalScale(15) }} /><View style={styles.statsRow}>{renderMiniKPI('Normal', vitalsCounts?.high?.count ?? vitalsCounts?.high, '#61A5C2', 'SiteVitals', { range: 'high' })}{renderMiniKPI('NA', vitalsCounts?.nc?.count ?? vitalsCounts?.nc, '#9e9e9e', 'SiteVitals', { range: 'na' })}{renderMiniKPI('NON-COMM', vitalsCounts?.noncomm?.count ?? vitalsCounts?.noncomm, '#ef4444', 'SiteVitals', { range: 'noncomm' })}</View>
           </TouchableOpacity>
 
           {/* 2.5 Battery Health Analytics */}
@@ -194,12 +203,12 @@ export default function DashboardScreen({ navigation }: Props) {
           >
             <View style={styles.cardHeaderRow}>
               <View style={styles.headerLeft}>
-                <AppIcon name="battery" size={20} color="#1e3c72" style={{ marginRight: 8 }} />
+                <AppIcon name="battery" size={20} color="#1e3c72" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.cardTitle}>Battery Health Analytics</Text>
               </View>
               <AppIcon name="chevron-right" size={20} color="#1e3c72" />
             </View>
-            <View style={[styles.statsRow, { marginBottom: 15 }]}>
+            <View style={[styles.statsRow, { marginBottom: verticalScale(15) }]}>
               {renderMiniKPI('Healthy', batteryKpi.healthy, '#16a34a', 'BatteryHealthAnalytics')}
               {renderMiniKPI('Critical', batteryKpi.critically_replace, '#dc2626', 'BatteryHealthAnalytics')}
               {renderMiniKPI('Poor', batteryKpi.poor_replace, '#ea580c', 'BatteryHealthAnalytics')}
@@ -213,27 +222,42 @@ export default function DashboardScreen({ navigation }: Props) {
 
           {/* 3. UPTIME SUMMARY */}
           <TouchableOpacity style={styles.mainCard} onPress={() => navigation.navigate('UptimeReport')}>
-            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="trending-up" size={20} color="#01497C" style={{ marginRight: 10 }} /><Text style={styles.cardTitle}>Uptime Summary (RMS Data-MTD)</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
+            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="trending-up" size={20} color="#01497C" style={{ marginRight: moderateScale(10) }} /><Text style={styles.cardTitle}>Uptime Summary (RMS Data-MTD)</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
             <View style={styles.statsRow}><View style={styles.miniKpi}><Text style={styles.miniLabel}>States</Text><Text style={[styles.miniValue, { color: '#1e3c72' }]}>{uptimeKpi?.total_states || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>SLA Met</Text><Text style={[styles.miniValue, { color: '#4caf50' }]}>{uptimeKpi?.total_met || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>SLA Not Met</Text><Text style={[styles.miniValue, { color: '#f44336' }]}>{uptimeKpi?.total_not_met || 0}</Text></View></View>
           </TouchableOpacity>
 
           {/* 4. SITE AUTOMATION STATUS */}
           <TouchableOpacity style={styles.mainCard} onPress={() => navigation.navigate('SiteAutomation')}>
-            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="cpu" size={20} color="#61A5C2" style={{ marginRight: 10 }} /><Text style={styles.cardTitle}>Site Automation Status</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
-            <View style={styles.statsRow}><View style={styles.miniKpi}><Text style={styles.miniLabel}>Automated</Text><Text style={[styles.miniValue, { color: '#61A5C2' }]}>{autoKpi?.under_automation || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>Manual</Text><Text style={[styles.miniValue, { color: '#64748b' }]}>{autoKpi?.not_under_automation || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>Rate</Text><Text style={[styles.miniValue, { color: '#10b981' }]}>{autoKpi?.automation_percentage || 0}%</Text></View></View>
+            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="cpu" size={20} color="#61A5C2" style={{ marginRight: moderateScale(10) }} /><Text style={styles.cardTitle}>Site Automation Status</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
+            <View style={styles.statsRow}><View style={styles.miniKpi}><Text style={styles.miniLabel}>Under Automation</Text><Text style={[styles.miniValue, { color: '#61A5C2' }]}>{autoKpi?.under_automation || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>Not Under Automation</Text><Text style={[styles.miniValue, { color: '#64748b' }]}>{autoKpi?.not_under_automation || 0}</Text></View><View style={styles.miniKpi}><Text style={styles.miniLabel}>Automation Rate</Text><Text style={[styles.miniValue, { color: '#10b981' }]}>{autoKpi?.automation_percentage || 0}%</Text></View></View>
           </TouchableOpacity>
 
           {/* --- DISTRIBUTION STATUS CARD --- */}
           <TouchableOpacity style={styles.mainCard} onPress={() => navigation.navigate('SiteTypeDetails', { siteType: 'bsc', title: 'BSC Sites', filters: {} })}>
-            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="grid" size={20} color="#0ea5e9" style={{ marginRight: 10 }} /><Text style={styles.cardTitle}>Site Type Distribution</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
+            <View style={styles.cardHeaderRow}><View style={styles.headerLeft}><AppIcon name="grid" size={20} color="#0ea5e9" style={{ marginRight: moderateScale(10) }} /><Text style={styles.cardTitle}>Site Type Distribution</Text></View><AppIcon name="chevron-right" size={20} color="#1e3c72" /></View>
             <View style={styles.distGrid}>
-              <View style={styles.distRow}>{renderDistItem('BSC Site', distKpi.bsc, 'bsc')}{renderDistItem('Hub Site', distKpi.hub, 'hub')}{renderDistItem('DG Present', distKpi.dg, 'dg')}{renderDistItem('EB Present', distKpi.eb, 'eb')}</View>
-              <View style={styles.distRow}>{renderDistItem('Indoor Site', distKpi.indoor, 'indoor')}{renderDistItem('Outdoor Site', distKpi.outdoor, 'outdoor')}{renderDistItem('RTT Site', distKpi.rtt, 'rtt')}{renderDistItem('RTP Site', distKpi.rtp, 'rtp')}</View>
-              <View style={styles.distRow}>{renderDistItem('GBT Site', distKpi.gbt, 'gbt')}{renderDistItem('Small Cell', distKpi['small-cell'] || distKpi['small_cell'], 'small-cell')}<View style={styles.miniKpi} /><View style={styles.miniKpi} /></View>
+              <View style={styles.distRow}>
+                {renderDistItem('DG Present', distKpi.dg, 'dg')}
+                {renderDistItem('Non DG', distKpi.non_dg, 'dg_non')}
+                {renderDistItem('EB Present', distKpi.eb, 'eb')}
+                {renderDistItem('Non EB', distKpi.non_eb, 'eb_non')}
+              </View>
+              <View style={styles.distRow}>
+                {renderDistItem('BSC Site', distKpi.bsc, 'bsc')}
+                {renderDistItem('Hub Site', distKpi.hub, 'hub')}
+                {renderDistItem('Indoor Site', distKpi.indoor, 'indoor')}
+                {renderDistItem('Outdoor Site', distKpi.outdoor, 'outdoor')}
+              </View>
+              <View style={styles.distRow}>
+                {renderDistItem('RTT Site', distKpi.rtt, 'rtt')}
+                {renderDistItem('RTP Site', distKpi.rtp, 'rtp')}
+                {renderDistItem('GBT Site', distKpi.gbt, 'gbt')}
+                {renderDistItem('Small Cell', distKpi['small-cell'] || distKpi['small_cell'], 'small-cell')}
+              </View>
             </View>
           </TouchableOpacity>
 
-          {loading && <ActivityIndicator color="#1e3c72" style={{ marginVertical: 20 }} />}
+          {loading && <ActivityIndicator color="#1e3c72" style={{ marginVertical: verticalScale(20) }} />}
         </ScrollView>
       </SafeAreaView>
     </>
@@ -256,3 +280,4 @@ const styles = StyleSheet.create({
   distGrid: { width: '100%' },
   distRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(20) }
 });
+

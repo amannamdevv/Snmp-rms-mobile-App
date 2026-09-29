@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: verticalScale(2) },
     shadowOpacity: 0.1,
     shadowRadius: 4
   },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(14),
     color: '#1e293b',
     height: '100%',
-    padding: 0,
+    padding: moderateScale(0),
   },
 
   listContent: { padding: moderateScale(15) },
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(12),
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: verticalScale(2) },
     shadowOpacity: 0.1,
     shadowRadius: 4
   },

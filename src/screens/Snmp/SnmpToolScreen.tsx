@@ -173,11 +173,11 @@ const SnmpToolScreen = ({ navigation }: any) => {
   };
 
   const renderCurrentValues = () => {
-    if (loadingValues) return <ActivityIndicator color="#6366f1" style={{ marginTop: 20 }} />;
+    if (loadingValues) return <ActivityIndicator color="#6366f1" style={{ marginTop: verticalScale(20) }} />;
     if (!currentValues || currentValues.length === 0) return null;
 
     return (
-      <View style={{ marginTop: 20 }}>
+      <View style={{ marginTop: verticalScale(20) }}>
         {currentValues.map((section: any, index: number) => (
           <View key={index} style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>{section.table}</Text>
@@ -264,10 +264,10 @@ const SnmpToolScreen = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(16) }}>
                {/* Read Action */}
               <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#10b981' }]} onPress={handleGet} disabled={loadingAction}>
-                <Icon name="download" size={18} color="#fff" style={{ marginRight: 8 }} />
+                <Icon name="download" size={18} color="#fff" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.actionBtnText}>Read Value</Text>
               </TouchableOpacity>
             </View>
@@ -280,7 +280,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
             )}
 
             {/* Write Section */}
-            <View style={[styles.fieldContainer, { marginTop: 16 }]}>
+            <View style={[styles.fieldContainer, { marginTop: verticalScale(16) }]}>
               <Text style={styles.label}>New Value (Write) <Text style={styles.required}>*</Text></Text>
               <TextInput
                 style={styles.input}
@@ -291,7 +291,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
               />
             </View>
             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#ef4444' }]} onPress={handleSet} disabled={loadingAction}>
-              <Icon name="upload" size={18} color="#fff" style={{ marginRight: 8 }} />
+              <Icon name="upload" size={18} color="#fff" style={{ marginRight: moderateScale(8) }} />
               <Text style={styles.actionBtnText}>Write Value</Text>
             </TouchableOpacity>
 
@@ -352,7 +352,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
                     onPress={() => handleParamSelect(item)}
                   >
                     <Text style={styles.modalItemText}>{item.name}</Text>
-                    <Text style={{fontSize:12, color:'#94a3b8'}}>{item.oid}</Text>
+                    <Text style={{fontSize: responsiveFontSize(12), color:'#94a3b8'}}>{item.oid}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(20),
     marginBottom: moderateScale(16),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: verticalScale(4) },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: moderateScale(16),
   },
   fieldContainer: { marginBottom: moderateScale(16) },
-  label: { color: '#475569', fontSize: 14, fontWeight: '600', marginBottom: 6 },
+  label: { color: '#475569', fontSize: responsiveFontSize(14), fontWeight: '600', marginBottom: verticalScale(6) },
   required: { color: '#ef4444' },
   pickerTrigger: {
     flexDirection: 'row',
@@ -399,14 +399,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: moderateScale(12),
   },
-  pickerTriggerText: { fontSize: 14, color: '#1e293b' },
+  pickerTriggerText: { fontSize: responsiveFontSize(14), color: '#1e293b' },
   input: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 8,
     padding: moderateScale(12),
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: '#1e293b',
   },
   actionBtn: {
@@ -418,17 +418,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  actionBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  actionBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14) },
   resultContainer: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: verticalScale(10),
+    padding: moderateScale(12),
     backgroundColor: '#ecfdf5',
     borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: '#10b981',
   },
-  resultLabel: { fontSize: 12, color: '#047857' },
-  resultText: { fontSize: 16, fontWeight: 'bold', color: '#065f46' },
+  resultLabel: { fontSize: responsiveFontSize(12), color: '#047857' },
+  resultText: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#065f46' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -439,31 +439,31 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '75%',
-    paddingBottom: 20,
+    paddingBottom: verticalScale(20),
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: moderateScale(20),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b' },
+  modalTitle: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e293b' },
   modalItem: {
-    padding: 20,
+    padding: moderateScale(20),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalItemText: { fontSize: 16, color: '#475569', fontWeight: '500' },
+  modalItemText: { fontSize: responsiveFontSize(16), color: '#475569', fontWeight: '500' },
   
   // Current values grid
-  sectionContainer: { marginTop: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#334155', marginBottom: 8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 4 },
+  sectionContainer: { marginTop: verticalScale(16) },
+  sectionTitle: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#334155', marginBottom: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: verticalScale(4) },
   gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  gridItem: { width: '48%', backgroundColor: '#f8fafc', padding: 10, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-  gridKey: { fontSize: 11, color: '#64748b', textTransform: 'capitalize' },
-  gridValue: { fontSize: 14, fontWeight: 'bold', color: '#0f172a', marginTop: 4 },
+  gridItem: { width: '48%', backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 8, marginBottom: verticalScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
+  gridKey: { fontSize: responsiveFontSize(11), color: '#64748b', textTransform: 'capitalize' },
+  gridValue: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#0f172a', marginTop: verticalScale(4) },
 });
 
 export default SnmpToolScreen;

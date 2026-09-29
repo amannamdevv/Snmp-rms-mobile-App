@@ -80,9 +80,9 @@ function HCell({ label, value, color }: { label: string; value: any; color: stri
     );
 }
 const HC = StyleSheet.create({
-    cell: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 10, padding: 10, alignItems: 'center', borderTopWidth: 3, marginHorizontal: 3 },
-    val: { fontSize: 13, fontWeight: '800', marginBottom: 3 },
-    lab: { fontSize: 8, color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    cell: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 10, padding: moderateScale(10), alignItems: 'center', borderTopWidth: 3, marginHorizontal: moderateScale(3) },
+    val: { fontSize: responsiveFontSize(13), fontWeight: '800', marginBottom: verticalScale(3) },
+    lab: { fontSize: responsiveFontSize(8), color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // ─── Site Card ────────────────────────────────────────────────
@@ -297,7 +297,7 @@ export default function EnergyRunHoursDetailsScreen({ navigation, route }: any) 
                     <FlatList
                         data={filtered}
                         keyExtractor={(item, i) => `${item.site_id || i}`}
-                        contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+                        contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
                         showsVerticalScrollIndicator={false}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />
@@ -317,12 +317,12 @@ export default function EnergyRunHoursDetailsScreen({ navigation, route }: any) 
                                     </View>
                                     <View style={styles.statDivider} />
                                     <View style={styles.statItem}>
-                                        <Text style={[styles.statVal, { fontSize: 12 }]}>{dateLabel}</Text>
+                                        <Text style={[styles.statVal, { fontSize: responsiveFontSize(12) }]}>{dateLabel}</Text>
                                         <Text style={styles.statLab}>DATE</Text>
                                     </View>
                                 </View>
 
-                                <View style={{ marginBottom: 10 }}>
+                                <View style={{ marginBottom: verticalScale(10) }}>
                                     <Text style={styles.listTitle}>Site-wise Details</Text>
                                 </View>
 
@@ -345,7 +345,7 @@ export default function EnergyRunHoursDetailsScreen({ navigation, route }: any) 
 
                                 {/* Column header row — matches website table */}
                                 <View style={styles.tableHeader}>
-                                    <Text style={[styles.thTxt, { width: 28 }]}>#</Text>
+                                    <Text style={[styles.thTxt, { width: moderateScale(28) }]}>#</Text>
                                     <Text style={[styles.thTxt, { flex: 1.5 }]}>SITE</Text>
                                     <Text style={[styles.thTxt, { flex: 1 }]}>EB</Text>
                                     <Text style={[styles.thTxt, { flex: 1 }]}>DG</Text>
@@ -357,7 +357,7 @@ export default function EnergyRunHoursDetailsScreen({ navigation, route }: any) 
                         renderItem={({ item, index }) => (
                             <SiteCard item={item} index={index} isSingleDay={isSingleDay} />
                         )}
-                        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#01497c" style={{ margin: 20 }} /> : null}
+                        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#01497c" style={{ margin: moderateScale(20) }} /> : null}
                         ListEmptyComponent={
                             !loading ? (
                                 <View style={styles.emptyBox}>
@@ -381,56 +381,56 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     listContainer: { flex: 1, maxWidth: 650, alignSelf: 'center', width: '100%' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#01497c', fontWeight: '600', fontSize: 13 },
+    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '600', fontSize: responsiveFontSize(13) },
 
     // Stats banner — matches website "25 Sites Found"
-    statsBanner: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), flexDirection: 'row', alignItems: 'center', marginBottom: 12, elevation: 2 },
+    statsBanner: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(12), elevation: 2 },
     statItem: { flex: 1, alignItems: 'center' },
-    statVal: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#01497c', marginBottom: 4 },
+    statVal: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#01497c', marginBottom: verticalScale(4) },
     statLab: { fontSize: responsiveFontSize(8), color: '#64748b', fontWeight: '800', letterSpacing: 0.5, textAlign: 'center' },
     statDivider: { width: 1, height: scale(36), backgroundColor: '#e2e8f0' },
 
     // Export row
-    exportRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+    exportRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) },
     listTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a' },
-    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#89C2D9', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-    exportTxt: { color: '#fff', fontWeight: '800', fontSize: 12 },
+    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#89C2D9', borderRadius: 8, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8) },
+    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(12) },
 
     // Search
-    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 10, elevation: 1, gap: 8 },
+    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(10), elevation: 1, gap: 8 },
     searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
 
     // Table header
-    tableHeader: { flexDirection: 'row', backgroundColor: '#01497c', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 8, alignItems: 'center' },
+    tableHeader: { flexDirection: 'row', backgroundColor: '#01497c', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), marginBottom: verticalScale(8), alignItems: 'center' },
     thTxt: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: 0.3 },
 
     // Site Card
-    siteCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: 8, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
-    cardTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
+    siteCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
+    cardTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: verticalScale(6) },
     cardNumBox: { width: scale(24), height: scale(24), borderRadius: scale(12), backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center' },
     cardNum: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b' },
-    siteName: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: 2 },
+    siteName: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
     siteId: { fontSize: responsiveFontSize(9), color: '#64748b', fontFamily: 'monospace' },
-    ebBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
+    ebBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
     ebBadgeTxt: { fontSize: responsiveFontSize(10), fontWeight: '800' },
-    locationRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 2 },
+    locationRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: verticalScale(2) },
     locationTxt: { fontSize: responsiveFontSize(9), color: '#64748b', flex: 1 },
 
     // Detail
-    detailWrap: { marginTop: 10 },
-    detailDivider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 12 },
-    hoursRow: { flexDirection: 'row', marginBottom: 10 },
-    totalLabel: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-    lastUpdRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+    detailWrap: { marginTop: verticalScale(10) },
+    detailDivider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
+    hoursRow: { flexDirection: 'row', marginBottom: verticalScale(10) },
+    totalLabel: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
+    lastUpdRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: verticalScale(4) },
     lastUpdTxt: { fontSize: responsiveFontSize(9), color: '#94a3b8' },
 
     // Error
-    errorBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30 },
-    errorTxt: { color: '#ef4444', fontSize: 13, fontWeight: '600', marginTop: 12, marginBottom: 16, textAlign: 'center' },
-    retryBtn: { backgroundColor: '#01497c', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10 },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
+    errorBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(30) },
+    errorTxt: { color: '#ef4444', fontSize: responsiveFontSize(13), fontWeight: '600', marginTop: verticalScale(12), marginBottom: verticalScale(16), textAlign: 'center' },
+    retryBtn: { backgroundColor: '#01497c', borderRadius: 10, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10) },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
 
     // Empty
-    emptyBox: { alignItems: 'center', paddingTop: 50 },
-    emptyTxt: { color: '#94a3b8', fontSize: 13, marginTop: 12, fontWeight: '500', textAlign: 'center' },
+    emptyBox: { alignItems: 'center', paddingTop: verticalScale(50) },
+    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500', textAlign: 'center' },
 });

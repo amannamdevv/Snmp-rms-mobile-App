@@ -95,7 +95,7 @@ function smartSample(data: VoltagePoint[], max: number): VoltagePoint[] {
 function KpiCard({ icon, label, value, color }: { icon: string; label: string; value: string; color: string }) {
   return (
     <View style={[styles.kpiCard, { borderBottomColor: color, borderBottomWidth: 3 }]}>
-      <AppIcon name={icon} size={20} color={color} style={{ marginBottom: 6 }} />
+      <AppIcon name={icon} size={20} color={color} style={{ marginBottom: verticalScale(6) }} />
       <Text style={[styles.kpiVal, { color }]}>{value}</Text>
       <Text style={styles.kpiLab}>{label}</Text>
     </View>
@@ -289,7 +289,7 @@ export default function SiteVariationScreen({ navigation }: any) {
         onPress={() => setExpandedLogIdx(isExpanded ? null : id)}
         style={[styles.ptRowContainer, isExpanded && styles.ptRowExpanded]}
     >
-        <View style={[styles.ptRow, { paddingHorizontal: 16, borderBottomWidth: isExpanded ? 0 : 1 }]}>
+        <View style={[styles.ptRow, { paddingHorizontal: moderateScale(16), borderBottomWidth: isExpanded ? 0 : 1 }]}>
             <View style={[styles.ptDot, { backgroundColor: statusColor(pt.running_status) }]} />
             <View style={{ flex: 1.5 }}>
                 <Text style={styles.ptTime}>{pt.time_display}</Text>
@@ -323,7 +323,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                     <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Source Status</Text>
                         <View style={[styles.badge, { backgroundColor: '#f1f5f9', alignSelf: 'flex-start' }]}>
-                            <Text style={{ color: '#475569', fontSize: 10, fontWeight: '700' }}>{pt.source_status || 'N/A'}</Text>
+                            <Text style={{ color: '#475569', fontSize: responsiveFontSize(10), fontWeight: '700' }}>{pt.source_status || 'N/A'}</Text>
                         </View>
                     </View>
                     <View style={styles.detailItem}>
@@ -333,12 +333,12 @@ export default function SiteVariationScreen({ navigation }: any) {
                 </View>
 
                 {pt.active_alarms && pt.active_alarms.length > 0 && (
-                    <View style={{ marginTop: 12 }}>
+                    <View style={{ marginTop: verticalScale(12) }}>
                         <Text style={styles.detailLabel}>Active Alarms</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: verticalScale(4) }}>
                             {pt.active_alarms.map((name, idx) => (
-                                <View key={idx} style={[styles.tooltipBadge, { backgroundColor: '#fee2e2', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }]}>
-                                    <Text style={[styles.tooltipBadgeText, { fontSize: 10, color: '#ef4444' }]}>{name}</Text>
+                                <View key={idx} style={[styles.tooltipBadge, { backgroundColor: '#fee2e2', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 6 }]}>
+                                    <Text style={[styles.tooltipBadgeText, { fontSize: responsiveFontSize(10), color: '#ef4444' }]}>{name}</Text>
                                 </View>
                             ))}
                         </View>
@@ -508,14 +508,14 @@ export default function SiteVariationScreen({ navigation }: any) {
               <KpiCard icon="trending-up" label="Max Voltage" value={`${siteData.voltage_statistics.max_voltage.toFixed(2)}V`} color="#22c55e" />
               <KpiCard icon="trending-down" label="Min Voltage" value={`${siteData.voltage_statistics.min_voltage.toFixed(2)}V`} color="#e11d48" />
             </View>
-            <View style={[styles.kpiRow, { marginBottom: 0 }]}>
+            <View style={[styles.kpiRow, { marginBottom: verticalScale(0) }]}>
               <KpiCard icon="activity" label="Avg Voltage" value={`${siteData.voltage_statistics.avg_voltage.toFixed(2)}V`} color="#0ea5e9" />
               <KpiCard icon="database" label="Total Records" value={`${siteData.data_availability.total_records}`} color="#8b5cf6" />
               <KpiCard icon="bell" label="Total Alarms" value={`${siteData.alarm_summary.total_events}`} color="#f97316" />
             </View>
 
             {/* Legend — unchanged */}
-            <View style={[styles.card, { marginTop: 12 }]}>
+            <View style={[styles.card, { marginTop: verticalScale(12) }]}>
               <View style={styles.legendRow}>
                 <View style={[styles.legendDot, { backgroundColor: '#22c55e' }]} /><Text style={styles.legText}>Mains  </Text>
                 <View style={[styles.legendDot, { backgroundColor: '#f59e0b' }]} /><Text style={styles.legText}>Battery  </Text>
@@ -546,9 +546,9 @@ export default function SiteVariationScreen({ navigation }: any) {
                 <Text style={styles.cardTitle}>Battery Voltage Timeline</Text>
 
                 {/* Chart Filters — unchanged */}
-                <View style={{ marginBottom: 12 }}>
+                <View style={{ marginBottom: verticalScale(12) }}>
                   <Text style={styles.filterLabel}>Filter by Date:</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(8) }}>
                     {availableDates.map(d => (
                       <TouchableOpacity key={d} onPress={() => setChartDateFilter(d)}
                         style={[styles.chip, chartDateFilter === d && styles.chipActive]}>
@@ -611,12 +611,12 @@ export default function SiteVariationScreen({ navigation }: any) {
                       <View style={styles.tooltipCard}>
                         <View style={styles.tooltipHeader}>
                           <Text style={styles.tooltipTime}>{chartData.raw[selectedIdx].time_display}</Text>
-                          <TouchableOpacity onPress={() => setSelectedIdx(null)} style={{ padding: 4 }}>
+                          <TouchableOpacity onPress={() => setSelectedIdx(null)} style={{ padding: moderateScale(4) }}>
                             <AppIcon name="x" size={16} color="#475569" />
                           </TouchableOpacity>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                          <View style={[styles.ptDot, { backgroundColor: statusColor(chartData.raw[selectedIdx].running_status), marginRight: 6 }]} />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4) }}>
+                          <View style={[styles.ptDot, { backgroundColor: statusColor(chartData.raw[selectedIdx].running_status), marginRight: moderateScale(6) }]} />
                           <Text style={styles.tooltipVolt}>{chartData.raw[selectedIdx].battery_voltage.toFixed(2)}V</Text>
                         </View>
                         <Text style={styles.tooltipText}><Text style={{ fontWeight: '700' }}>Status:</Text> {chartData.raw[selectedIdx].running_status}</Text>
@@ -639,15 +639,15 @@ export default function SiteVariationScreen({ navigation }: any) {
                   </>
                 )}
 
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 12 }}>
-                    <Text style={[styles.cardTitle, { marginBottom: 0, fontSize: 13 }]}>Recent Readings (Unfiltered)</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: verticalScale(24), marginBottom: verticalScale(12) }}>
+                    <Text style={[styles.cardTitle, { marginBottom: verticalScale(0), fontSize: responsiveFontSize(13) }]}>Recent Readings (Unfiltered)</Text>
                     <View style={styles.filterBadge}>
                         <Text style={styles.filterBadgeText}>{filteredCorrelation.length} Recs</Text>
                     </View>
                 </View>
 
                 {/* List Filters */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(12) }}>
                     {[
                         {v: 'All', l: 'All Events'},
                         {v: 'Mains', l: 'Mains Only'},
@@ -683,7 +683,7 @@ export default function SiteVariationScreen({ navigation }: any) {
 
             {activeTab === 'readings' && (
                <View style={styles.card}>
-                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: verticalScale(16) }}>
                     <Text style={styles.cardTitle}>Detailed Site Readings</Text>
                     <View style={styles.filterBadge}>
                         <Text style={styles.filterBadgeText}>{filteredCorrelation.length} Records</Text>
@@ -691,7 +691,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                  </View>
 
                  {/* List Filters */}
-                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(12) }}>
                     {[
                         {v: 'All', l: 'All Events'},
                         {v: 'Mains', l: 'Mains Only'},
@@ -723,7 +723,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                             <AppIcon name="chevron-down" size={16} color="#1e3c72" />
                         </TouchableOpacity>
                     ) : (
-                        <Text style={[styles.chartSub, { padding: 12, textAlign: 'center' }]}>
+                        <Text style={[styles.chartSub, { padding: moderateScale(12), textAlign: 'center' }]}>
                             End of records.
                         </Text>
                     )}
@@ -755,7 +755,7 @@ export default function SiteVariationScreen({ navigation }: any) {
           </>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: verticalScale(100) }} />
       </ScrollView>
 
       <Sidebar
@@ -795,13 +795,13 @@ function AlarmRow({ alarm }: { alarm: AlarmDetail }) {
         {alarm.details ? <Text style={styles.alarmDetails}>{alarm.details}</Text> : null}
         <Text style={styles.alarmTime}>{new Date(alarm.timestamp).toLocaleString()}</Text>
         <View style={styles.durRow}>
-          <AppIcon name="clock" size={10} color="#94a3b8" style={{ marginRight: 4 }} />
+          <AppIcon name="clock" size={10} color="#94a3b8" style={{ marginRight: moderateScale(4) }} />
           <Text style={styles.alarmDur}>{alarm.duration}</Text>
         </View>
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <View style={[styles.badge, { backgroundColor: isOpen ? '#fee2e2' : '#dcfce7' }]}>
-          <Text style={{ color: isOpen ? '#ef4444' : '#16a34a', fontSize: 10, fontWeight: '700' }}>
+          <Text style={{ color: isOpen ? '#ef4444' : '#16a34a', fontSize: responsiveFontSize(10), fontWeight: '700' }}>
             {alarm.status}
           </Text>
         </View>
@@ -809,7 +809,7 @@ function AlarmRow({ alarm }: { alarm: AlarmDetail }) {
           {alarm.battery_voltage_at_alarm != null ? `${alarm.battery_voltage_at_alarm.toFixed(2)}V` : '—'}
         </Text>
         <View style={[styles.badge, { backgroundColor: isSmps ? '#dbeafe' : '#f0fdf4' }]}>
-          <Text style={{ color: isSmps ? '#1d4ed8' : '#15803d', fontSize: 9, fontWeight: '600' }}>
+          <Text style={{ color: isSmps ? '#1d4ed8' : '#15803d', fontSize: responsiveFontSize(9), fontWeight: '600' }}>
             {isSmps ? 'SMPS' : 'RMS'}
           </Text>
         </View>
@@ -824,16 +824,16 @@ const styles = StyleSheet.create({
 
   header: {
     paddingTop: Platform.OS === 'ios' ? 0 : 8,
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingHorizontal: moderateScale(16),
+    paddingBottom: verticalScale(14),
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { color: '#fff', fontSize: 17, fontWeight: '700', flex: 1, textAlign: 'center' },
-  headerBtn: { padding: 8, borderRadius: 8 },
+  headerTitle: { color: '#fff', fontSize: responsiveFontSize(17), fontWeight: '700', flex: 1, textAlign: 'center' },
+  headerBtn: { padding: moderateScale(8), borderRadius: 8 },
 
-  scroll: { padding: 16 },
+  scroll: { padding: moderateScale(16) },
 
   card: {
     backgroundColor: '#fff', borderRadius: moderateScale(16), padding: moderateScale(16),
@@ -880,68 +880,68 @@ const styles = StyleSheet.create({
   kpiLab: { fontSize: responsiveFontSize(11), color: '#64748b', textTransform: 'uppercase', textAlign: 'center' },
 
   legendRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
-  legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 4 },
-  legText: { fontSize: 12, color: '#475569', marginRight: 8 },
+  legendDot: { width: moderateScale(10), height: verticalScale(10), borderRadius: 5, marginRight: moderateScale(4) },
+  legText: { fontSize: responsiveFontSize(12), color: '#475569', marginRight: moderateScale(8) },
 
   tabBar: {
-    flexDirection: 'row', gap: 8, marginBottom: 12,
-    backgroundColor: '#1e3c72', borderRadius: 12, padding: 6,
+    flexDirection: 'row', gap: 8, marginBottom: verticalScale(12),
+    backgroundColor: '#1e3c72', borderRadius: 12, padding: moderateScale(6),
   },
-  tab: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 8, borderRadius: 8 },
+  tab: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: verticalScale(8), borderRadius: 8 },
   tabActive: { backgroundColor: '#fff' },
-  tabText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  tabText: { fontSize: responsiveFontSize(13), fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
   tabTextActive: { color: '#1e3c72' },
 
-  chartSub: { fontSize: 11, color: '#94a3b8', marginBottom: 10 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: '#f1f5f9', marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  chartSub: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginBottom: verticalScale(10) },
+  chip: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 16, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
   chipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  chipText: { fontSize: 12, color: '#475569', fontWeight: '500' },
+  chipText: { fontSize: responsiveFontSize(12), color: '#475569', fontWeight: '500' },
   chipTextActive: { color: '#fff' },
-  filterLabel: { fontSize: 13, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
+  filterLabel: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(8) },
 
-  tooltipCard: { backgroundColor: '#fff', padding: 14, borderRadius: 12, marginTop: 16, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 2 } },
-  tooltipHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  tooltipTime: { fontSize: 13, fontWeight: '700', color: '#1e293b' },
-  tooltipVolt: { fontSize: 17, fontWeight: '800', color: '#1e3c72' },
-  tooltipText: { fontSize: 12, color: '#475569', marginBottom: 3 },
-  tooltipAlarms: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  tooltipBadge: { backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  tooltipBadgeText: { fontSize: 10, color: '#ef4444', fontWeight: '700' },
+  tooltipCard: { backgroundColor: '#fff', padding: moderateScale(14), borderRadius: 12, marginTop: verticalScale(16), borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: verticalScale(2) } },
+  tooltipHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(8), paddingBottom: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  tooltipTime: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b' },
+  tooltipVolt: { fontSize: responsiveFontSize(17), fontWeight: '800', color: '#1e3c72' },
+  tooltipText: { fontSize: responsiveFontSize(12), color: '#475569', marginBottom: verticalScale(3) },
+  tooltipAlarms: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: verticalScale(8) },
+  tooltipBadge: { backgroundColor: '#fee2e2', paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 4 },
+  tooltipBadgeText: { fontSize: responsiveFontSize(10), color: '#ef4444', fontWeight: '700' },
 
-  ptRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', gap: 8 },
-  ptDot: { width: 10, height: 10, borderRadius: 5 },
-  ptTime: { fontSize: 12, fontWeight: '600', color: '#1e293b' },
-  ptStatus: { fontSize: 11, color: '#64748b' },
-  ptVolt: { fontSize: 13, fontWeight: '800', flex: 1, textAlign: 'right' },
-  ptVoltSmall: { fontSize: 9, color: '#64748b', fontWeight: '500' },
-  loadMoreBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 15, backgroundColor: '#f1f5f9', gap: 8 },
-  loadMoreText: { fontSize: 13, fontWeight: '700', color: '#1e3c72' },
+  ptRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: verticalScale(7), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', gap: 8 },
+  ptDot: { width: moderateScale(10), height: verticalScale(10), borderRadius: 5 },
+  ptTime: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#1e293b' },
+  ptStatus: { fontSize: responsiveFontSize(11), color: '#64748b' },
+  ptVolt: { fontSize: responsiveFontSize(13), fontWeight: '800', flex: 1, textAlign: 'right' },
+  ptVoltSmall: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '500' },
+  loadMoreBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: moderateScale(15), backgroundColor: '#f1f5f9', gap: 8 },
+  loadMoreText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e3c72' },
 
-  chipSmall: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: '#f1f5f9', marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  chipSmall: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
   chipSmallActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  chipSmallText: { fontSize: 11, color: '#475569', fontWeight: '600' },
+  chipSmallText: { fontSize: responsiveFontSize(11), color: '#475569', fontWeight: '600' },
   chipSmallTextActive: { color: '#fff' },
 
-  filterBadge: { backgroundColor: '#e0f2fe', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  filterBadgeText: { fontSize: 10, fontWeight: '700', color: '#0369a1' },
+  filterBadge: { backgroundColor: '#e0f2fe', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 6 },
+  filterBadgeText: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#0369a1' },
 
   alarmRow: {
-    flexDirection: 'row', padding: 12,
-    backgroundColor: '#f8fafc', borderRadius: 10, marginBottom: 8,
+    flexDirection: 'row', padding: moderateScale(12),
+    backgroundColor: '#f8fafc', borderRadius: 10, marginBottom: verticalScale(8),
     borderLeftWidth: 3, borderLeftColor: '#1e3c72',
   },
-  alarmName: { fontSize: 13, fontWeight: '700', color: '#1e293b', marginBottom: 2 },
-  alarmTime: { fontSize: 11, color: '#64748b' },
-  alarmDur: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
-  alarmVolt: { fontSize: 12, fontWeight: '700', color: '#1e3c72' },
-  alarmDetails: { fontSize: 11, color: '#3b82f6', marginBottom: 2, fontWeight: '500' },
-  durRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
+  alarmName: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(2) },
+  alarmTime: { fontSize: responsiveFontSize(11), color: '#64748b' },
+  alarmDur: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginTop: verticalScale(2) },
+  alarmVolt: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e3c72' },
+  alarmDetails: { fontSize: responsiveFontSize(11), color: '#3b82f6', marginBottom: verticalScale(2), fontWeight: '500' },
+  durRow: { flexDirection: 'row', alignItems: 'center', marginTop: verticalScale(2) },
+  badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 20 },
   ptRowContainer: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   ptRowExpanded: { backgroundColor: '#f8fafc' },
-  expandedDetail: { padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  expandedDetail: { padding: moderateScale(16), backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   detailItem: { width: '45%' },
-  detailLabel: { fontSize: 10, fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: 4 },
-  detailValue: { fontSize: 12, color: '#1e293b', fontWeight: '500' },
+  detailLabel: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  detailValue: { fontSize: responsiveFontSize(12), color: '#1e293b', fontWeight: '500' },
 });

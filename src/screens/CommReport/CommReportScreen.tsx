@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl, Alert, Platform,
@@ -9,6 +10,8 @@ import { api, logoutApi } from '../../api';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import Sidebar from '../../components/Sidebar';
@@ -37,7 +40,12 @@ export default function CommReportScreen({ navigation }: Props) {
     const [deviceCounts, setDeviceCounts] = useState<any>({ smps: 0, amf: 0, both: 0, dcem: 0, any: 0 });
 
     const [expandedImei, setExpandedImei] = useState<string | null>(null);
-    const [activeFilters, setActiveFilters] = useState<any>({});
+    const [activeFilters, setActiveFilters] = useState<any>(globalFilters)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [commFilter, setCommFilter] = useState<string | null>(null);
@@ -246,7 +254,7 @@ export default function CommReportScreen({ navigation }: Props) {
 
                 <View style={styles.listLabel}><Text style={styles.listLabelText}>SITE RECORDS ({displayItems.length})</Text></View>
 
-                {loading && !refreshing ? <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: 40 }} /> : (
+                {loading && !refreshing ? <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(40) }} /> : (
                     <FlatList
                         data={displayItems}
                         renderItem={({ item }) => {
@@ -294,9 +302,10 @@ export default function CommReportScreen({ navigation }: Props) {
                         ListEmptyComponent={<View style={styles.empty}><AppIcon name="info" size={40} color="#cbd5e1" /><Text style={styles.emptyText}>Nothing to show</Text></View>}
                     />
                 )}
-                <View style={{ height: 40 }} />
+                <View style={{ height: verticalScale(40) }} />
             </ScrollView>
-            <FilterModal visible={filterModalVisible} onClose={() => setFilterModalVisible(false)} onApply={f => { setActiveFilters(f); setFilterModalVisible(false); }} initialFilters={activeFilters} />
+            <GlobalFilterBanner />
+      <FilterModal visible={filterModalVisible} onClose={() => setFilterModalVisible(false)} onApply={f => { setActiveFilters(f); setFilterModalVisible(false); }} initialFilters={activeFilters} />
             <Sidebar
                 isVisible={isSidebarVisible}
                 onClose={() => setSidebarVisible(false)}
@@ -338,57 +347,57 @@ const Unit = ({ label, ok, l, m, t }: any) => (
 
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#c5d4eeff' },
-    backBtn: { padding: 4 },
+    backBtn: { padding: moderateScale(4) },
     headerIcons: { flexDirection: 'row', alignItems: 'center' },
-    iconBtn: { padding: 8, marginLeft: 10 },
+    iconBtn: { padding: moderateScale(8), marginLeft: moderateScale(10) },
 
-    kpiContainer: { flexDirection: 'row', padding: 16, gap: 10 },
-    kpiCard: { flex: 1, backgroundColor: '#fff', padding: 16, borderRadius: 12, alignItems: 'center', elevation: 2 },
+    kpiContainer: { flexDirection: 'row', padding: moderateScale(16), gap: 10 },
+    kpiCard: { flex: 1, backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, alignItems: 'center', elevation: 2 },
     kpiActive: { borderWidth: 2, borderColor: '#1e3c72' },
-    kpiValue: { fontSize: 24, fontWeight: '700', color: '#1e3c72' },
-    kpiLabel: { fontSize: 12, color: '#666', marginTop: 4 },
+    kpiValue: { fontSize: responsiveFontSize(24), fontWeight: '700', color: '#1e3c72' },
+    kpiLabel: { fontSize: responsiveFontSize(12), color: '#666', marginTop: verticalScale(4) },
 
     searchWrap: {
         flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-        marginHorizontal: 16, marginVertical: 8, borderRadius: 10,
-        paddingHorizontal: 12, paddingVertical: 10, elevation: 1, gap: 8,
+        marginHorizontal: moderateScale(16), marginVertical: verticalScale(8), borderRadius: 10,
+        paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), elevation: 1, gap: 8,
         borderWidth: 1, borderColor: '#e2e8f0',
     },
-    searchInput: { flex: 1, fontSize: 13, color: '#0f172a', fontWeight: '500', padding: 0 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#0f172a', fontWeight: '500', padding: moderateScale(0) },
 
-    secTitle: { padding: 16, paddingBottom: 8 },
-    secTitleText: { fontSize: 13, fontWeight: '800', color: '#1e3c72' },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, gap: 10, marginBottom: 15 },
-    boxWrap: { width: '31%', backgroundColor: '#fcfdfe', borderRadius: 12, padding: 10, alignItems: 'center', elevation: 1, borderWidth: 1.5, borderColor: '#e2e8f0' },
-    boxIcoWrap: { width: 22, height: 22, borderRadius: 6, justifyContent: 'center', alignItems: 'center', marginBottom: 4 },
-    boxN: { fontSize: 18, fontWeight: '800', color: '#1e293b' },
-    boxL: { fontSize: 7, fontWeight: '700', color: '#94a3b8', textAlign: 'center' },
-    listLabel: { backgroundColor: '#e2e8f0', padding: 10, paddingHorizontal: 16 },
-    listLabelText: { fontSize: 11, fontWeight: '800', color: '#1e3c72' },
+    secTitle: { padding: moderateScale(16), paddingBottom: verticalScale(8) },
+    secTitleText: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1e3c72' },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: moderateScale(16), gap: 10, marginBottom: verticalScale(15) },
+    boxWrap: { width: '31%', backgroundColor: '#fcfdfe', borderRadius: 12, padding: moderateScale(10), alignItems: 'center', elevation: 1, borderWidth: 1.5, borderColor: '#e2e8f0' },
+    boxIcoWrap: { width: moderateScale(22), height: verticalScale(22), borderRadius: 6, justifyContent: 'center', alignItems: 'center', marginBottom: verticalScale(4) },
+    boxN: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e293b' },
+    boxL: { fontSize: responsiveFontSize(7), fontWeight: '700', color: '#94a3b8', textAlign: 'center' },
+    listLabel: { backgroundColor: '#e2e8f0', padding: moderateScale(10), paddingHorizontal: moderateScale(16) },
+    listLabelText: { fontSize: responsiveFontSize(11), fontWeight: '800', color: '#1e3c72' },
 
-    card: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 12, borderRadius: 16, elevation: 2, overflow: 'hidden' },
-    cardInfo: { padding: 16, flexDirection: 'row', alignItems: 'center' },
-    cardId: { fontSize: 15, fontWeight: '800', color: '#1e3c72' },
-    cardName: { fontSize: 13, color: '#475569', fontWeight: '500' },
-    cardImei: { fontSize: 11, color: '#94a3b8' },
+    card: { backgroundColor: '#fff', marginHorizontal: moderateScale(16), marginTop: verticalScale(12), borderRadius: 16, elevation: 2, overflow: 'hidden' },
+    cardInfo: { padding: moderateScale(16), flexDirection: 'row', alignItems: 'center' },
+    cardId: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#1e3c72' },
+    cardName: { fontSize: responsiveFontSize(13), color: '#475569', fontWeight: '500' },
+    cardImei: { fontSize: responsiveFontSize(11), color: '#94a3b8' },
     cardEnd: { alignItems: 'flex-end', gap: 6 },
-    pill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+    pill: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
     activePill: { backgroundColor: '#d1fae5' },
     downPill: { backgroundColor: '#fee2e2' },
-    pillTxt: { color: '#333', fontSize: 10, fontWeight: '600' },
+    pillTxt: { color: '#333', fontSize: responsiveFontSize(10), fontWeight: '600' },
 
-    expanded: { padding: 16, paddingTop: 0, backgroundColor: '#f8fafc', borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-    unitRow: { flexDirection: 'row', gap: 10, marginTop: 10 },
-    unit: { flex: 1, backgroundColor: '#fff', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0' },
-    unitH: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-    unitLabel: { fontSize: 12, fontWeight: '700', color: '#1e293b' },
-    unitStat: { fontSize: 10, fontWeight: '800' },
-    unitV: { fontSize: 10, color: '#64748b' },
-    note: { marginTop: 12, padding: 12, backgroundColor: '#fffbe6', borderRadius: 10, borderWidth: 1, borderColor: '#ffe58f' },
-    noteTitle: { fontSize: 9, fontWeight: '800', color: '#856404', marginBottom: 2 },
-    noteText: { fontSize: 11, color: '#92400e' },
-    actionBtn: { marginTop: 16, backgroundColor: '#1e3c72', padding: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-    actionBtnText: { color: '#fff', fontSize: 14, fontWeight: '700', marginRight: 8 },
-    empty: { alignItems: 'center', padding: 60 },
-    emptyText: { marginTop: 12, color: '#94a3b8', fontWeight: '600' }
+    expanded: { padding: moderateScale(16), paddingTop: verticalScale(0), backgroundColor: '#f8fafc', borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+    unitRow: { flexDirection: 'row', gap: 10, marginTop: verticalScale(10) },
+    unit: { flex: 1, backgroundColor: '#fff', padding: moderateScale(12), borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0' },
+    unitH: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(6) },
+    unitLabel: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' },
+    unitStat: { fontSize: responsiveFontSize(10), fontWeight: '800' },
+    unitV: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    note: { marginTop: verticalScale(12), padding: moderateScale(12), backgroundColor: '#fffbe6', borderRadius: 10, borderWidth: 1, borderColor: '#ffe58f' },
+    noteTitle: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#856404', marginBottom: verticalScale(2) },
+    noteText: { fontSize: responsiveFontSize(11), color: '#92400e' },
+    actionBtn: { marginTop: verticalScale(16), backgroundColor: '#1e3c72', padding: moderateScale(14), borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+    actionBtnText: { color: '#fff', fontSize: responsiveFontSize(14), fontWeight: '700', marginRight: moderateScale(8) },
+    empty: { alignItems: 'center', padding: moderateScale(60) },
+    emptyText: { marginTop: verticalScale(12), color: '#94a3b8', fontWeight: '600' }
 });

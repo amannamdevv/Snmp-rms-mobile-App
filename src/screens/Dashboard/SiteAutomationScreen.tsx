@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, Alert, TextInput
@@ -155,7 +156,7 @@ export default function SiteAutomationScreen({ navigation }: any) {
                     onPress={() => navigation.navigate('SiteDetails', { imei: item.imei, siteId: item.site_id })}
                 >
                     <View style={styles.cardHeader}>
-                        <View style={{ flex: 1, marginRight: 8 }}>
+                        <View style={{ flex: 1, marginRight: moderateScale(8) }}>
                             <Text style={styles.siteName}>{item.site_name}</Text>
                             <Text style={styles.subText}>Global ID: {item.global_id || item.site_id || '—'} | ID: {item.site_id}</Text>
                         </View>
@@ -200,7 +201,7 @@ export default function SiteAutomationScreen({ navigation }: any) {
                         <Text style={styles.analysisTitle}>Analysis Feedback:</Text>
                         <Text style={styles.feedbackText}>{item.sequence_analysis.feedback}</Text>
 
-                        <Text style={[styles.analysisTitle, { marginTop: 10 }]}>Recent Sequences (Last 5):</Text>
+                        <Text style={[styles.analysisTitle, { marginTop: verticalScale(10) }]}>Recent Sequences (Last 5):</Text>
                         {item.sequence_analysis.sequence_details && item.sequence_analysis.sequence_details.length > 0 ? (
                             item.sequence_analysis.sequence_details.slice(0, 5).map((seq: any, idx: number) =>
                                 renderSequenceItem(seq, idx)
@@ -236,9 +237,9 @@ export default function SiteAutomationScreen({ navigation }: any) {
 
                 <View style={styles.statusFilterContainer}>
                     {[
-                        { id: 'all', label: 'All', count: summary?.total_sites },
-                        { id: 'automated', label: 'Automated', count: summary?.under_automation },
-                        { id: 'not_automated', label: 'Manual', count: summary?.not_under_automation }
+                        { id: 'all', label: 'Total Sites', count: summary?.total_sites },
+                        { id: 'automated', label: 'Under Automation', count: summary?.under_automation },
+                        { id: 'not_automated', label: 'Not Under Automation', count: summary?.not_under_automation }
                     ].map((f) => (
                         <TouchableOpacity
                             key={f.id}
@@ -273,13 +274,13 @@ export default function SiteAutomationScreen({ navigation }: any) {
                 </View>
 
                 {loading && !refreshing ? (
-                    <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: 50 }} />
+                    <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />
                 ) : (
                     <FlatList
                         data={filteredData}
                         keyExtractor={(item, index) => (item.site_id || index).toString()}
                         renderItem={renderCard}
-                        contentContainerStyle={{ padding: 16 }}
+                        contentContainerStyle={{ padding: moderateScale(16) }}
                         refreshControl={
                             <RefreshControl
                                 refreshing={refreshing}
@@ -303,64 +304,64 @@ export default function SiteAutomationScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     headerIcons: { flexDirection: 'row', alignItems: 'center' },
-    iconBtn: { padding: 8, position: 'relative' },
-    activeFilterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+    iconBtn: { padding: moderateScale(8), position: 'relative' },
+    activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
-    statusFilterContainer: { flexDirection: 'row', backgroundColor: '#fff', padding: 10, gap: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    statusFilterBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 20, backgroundColor: '#f0f4f8' },
+    statusFilterContainer: { flexDirection: 'row', backgroundColor: '#fff', padding: moderateScale(10), gap: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    statusFilterBtn: { flex: 1, paddingVertical: verticalScale(8), alignItems: 'center', borderRadius: 20, backgroundColor: '#f0f4f8' },
     statusFilterBtnActive: { backgroundColor: '#1e3c72' },
-    statusFilterText: { fontSize: 12, color: '#1e3c72', fontWeight: '600' },
+    statusFilterText: { fontSize: responsiveFontSize(12), color: '#1e3c72', fontWeight: '600' },
     statusFilterTextActive: { color: '#fff' },
 
     searchContainer: { 
         backgroundColor: '#fff', 
-        paddingHorizontal: 14, 
-        paddingVertical: 6, 
+        paddingHorizontal: moderateScale(14), 
+        paddingVertical: verticalScale(6), 
         flexDirection: 'row', 
         alignItems: 'center',
-        marginHorizontal: 14,
-        marginVertical: 10,
+        marginHorizontal: moderateScale(14),
+        marginVertical: verticalScale(10),
         borderRadius: 12,
         elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: verticalScale(2) },
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-    searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 13, color: '#1e293b', height: 38, padding: 0, fontWeight: '500' },
+    searchIcon: { marginRight: moderateScale(10) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 
-    emptyContainer: { alignItems: 'center', marginTop: 50 },
-    emptyTextMain: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 12 },
-    emptySubtitle: { fontSize: 14, color: '#94a3b8', marginTop: 4 },
+    emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
+    emptyTextMain: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+    emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
 
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 3 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(16), marginBottom: verticalScale(12), elevation: 3 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    siteName: { fontSize: 15, fontWeight: '700', color: '#1e3c72' },
-    subText: { fontSize: 11, color: '#666', marginTop: 2 },
-    locRow: { marginTop: 4 },
-    locText: { fontSize: 11, color: '#888' },
-    tag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+    siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72' },
+    subText: { fontSize: responsiveFontSize(12), color: '#475569', marginTop: verticalScale(2) },
+    locRow: { marginTop: verticalScale(4) },
+    locText: { fontSize: responsiveFontSize(12), color: '#64748b' },
+    tag: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6 },
     tagAuto: { backgroundColor: 'rgba(76, 175, 80, 0.1)' },
     tagNotAuto: { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
-    tagText: { fontSize: 9, fontWeight: 'bold' },
-    divider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 12 },
+    tagText: { fontSize: responsiveFontSize(12), fontWeight: 'bold' },
+    divider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(12) },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     infoCol: { flex: 1 },
-    label: { fontSize: 9, color: '#999', textTransform: 'uppercase' },
-    val: { fontSize: 12, fontWeight: '700', marginTop: 1 },
-    expandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 5 },
-    expandText: { fontSize: 12, color: '#2196f3', fontWeight: '600' },
-    detailsContainer: { marginTop: 15, padding: 12, backgroundColor: '#f8fafc', borderRadius: 8, borderTopWidth: 1, borderTopColor: '#eee' },
-    analysisTitle: { fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 5 },
-    feedbackText: { fontSize: 12, color: '#334155', lineHeight: 18 },
-    seqBox: { backgroundColor: '#fff', padding: 10, borderRadius: 6, marginBottom: 8, borderLeftWidth: 3, elevation: 1 },
-    seqHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-    seqStatus: { fontSize: 11, fontWeight: 'bold' },
-    seqTime: { fontSize: 10, color: '#999' },
-    seqText: { fontSize: 11, color: '#444' },
+    label: { fontSize: responsiveFontSize(12), color: '#64748b', textTransform: 'uppercase' },
+    val: { fontSize: responsiveFontSize(12), fontWeight: '700', marginTop: verticalScale(1) },
+    expandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: moderateScale(5) },
+    expandText: { fontSize: responsiveFontSize(12), color: '#2196f3', fontWeight: '600' },
+    detailsContainer: { marginTop: verticalScale(15), padding: moderateScale(12), backgroundColor: '#f8fafc', borderRadius: 8, borderTopWidth: 1, borderTopColor: '#eee' },
+    analysisTitle: { fontSize: responsiveFontSize(12), fontWeight: 'bold', color: '#475569', marginBottom: verticalScale(5) },
+    feedbackText: { fontSize: responsiveFontSize(12), color: '#334155', lineHeight: 18 },
+    seqBox: { backgroundColor: '#fff', padding: moderateScale(10), borderRadius: 6, marginBottom: verticalScale(8), borderLeftWidth: 3, elevation: 1 },
+    seqHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(5) },
+    seqStatus: { fontSize: responsiveFontSize(12), fontWeight: 'bold' },
+    seqTime: { fontSize: responsiveFontSize(12), color: '#64748b' },
+    seqText: { fontSize: responsiveFontSize(12), color: '#444' },
     bold: { fontWeight: 'bold' },
-    note: { fontSize: 10, color: '#666', fontStyle: 'italic', marginTop: 4 },
-    issue: { fontSize: 10, color: '#dc2626', marginTop: 4, fontWeight: '500' },
-    emptyText: { fontSize: 11, color: '#999', fontStyle: 'italic', textAlign: 'center' }
+    note: { fontSize: responsiveFontSize(12), color: '#475569', fontStyle: 'italic', marginTop: verticalScale(4) },
+    issue: { fontSize: responsiveFontSize(12), color: '#dc2626', marginTop: verticalScale(4), fontWeight: '500' },
+    emptyText: { fontSize: responsiveFontSize(12), color: '#64748b', fontStyle: 'italic', textAlign: 'center' }
 });

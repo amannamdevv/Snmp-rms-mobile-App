@@ -230,7 +230,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
 
                 <Text style={styles.inputLabel}>Description</Text>
                 <TextInput
-                  style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                  style={[styles.input, { height: verticalScale(80), textAlignVertical: 'top' }]}
                   multiline
                   placeholder="Describe the problem..."
                   placeholderTextColor="#94a3b8"
@@ -239,7 +239,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
                 />
 
                 <TouchableOpacity style={styles.fileBtn} onPress={() => handlePickImage('portal')}>
-                  <AppIcon name="image" size={18} color="#64748b" style={{ marginRight: 8 }} />
+                  <AppIcon name="image" size={18} color="#64748b" style={{ marginRight: moderateScale(8) }} />
                   <Text style={styles.fileBtnText}>{portalData.screenshot ? (portalData.screenshot.fileName || 'Image Selected') : 'Attach Screenshot'}</Text>
                 </TouchableOpacity>
 
@@ -326,7 +326,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
 
                 <Text style={styles.inputLabel}>Details</Text>
                 <TextInput
-                  style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                  style={[styles.input, { height: verticalScale(80), textAlignVertical: 'top' }]}
                   multiline
                   placeholder="What needs to be corrected?"
                   placeholderTextColor="#94a3b8"
@@ -335,7 +335,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
                 />
 
                 <TouchableOpacity style={styles.fileBtn} onPress={() => handlePickImage('fix')}>
-                  <AppIcon name="paperclip" size={18} color="#64748b" style={{ marginRight: 8 }} />
+                  <AppIcon name="paperclip" size={18} color="#64748b" style={{ marginRight: moderateScale(8) }} />
                   <Text style={styles.fileBtnText}>{fixData.attach_reference ? (fixData.attach_reference.fileName || 'File Selected') : 'Attach Reference'}</Text>
                 </TouchableOpacity>
 
@@ -347,7 +347,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
           </View>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: verticalScale(40) }} />
       </ScrollView>
 
       <Sidebar
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     elevation: 2, 
     shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
+    shadowOffset: { width: 0, height: verticalScale(2) }, 
     shadowOpacity: 0.05, 
     shadowRadius: 8 
   },
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(20), 
     elevation: 3, 
     shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 4 }, 
+    shadowOffset: { width: 0, height: verticalScale(4) }, 
     shadowOpacity: 0.08, 
     shadowRadius: 12 
   },

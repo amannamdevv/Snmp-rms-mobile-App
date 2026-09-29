@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl, Platform, Modal
@@ -205,7 +206,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                          'Avg Uptime'}
                     </Text>
                 </View>
-                {activeTab === 'circle' && <AppIcon name="chevron-right" size={16} color="#cbd5e1" style={{ marginLeft: 10 }} />}
+                {activeTab === 'circle' && <AppIcon name="chevron-right" size={16} color="#cbd5e1" style={{ marginLeft: moderateScale(10) }} />}
             </View>
         </TouchableOpacity>
     );
@@ -230,7 +231,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
             />
 
             {/* KPI Cards (4-Column Layout like Web) */}
-            <View style={{ backgroundColor: '#f1f5f9', paddingVertical: 12, paddingHorizontal: 12 }}>
+            <View style={{ backgroundColor: '#f1f5f9', paddingVertical: verticalScale(12), paddingHorizontal: moderateScale(12) }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.kpiScroll}>
                     <View style={[styles.kpiBox, { borderTopColor: '#2ecc71' }]}>
                         <Text style={[styles.kpiTextValue, { color: '#2ecc71' }]}>{kpis.compliance}%</Text>
@@ -281,7 +282,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                         </ScrollView>
 
                         <TouchableOpacity style={styles.applyBtnLarge} onPress={fetchDashboardData}>
-                            <AppIcon name="filter" color="#fff" size={16} style={{ marginRight: 8 }} />
+                            <AppIcon name="filter" color="#fff" size={16} style={{ marginRight: moderateScale(8) }} />
                             <Text style={styles.applyBtnText}>Apply Filters</Text>
                         </TouchableOpacity>
                     </View>
@@ -363,7 +364,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                     </View>
                     
                     {loading ? (
-                        <ActivityIndicator color="#1e3c72" size="large" style={{ marginVertical: 30 }} />
+                        <ActivityIndicator color="#1e3c72" size="large" style={{ marginVertical: verticalScale(30) }} />
                     ) : (
                         <View style={styles.dataCardWrap}>
                             {listData.length > 0 ? (
@@ -377,7 +378,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                         </View>
                     )}
                 </View>
-                <View style={{ height: 100 }} />
+                <View style={{ height: verticalScale(100) }} />
             </ScrollView>
 
             {/* Date Pickers */}
@@ -412,63 +413,63 @@ export default function UptimeDashboard({ navigation, route }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     kpiScroll: { flexDirection: 'row', marginHorizontal: -5 },
-    kpiBox: { backgroundColor: '#fff', borderRadius: 10, padding: 12, marginRight: 10, width: 120, borderTopWidth: 4, elevation: 3, alignItems: 'center' },
-    kpiTextValue: { fontSize: 22, fontWeight: 'bold', color: '#1e3c72', marginBottom: 4 },
-    kpiTitleLabel: { fontSize: 9, color: '#64748b', marginTop: 2, textTransform: 'uppercase', textAlign: 'center' },
+    kpiBox: { backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(12), marginRight: moderateScale(10), width: moderateScale(120), borderTopWidth: 4, elevation: 3, alignItems: 'center' },
+    kpiTextValue: { fontSize: responsiveFontSize(22), fontWeight: 'bold', color: '#1e3c72', marginBottom: verticalScale(4) },
+    kpiTitleLabel: { fontSize: responsiveFontSize(9), color: '#64748b', marginTop: verticalScale(2), textTransform: 'uppercase', textAlign: 'center' },
     
-    filterSection: { backgroundColor: '#fff', margin: 15, padding: 15, borderRadius: 15, elevation: 4 },
-    dateControlRow: { flexDirection: 'row', gap: 10, marginBottom: 15 },
-    dateInputWrapper: { flex: 1, backgroundColor: '#f8fafc', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-    filterLabelSmall: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 2 },
-    filterValueText: { fontSize: 12, color: '#1e3c72', fontWeight: 'bold' },
-    filterLabelSec: { fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 10 },
-    quickSelectScroll: { flexDirection: 'row', marginBottom: 15 },
-    qsBtn: { backgroundColor: '#e2e8f0', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
-    qsText: { fontSize: 11, color: '#475569', fontWeight: '600' },
-    applyBtnLarge: { backgroundColor: '#1e3c72', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 10 },
-    applyBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+    filterSection: { backgroundColor: '#fff', margin: moderateScale(15), padding: moderateScale(15), borderRadius: 15, elevation: 4 },
+    dateControlRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(15) },
+    dateInputWrapper: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+    filterLabelSmall: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+    filterValueText: { fontSize: responsiveFontSize(12), color: '#1e3c72', fontWeight: 'bold' },
+    filterLabelSec: { fontSize: responsiveFontSize(11), fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(10) },
+    quickSelectScroll: { flexDirection: 'row', marginBottom: verticalScale(15) },
+    qsBtn: { backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(8), borderRadius: 20, marginRight: moderateScale(8) },
+    qsText: { fontSize: responsiveFontSize(11), color: '#475569', fontWeight: '600' },
+    applyBtnLarge: { backgroundColor: '#1e3c72', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: moderateScale(14), borderRadius: 10 },
+    applyBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14) },
 
-    groupSection: { backgroundColor: '#fff', marginHorizontal: 15, paddingHorizontal: 15, paddingBottom: 15, borderBottomLeftRadius: 15, borderBottomRightRadius: 15, marginTop: -15 },
-    groupLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 8 },
+    groupSection: { backgroundColor: '#fff', marginHorizontal: moderateScale(15), paddingHorizontal: moderateScale(15), paddingBottom: verticalScale(15), borderBottomLeftRadius: 15, borderBottomRightRadius: 15, marginTop: -15 },
+    groupLabel: { fontSize: responsiveFontSize(11), fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(8) },
     groupButtons: { flexDirection: 'row', gap: 10 },
-    groupBtn: { flex: 1, padding: 10, borderRadius: 8, backgroundColor: '#f1f5f9', alignItems: 'center' },
+    groupBtn: { flex: 1, padding: moderateScale(10), borderRadius: 8, backgroundColor: '#f1f5f9', alignItems: 'center' },
     groupBtnActive: { backgroundColor: '#1e3c72' },
-    groupBtnText: { fontSize: 12, color: '#64748b', fontWeight: '600' },
+    groupBtnText: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: '600' },
     groupBtnTextActive: { color: '#fff' },
 
-    tabBarContainer: { backgroundColor: '#f0f2f5', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-    tabScroll: { paddingHorizontal: 15 },
-    tabItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 25, backgroundColor: '#fff', marginRight: 10, elevation: 1 },
+    tabBarContainer: { backgroundColor: '#f0f2f5', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
+    tabScroll: { paddingHorizontal: moderateScale(15) },
+    tabItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(10), borderRadius: 25, backgroundColor: '#fff', marginRight: moderateScale(10), elevation: 1 },
     activeTabItem: { backgroundColor: '#1e3c72' },
-    tabItemText: { fontSize: 12, color: '#64748b', fontWeight: 'bold', marginLeft: 6 },
+    tabItemText: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: 'bold', marginLeft: moderateScale(6) },
     activeTabItemText: { color: '#fff' },
 
-    chartArea: { backgroundColor: '#fff', margin: 15, borderRadius: 15, padding: 15, elevation: 3 },
-    chartInfo: { marginBottom: 15 },
-    chartAreaTitle: { fontSize: 14, fontWeight: 'bold', color: '#1e3c72' },
-    chartAreaSub: { fontSize: 10, color: '#94a3b8' },
+    chartArea: { backgroundColor: '#fff', margin: moderateScale(15), borderRadius: 15, padding: moderateScale(15), elevation: 3 },
+    chartInfo: { marginBottom: verticalScale(15) },
+    chartAreaTitle: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e3c72' },
+    chartAreaSub: { fontSize: responsiveFontSize(10), color: '#94a3b8' },
 
-    listArea: { paddingHorizontal: 15 },
-    listAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-    listAreaTitle: { fontSize: 13, fontWeight: 'bold', color: '#64748b' },
-    listAreaCount: { fontSize: 12, color: '#94a3b8' },
+    listArea: { paddingHorizontal: moderateScale(15) },
+    listAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(12) },
+    listAreaTitle: { fontSize: responsiveFontSize(13), fontWeight: 'bold', color: '#64748b' },
+    listAreaCount: { fontSize: responsiveFontSize(12), color: '#94a3b8' },
     dataCardWrap: { backgroundColor: '#fff', borderRadius: 15, elevation: 3, overflow: 'hidden' },
-    tableRow: { flexDirection: 'row', justifyContent: 'space-between', padding: 15, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', alignItems: 'center' },
-    rowTitle: { fontSize: 14, fontWeight: '900', color: '#1e293b' },
-    rowSub: { fontSize: 11, color: '#64748b', marginTop: 3 },
-    historyRow: { flexDirection: 'row', gap: 6, marginTop: 8 },
-    historyPill: { backgroundColor: '#f8fafc', padding: 5, borderRadius: 6, borderWidth: 1, borderColor: '#e2e8f0', minWidth: 60, alignItems: 'center' },
-    historyLabel: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' },
-    historyVal: { fontSize: 10, fontWeight: 'bold' },
+    tableRow: { flexDirection: 'row', justifyContent: 'space-between', padding: moderateScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', alignItems: 'center' },
+    rowTitle: { fontSize: responsiveFontSize(14), fontWeight: '900', color: '#1e293b' },
+    rowSub: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(3) },
+    historyRow: { flexDirection: 'row', gap: 6, marginTop: verticalScale(8) },
+    historyPill: { backgroundColor: '#f8fafc', padding: moderateScale(5), borderRadius: 6, borderWidth: 1, borderColor: '#e2e8f0', minWidth: 60, alignItems: 'center' },
+    historyLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase' },
+    historyVal: { fontSize: responsiveFontSize(10), fontWeight: 'bold' },
     rowRight: { flexDirection: 'row', alignItems: 'center' },
-    uptimeValue: { fontSize: 16, fontWeight: 'bold' },
-    valueSub: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontWeight: 'bold', textTransform: 'uppercase' },
-    noData: { padding: 40, alignItems: 'center' },
-    noDataText: { marginTop: 10, color: '#94a3b8', fontSize: 13 },
+    uptimeValue: { fontSize: responsiveFontSize(16), fontWeight: 'bold' },
+    valueSub: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2), fontWeight: 'bold', textTransform: 'uppercase' },
+    noData: { padding: moderateScale(40), alignItems: 'center' },
+    noDataText: { marginTop: verticalScale(10), color: '#94a3b8', fontSize: responsiveFontSize(13) },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 25 },
-    modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, color: '#1e3c72' },
-    modalOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optionText: { fontSize: 16, color: '#475569' }
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: moderateScale(25) },
+    modalTitle: { fontSize: responsiveFontSize(18), fontWeight: 'bold', marginBottom: verticalScale(20), color: '#1e3c72' },
+    modalOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    optionText: { fontSize: responsiveFontSize(16), color: '#475569' }
 });

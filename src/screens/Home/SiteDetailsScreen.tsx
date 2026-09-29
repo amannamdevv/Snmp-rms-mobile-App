@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   ActivityIndicator, Switch
@@ -49,7 +50,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
 
       const res = await api.getSiteDetails(fetchId);
       if (res) {
-        const siteData = res.sites?.[0] || res.data?.[0] || res.data || res;
+      const siteData = res.sites?.[0] || res[0] || res.data?.[0] || res.data || res;
         setData(siteData);
       } else {
         setData(null);
@@ -85,7 +86,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
     return (
       <View style={styles.center}>
         <Icon name="alert-circle" size={40} color="#ccc" />
-        <Text style={{ color: '#999', marginTop: 10 }}>No Data Available</Text>
+        <Text style={{ color: '#999', marginTop: verticalScale(10) }}>No Data Available</Text>
       </View>
     );
   }
@@ -101,12 +102,12 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         <DetailRow label="System Serial No." value={data.system_serial_no} label2="Site Type" value2={data.site_type} />
         <DetailRow label="Global ID" value={data.global_id} label2="Site ID (As Per SMS)" value2={data.site_id} />
         <DetailRow label="System Version Type" value={data.system_version_type} label2="EB Sanction Load" value2="--" />
-        <DetailRow label="Installation Date" value={data.installation_date} label2="Device Make & Type" value2="--" />
+        <DetailRow label="Installation Date" value={data.installation_date} label2="Device Make & Type" value2={data.device_make_type || '--'} />
       </SectionCard>
 
       <SectionCard title="Additional Info">
-        <DetailRow label="AMF Panel Detail" value="Model No." label2="No. of Rectifiers" value2="--" />
-        <DetailRow label="No. of Tenants" value="--" label2="Li-ion Battery Detail" value2="--" />
+        <DetailRow label="AMF Panel Model" value={data.amf_panel_model || '--'} label2="No. of Rectifiers" value2={data.no_of_rectifiers != null ? String(data.no_of_rectifiers) : '--'} />
+        <DetailRow label="No. of Tenants" value={data.no_of_tenants != null ? String(data.no_of_tenants) : '--'} label2="Li-ion Battery Detail" value2="--" />
         <DetailRow label="Max EB Voltage" value="--" label2="Min EB Voltage" value2="--" />
         <DetailRow label="AVG EB Voltage" value="--" label2="BMS" value2="No Data" />
         <DetailRow label="VRLA" value="No Data" label2="Commissioning Date" value2="--" />
@@ -154,7 +155,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
                   <View style={styles.alarmCardHead}>
                     <Text style={styles.alarmCardName}>{a.name}</Text>
                     <View style={styles.badgeActive}>
-                      <Icon name="alert-circle" size={10} color="#fff" style={{ marginRight: 4 }} />
+                      <Icon name="alert-circle" size={10} color="#fff" style={{ marginRight: moderateScale(4) }} />
                       <Text style={styles.badgeText}>ACTIVE</Text>
                     </View>
                   </View>
@@ -192,7 +193,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
                   <View style={styles.alarmCardHead}>
                     <Text style={styles.alarmCardName}>{a.name}</Text>
                     <View style={styles.badgeClosed}>
-                      <Icon name="check-circle" size={10} color="#fff" style={{ marginRight: 4 }} />
+                      <Icon name="check-circle" size={10} color="#fff" style={{ marginRight: moderateScale(4) }} />
                       <Text style={styles.badgeText}>CLOSED</Text>
                     </View>
                   </View>
@@ -209,7 +210,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
                       <Text style={styles.timelineLabel}>START</Text>
                       <Text style={styles.timelineVal}>{start}</Text>
                     </View>
-                    <Icon name="arrow-right" size={12} color="#CBD5E1" style={{ marginHorizontal: 10 }} />
+                    <Icon name="arrow-right" size={12} color="#CBD5E1" style={{ marginHorizontal: moderateScale(10) }} />
                     <View style={styles.timelinePoint}>
                       <Text style={styles.timelineLabel}>END</Text>
                       <Text style={styles.timelineVal}>{end}</Text>
@@ -227,35 +228,25 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
   // ─── TECHNICAL ───────────────────────────────────────────────────────────────
   const renderTechnical = () => (
     <View style={styles.tabContent}>
-      <View style={styles.capacityRow}>
-        <CapCard head="EB Capacity" val="-- kVA" sub="Sanctioned Load" />
-        <CapCard head="DG Capacity" val="-- kVA" sub="Generator Power" />
-        <CapCard head="BB Capacity" val={data.battery_banks?.bank1 || '--'} sub="Battery Bank" />
-      </View>
+      
 
       <SectionCard title="Mains Details">
         <DetailRow label="Voltage R-Phase (Vac)" value={data.mains_parameters?.voltage_r} label2="Voltage Y-Phase (Vac)" value2={data.mains_parameters?.voltage_y} />
         <DetailRow label="Voltage B-Phase (Vac)" value={data.mains_parameters?.voltage_b} label2="EB Frequency (Hz)" value2={data.mains_parameters?.frequency} />
-        <DetailRow label="Current R (A)" value={data.mains_parameters?.current_r} label2="Current Y (A)" value2={data.mains_parameters?.current_y} />
-        <DetailRow label="Current B (A)" value={data.mains_parameters?.current_b} label2="Total KW" value2={data.mains_parameters?.total_kw} />
-        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.mains} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.mains} />
-        <DetailRow label="Cumulative Energy (KWH)" value={data.mains_parameters?.cumulative_energy} label2="Cumulative Run Hours" value2="--" />
+                        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.mains} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.mains} />
+        <DetailRow label="Cumulative Energy (KWH)" value={data.mains_parameters?.cumulative_energy} label2="Cumulative Run Hours" value2={data.cumulative_run_hours?.eb_formatted || "--"} />
       </SectionCard>
 
       <SectionCard title="DG Parameters">
         <DetailRow label="Voltage R-Phase (Vac)" value={data.dg_parameters?.voltage_r} label2="Voltage Y-Phase (Vac)" value2={data.dg_parameters?.voltage_y} />
         <DetailRow label="Voltage B-Phase (Vac)" value={data.dg_parameters?.voltage_b} label2="DG Frequency (Hz)" value2={data.dg_parameters?.frequency} />
-        <DetailRow label="Current R (A)" value={data.dg_parameters?.current_r} label2="Current Y (A)" value2={data.dg_parameters?.current_y} />
-        <DetailRow label="Current B (A)" value={data.dg_parameters?.current_b} label2="Total KW" value2={data.dg_parameters?.total_kw} />
-        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.dg} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.dg} />
-        <DetailRow label="Cumulative Energy (KWH)" value={data.dg_parameters?.cumulative_energy} label2="DG Battery Voltage" value2={data.dg_parameters?.battery_voltage} />
+                        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.dg} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.dg} />
+        <DetailRow label="Cumulative Energy (KWH)" value={data.dg_parameters?.cumulative_energy} label2="Cumulative Run Hours" value2={data.cumulative_run_hours?.dg_formatted || "--"} />
       </SectionCard>
 
-      <SectionCard title="BB / Battery Details">
-        <DetailRow label="Battery Voltage (Vdc)" value={data.battery_parameters?.voltage} label2="Battery Current (A)" value2={data.battery_parameters?.current} />
-        <DetailRow label="DC Bus Voltage (Vdc)" value={data.current_status?.vdc} label2="HRT" value2={data.current_status?.hrt} />
-        <DetailRow label="Voltage Offset" value={data.current_status?.v_offset} label2="Temperature Offset" value2={data.current_status?.t_offset} />
-        <DetailRow label="BTLV" value={data.current_status?.btlv} label2="Energy Today (KWH)" value2={data.energy_consumption?.today?.solar} />
+      <SectionCard title="BB Details">
+        <DetailRow label="Battery Voltage (Vdc)" value={data.battery_parameters?.voltage} label2="Battery Current (Amp.)" value2={data.battery_parameters?.current} />
+        <StaticRow label="Cumulative Run Hours" value={data.cumulative_run_hours?.bt_formatted || "--"} />
       </SectionCard>
 
       <SectionCard title="Battery Bank Details">
@@ -266,8 +257,8 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
           <Text style={[styles.thCell, { flex: 1 }]}>Current</Text>
           <Text style={[styles.thCell, { flex: 1 }]}>Condition</Text>
         </View>
-        {['bank1', 'bank2', 'bank3', 'bank4'].map((b, i) => {
-          const val = data.battery_banks?.[b];
+        {['bank_a', 'bank_b', 'bank_c', 'bank_d'].map((b, i) => {
+          const val = data.inc_bb_capacities?.[b];
           if (!val) return null;
           return (
             <View key={b} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
@@ -294,17 +285,17 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         <StaticRow label="Antenna" value={data.antenna == 1 ? 'Available' : 'Not Available'} />
         <StaticRow label="Hooter" value={data.hooter == 1 ? 'Available' : 'Not Available'} />
         <StaticRow label="SOW Status" value={data.sow_status} />
-        <StaticRow label="No. of Hub" value={data.system_details?.hub} />
-      </SectionCard>
+              </SectionCard>
 
       <SectionCard title="Real Time Status">
         <StaticRow label="System Status" value={data.status?.includes('Non') ? 'Offline' : 'Online'} />
         <StaticRow label="Communication" value={data.status?.includes('Non') ? 'Inactive' : 'Active'} />
         <StaticRow label="Temperature" value={data.environmental?.room_temperature ? `${data.environmental.room_temperature}°C` : '--'} />
-        <StaticRow label="Temperature 2" value={data.environmental?.temperature2 ? `${data.environmental.temperature2}°C` : '--'} />
+        <StaticRow label="Humidity" value={data.environmental?.humidity ? `${data.environmental.humidity}%` : '--'} />
         <StaticRow label="Door Status" value={data.tpms_alarms?.some((a: string) => a.toLowerCase().includes('door')) ? 'Open' : 'Closed'} />
+        <StaticRow label="Smoke Detector" value={data.tpms_alarms?.some((a: string) => a.toLowerCase().includes('smoke')) ? 'Active' : '--'} />
+        <StaticRow label="Motion Sensor" value={data.tpms_alarms?.some((a: string) => a.toLowerCase().includes('motion')) ? 'Active' : '--'} />
         <StaticRow label="Power Supply" value={data.load_parameters?.site_mode} />
-        <StaticRow label="Aging (Days)" value={data.aging_days} />
       </SectionCard>
 
       <SectionCard title="TPMS Connectivity">
@@ -317,10 +308,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         </View>
       </SectionCard>
 
-      <SectionCard title="Shroti Team">
-        <StaticRow label="Team Name" value={data.shroti_team?.name} />
-        <StaticRow label="Team Mobile" value={data.shroti_team?.mobile} />
-      </SectionCard>
+      
     </View>
   );
 
@@ -405,6 +393,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
     const settings = data.settings_parameters || {};
     const load = data.load_parameters || {};
     const energy = data.energy_consumption || {};
+    const opcoLoad = data.opco_load_energy || {};
 
     return (
       <View style={styles.tabContent}>
@@ -416,11 +405,11 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
                 <StaticRow label="EB Run Hrs." value={day.eb_duration_formatted || `${day.eb_hours}h`} />
                 <StaticRow label="DG Run Hrs." value={day.dg_duration_formatted || `${day.dg_hours}h`} />
                 <StaticRow label="Battery Run Hrs." value={day.battery_duration_formatted || `${day.battery_hours}h`} />
-                <StaticRow label="Mains Fail Hrs." value={day.mains_fail_hours ? `${day.mains_fail_hours}h` : '--'} />
                 <StaticRow label="Solar Run Hrs." value={day.solar_hours ? `${day.solar_hours}h` : '--'} />
                 <StaticRow label="Solar+EB Run Hrs." value="--" />
                 <StaticRow label="Solar+BB Run Hrs." value="--" />
                 <StaticRow label="Solar+DG Run Hrs." value="--" />
+                <StaticRow label="Date" value={day.date} />
               </View>
             );
           })() : <EmptyState text="No run hours data available" />}
@@ -429,14 +418,8 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         <SectionCard title="Load Parameters">
           <StaticRow label="DC Bus Voltage (Vdc)" value={load.dc_bus_voltage} />
           <StaticRow label="Site Mode On" value={load.site_mode} />
-          <StaticRow label="System Mode PIU" value={load.system_mode_piu} />
-          <StaticRow label="Room Temperature" value={data.environmental?.room_temperature ? `${data.environmental.room_temperature}°C` : '--'} />
-          <StaticRow label="Temperature 2" value={data.environmental?.temperature2 ? `${data.environmental.temperature2}°C` : '--'} />
-          <StaticRow label="CH1 Current (A)" value={load.ch1_current} />
-          <StaticRow label="CH2 Current (A)" value={load.ch2_current} />
-          <StaticRow label="CH3 Current (A)" value={load.ch3_current} />
-          <StaticRow label="CH4 Current (A)" value={load.ch4_current} />
-          <StaticRow label="Solar Energy (KWH)" value={load.solar_energy} />
+          <StaticRow label="DC Bus Voltage (VDC)" value={load.dc_bus_voltage} />
+          <StaticRow label="Room temperature" value={data.environmental?.room_temperature ? `${data.environmental.room_temperature}°C` : '--'} />
         </SectionCard>
 
         <SectionCard title="Setting Parameters">
@@ -456,10 +439,10 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
             <Text style={[styles.thCell, { flex: 1 }]}>OPCO3</Text>
             <Text style={[styles.thCell, { flex: 1 }]}>OPCO4</Text>
           </View>
-          {[
-            { label: 'Load Today (KWH)', v1: load.ch1_energy, v2: load.ch2_energy, v3: load.ch3_energy, v4: load.ch4_energy },
-            { label: 'Load Yest. (KWH)', v1: '--', v2: '--', v3: '--', v4: '--' },
-            { label: 'Cumulative (KWH)', v1: '--', v2: '--', v3: '--', v4: '--' },
+          {[ 
+            { label: 'Load Energy Today (KWH)', v1: opcoLoad.today?.opco1, v2: opcoLoad.today?.opco2, v3: opcoLoad.today?.opco3, v4: opcoLoad.today?.opco4 },
+            { label: 'Load Energy Yesterday (KWH)', v1: opcoLoad.yesterday?.opco1, v2: opcoLoad.yesterday?.opco2, v3: opcoLoad.yesterday?.opco3, v4: opcoLoad.yesterday?.opco4 },
+            { label: 'Load Cumulative Energy (KWH)', v1: opcoLoad.cumulative?.opco1, v2: opcoLoad.cumulative?.opco2, v3: opcoLoad.cumulative?.opco3, v4: opcoLoad.cumulative?.opco4 },
           ].map((row, i) => (
             <View key={i} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
               <Text style={[styles.tdCellBold, { flex: 2.5 }]}>{row.label}</Text>
@@ -471,26 +454,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
           ))}
         </SectionCard>
 
-        <SectionCard title="Energy Consumption Summary">
-          <View style={styles.tableHeader}>
-            <Text style={[styles.thCell, { flex: 2 }]}>Source</Text>
-            <Text style={[styles.thCell, { flex: 1.5 }]}>Today (KWH)</Text>
-            <Text style={[styles.thCell, { flex: 1.5 }]}>Yest. (KWH)</Text>
-          </View>
-          {[
-            { src: 'Mains / EB', t: energy.today?.mains, y: energy.yesterday?.mains },
-            { src: 'DG1', t: energy.today?.dg, y: energy.yesterday?.dg },
-            { src: 'DG2', t: energy.today?.dg2, y: energy.yesterday?.dg2 },
-            { src: 'Solar', t: energy.today?.solar, y: energy.yesterday?.solar },
-            { src: 'Load', t: energy.today?.load, y: energy.yesterday?.load },
-          ].map((row, i) => (
-            <View key={i} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
-              <Text style={[styles.tdCellBold, { flex: 2 }]}>{row.src}</Text>
-              <Text style={[styles.tdCell, { flex: 1.5 }]}>{row.t ?? '--'}</Text>
-              <Text style={[styles.tdCell, { flex: 1.5 }]}>{row.y ?? '--'}</Text>
-            </View>
-          ))}
-        </SectionCard>
+        
       </View>
     );
   };
@@ -522,7 +486,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         {activeTab === 'I&C Details' && renderMonitoring()}
         {activeTab === 'Contacts' && renderContacts()}
         {activeTab === 'Parameters' && renderParameters()}
-        <View style={{ height: 60 }} />
+        <View style={{ height: verticalScale(60) }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -584,94 +548,94 @@ const EmptyState = ({ text }: { text: string }) => (
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#EBF2FA' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#EBF2FA' },
-  loadingText: { marginTop: 12, color: '#01497C', fontWeight: '600', fontSize: 14 },
+  loadingText: { marginTop: verticalScale(12), color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(14) },
 
   // Status Banner
-  statusBanner: { paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusBanner: { paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(14), flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   bannerActive: { backgroundColor: '#01497C' },
   bannerNonActive: { backgroundColor: '#7F1D1D' },
-  bannerSiteName: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  bannerSub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 },
-  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, gap: 6 },
+  bannerSiteName: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '700' },
+  bannerSub: { color: 'rgba(255,255,255,0.75)', fontSize: responsiveFontSize(11), marginTop: verticalScale(2) },
+  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 20, gap: 6 },
   pillActive: { backgroundColor: 'rgba(34,197,94,0.25)' },
   pillNonActive: { backgroundColor: 'rgba(239,68,68,0.25)' },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusDot: { width: moderateScale(8), height: verticalScale(8), borderRadius: 4 },
   dotActive: { backgroundColor: '#22C55E' },
   dotNonActive: { backgroundColor: '#EF4444' },
-  statusPillTxt: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  statusPillTxt: { color: '#fff', fontSize: responsiveFontSize(12), fontWeight: '700' },
 
   // Tab Bar
-  tabBarWrapper: { backgroundColor: '#fff', elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  tabBarContent: { paddingHorizontal: 8, paddingVertical: 4 },
-  tabBtn: { paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: 3, borderColor: 'transparent' },
+  tabBarWrapper: { backgroundColor: '#fff', elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: verticalScale(2) } },
+  tabBarContent: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4) },
+  tabBtn: { paddingHorizontal: moderateScale(18), paddingVertical: verticalScale(12), borderBottomWidth: 3, borderColor: 'transparent' },
   tabActive: { borderColor: '#01497C' },
-  tabTxt: { color: '#888', fontWeight: '600', fontSize: 13 },
+  tabTxt: { color: '#888', fontWeight: '600', fontSize: responsiveFontSize(13) },
   tabTxtActive: { color: '#01497C' },
 
   // Content
-  tabContent: { padding: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, marginBottom: 14, elevation: 2, shadowColor: '#01497C', shadowOpacity: 0.07, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#01497C', marginBottom: 14, paddingBottom: 10, borderBottomWidth: 1.5, borderColor: '#E2EBF4' },
+  tabContent: { padding: moderateScale(12) },
+  card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2, shadowColor: '#01497C', shadowOpacity: 0.07, shadowRadius: 6, shadowOffset: { width: 0, height: verticalScale(2) } },
+  cardTitle: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(14), paddingBottom: verticalScale(10), borderBottomWidth: 1.5, borderColor: '#E2EBF4' },
 
   // Detail Rows (two-column)
-  detailRow: { flexDirection: 'row', marginBottom: 14, gap: 12 },
+  detailRow: { flexDirection: 'row', marginBottom: verticalScale(14), gap: 12 },
   detailCol: { flex: 1 },
-  detailLabel: { fontSize: 11, color: '#2A6F97', fontWeight: '700', marginBottom: 3, textTransform: 'uppercase', letterSpacing: 0.3 },
-  detailValue: { fontSize: 13, color: '#1C2F3E', fontWeight: '500' },
+  detailLabel: { fontSize: responsiveFontSize(11), color: '#2A6F97', fontWeight: '700', marginBottom: verticalScale(3), textTransform: 'uppercase', letterSpacing: 0.3 },
+  detailValue: { fontSize: responsiveFontSize(13), color: '#1C2F3E', fontWeight: '500' },
 
   // Static Rows (label – value)
-  staticRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 11, borderBottomWidth: 1, borderColor: '#F0F5FA' },
-  staticLabel: { color: '#01497C', fontWeight: '600', fontSize: 13, flex: 1.2 },
-  staticVal: { color: '#333', fontSize: 13, flex: 1, textAlign: 'right' },
+  staticRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(11), borderBottomWidth: 1, borderColor: '#F0F5FA' },
+  staticLabel: { color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(13), flex: 1.2 },
+  staticVal: { color: '#333', fontSize: responsiveFontSize(13), flex: 1, textAlign: 'right' },
 
   // Capacity Cards
-  capacityRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  capCard: { flex: 1, backgroundColor: '#01497C', padding: 14, borderRadius: 12, alignItems: 'center' },
-  capHead: { color: '#89C2D9', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
-  capVal: { color: '#fff', fontSize: 16, fontWeight: '800', marginBottom: 4 },
-  capSub: { color: 'rgba(255,255,255,0.7)', fontSize: 9 },
+  capacityRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(14) },
+  capCard: { flex: 1, backgroundColor: '#01497C', padding: moderateScale(14), borderRadius: 12, alignItems: 'center' },
+  capHead: { color: '#89C2D9', fontSize: responsiveFontSize(9), fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(6) },
+  capVal: { color: '#fff', fontSize: responsiveFontSize(16), fontWeight: '800', marginBottom: verticalScale(4) },
+  capSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFontSize(9) },
 
   // Channel Grid
   channelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  channelBox: { width: '47%', backgroundColor: '#F0F7FF', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#D0E8F5' },
-  chLabel: { fontSize: 10, color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 },
-  chValue: { fontSize: 13, fontWeight: '700', color: '#01497C' },
+  channelBox: { width: '47%', backgroundColor: '#F0F7FF', padding: moderateScale(12), borderRadius: 10, borderWidth: 1, borderColor: '#D0E8F5' },
+  chLabel: { fontSize: responsiveFontSize(10), color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  chValue: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#01497C' },
 
   // TPMS
-  tpmsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, paddingTop: 4 },
+  tpmsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, paddingTop: verticalScale(4) },
   checkItem: { flexDirection: 'row', alignItems: 'center', width: '45%', gap: 8 },
-  checkBox: { width: 22, height: 22, borderWidth: 2, borderColor: '#CBD5E0', borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
+  checkBox: { width: moderateScale(22), height: verticalScale(22), borderWidth: 2, borderColor: '#CBD5E0', borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
   checkBoxOn: { backgroundColor: '#2e7d32', borderColor: '#2e7d32' },
-  checkMark: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  checkLabel: { fontSize: 13, color: '#334155' },
+  checkMark: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: '700' },
+  checkLabel: { fontSize: responsiveFontSize(13), color: '#334155' },
 
   // Contacts
-  contactRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F0F5FA' },
-  levelBadge: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#01497C', alignItems: 'center', justifyContent: 'center' },
-  levelBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  contactName: { fontSize: 14, fontWeight: '700', color: '#1C2F3E' },
-  contactDesig: { fontSize: 11, color: '#64748B', marginTop: 2 },
-  contactMobile: { fontSize: 13, color: '#2A6F97', fontWeight: '600', marginTop: 2 },
-  subSectionTitle: { fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 8, marginTop: 4 },
-  divider: { height: 1, backgroundColor: '#E2EBF4', marginVertical: 12 },
+  contactRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: verticalScale(12), borderBottomWidth: 1, borderColor: '#F0F5FA' },
+  levelBadge: { width: moderateScale(36), height: verticalScale(36), borderRadius: 18, backgroundColor: '#01497C', alignItems: 'center', justifyContent: 'center' },
+  levelBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
+  contactName: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#1C2F3E' },
+  contactDesig: { fontSize: responsiveFontSize(11), color: '#64748B', marginTop: verticalScale(2) },
+  contactMobile: { fontSize: responsiveFontSize(13), color: '#2A6F97', fontWeight: '600', marginTop: verticalScale(2) },
+  subSectionTitle: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(4) },
+  divider: { height: 1, backgroundColor: '#E2EBF4', marginVertical: verticalScale(12) },
 
   // Alarm list rows
-  alarmListRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderColor: '#F0F5FA' },
-  alarmListTxt: { fontSize: 13, color: '#334155', flex: 1 },
+  alarmListRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderColor: '#F0F5FA' },
+  alarmListTxt: { fontSize: responsiveFontSize(13), color: '#334155', flex: 1 },
 
   // Badges
-  badgeConfig: { backgroundColor: '#2A6F97', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeActive: { backgroundColor: '#DC2626', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
-  badgeClosed: { backgroundColor: '#2E7D32', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
-  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+  badgeConfig: { backgroundColor: '#2A6F97', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
+  badgeActive: { backgroundColor: '#DC2626', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
+  badgeClosed: { backgroundColor: '#2E7D32', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
+  badgeText: { color: '#fff', fontSize: responsiveFontSize(9), fontWeight: '800' },
 
   // Table
-  tableHeader: { flexDirection: 'row', backgroundColor: '#EBF2FA', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 6, marginBottom: 2 },
-  thCell: { fontSize: 11, fontWeight: '700', color: '#01497C', paddingHorizontal: 4 },
-  tableRow: { flexDirection: 'row', paddingVertical: 9, paddingHorizontal: 4, borderBottomWidth: 1, borderColor: '#F0F5FA' },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#EBF2FA', paddingVertical: verticalScale(8), paddingHorizontal: moderateScale(4), borderRadius: 6, marginBottom: verticalScale(2) },
+  thCell: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#01497C', paddingHorizontal: moderateScale(4) },
+  tableRow: { flexDirection: 'row', paddingVertical: verticalScale(9), paddingHorizontal: moderateScale(4), borderBottomWidth: 1, borderColor: '#F0F5FA' },
   tableRowAlt: { backgroundColor: '#FAFCFF' },
-  tdCell: { fontSize: 10, color: '#334155', paddingHorizontal: 4 },
-  tdCellBold: { fontSize: 10, color: '#01497C', fontWeight: '600', paddingHorizontal: 4 },
+  tdCell: { fontSize: responsiveFontSize(10), color: '#334155', paddingHorizontal: moderateScale(4) },
+  tdCellBold: { fontSize: responsiveFontSize(10), color: '#01497C', fontWeight: '600', paddingHorizontal: moderateScale(4) },
   tdCellCenter: { alignItems: 'center', justifyContent: 'center' },
 
   // Alarm Cards Styling
@@ -679,7 +643,7 @@ const styles = StyleSheet.create({
   alarmRowCard: { 
     backgroundColor: '#F8FAFC', 
     borderRadius: 12, 
-    padding: 12, 
+    padding: moderateScale(12), 
     borderWidth: 1, 
     borderColor: '#E2EBF4' 
   },
@@ -687,27 +651,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
-    marginBottom: 10 
+    marginBottom: verticalScale(10) 
   },
   alarmCardName: { 
-    fontSize: 14, 
+    fontSize: responsiveFontSize(14), 
     fontWeight: '700', 
     color: '#1C2F3E', 
     flex: 1, 
-    marginRight: 10 
+    marginRight: moderateScale(10) 
   },
   alarmCardDetails: { 
     flexDirection: 'row', 
     flexWrap: 'wrap', 
     gap: 15, 
-    marginBottom: 8 
+    marginBottom: verticalScale(8) 
   },
   alarmCardInfo: { 
     flexDirection: 'row', 
     alignItems: 'center' 
   },
   alarmCardInfoTxt: { 
-    fontSize: 12, 
+    fontSize: responsiveFontSize(12), 
     color: '#64748B', 
     fontWeight: '600' 
   },
@@ -716,25 +680,25 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     backgroundColor: '#fff', 
     borderRadius: 8, 
-    padding: 8, 
-    marginTop: 4,
+    padding: moderateScale(8), 
+    marginTop: verticalScale(4),
     borderWidth: 1,
     borderColor: '#F1F5F9'
   },
   timelinePoint: { flex: 1 },
   timelineLabel: { 
-    fontSize: 9, 
+    fontSize: responsiveFontSize(9), 
     color: '#94A3B8', 
     fontWeight: '800', 
     letterSpacing: 0.5, 
-    marginBottom: 2 
+    marginBottom: verticalScale(2) 
   },
   timelineVal: { 
-    fontSize: 11, 
+    fontSize: responsiveFontSize(11), 
     color: '#334155', 
     fontWeight: '700' 
   },
 
   // Empty
-  emptyText: { textAlign: 'center', color: '#94A3B8', padding: 20, fontSize: 13, fontStyle: 'italic' },
+  emptyText: { textAlign: 'center', color: '#94A3B8', padding: moderateScale(20), fontSize: responsiveFontSize(13), fontStyle: 'italic' },
 });

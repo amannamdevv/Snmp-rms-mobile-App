@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Constants & Configuration ──────────────────────────────────────────────────────────
@@ -22,6 +22,20 @@ const extractSessionId = (headers) => {
   return null;
 };
 
+// Safely convert any response shape into an array
+const toArray = (data, ...keys) => {
+  if (Array.isArray(data)) return data;
+  for (const k of keys) {
+    if (Array.isArray(data?.[k])) return data[k];
+  }
+  if (Array.isArray(data?.data)) return data.data;
+  console.log(
+    '[toArray] Unexpected response shape:',
+    typeof data === 'string' ? data.slice(0, 150) : JSON.stringify(data)?.slice(0, 200)
+  );
+  return [];
+};
+
 // ─── Django Axios Instance ──────────────────────────────────────────────────────────
 const attachDjangoAuth = async (config) => {
   try {
@@ -31,7 +45,7 @@ const attachDjangoAuth = async (config) => {
       config.headers['Cookie'] = `sessionid=${session}`;
       // Some server configurations might also look for this header
       config.headers['X-Requested-With'] = 'XMLHttpRequest';
-      
+
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - sessionid attached`);
     } else {
       console.log('[API Request] WARNING: No djangoSession found in AsyncStorage!');
@@ -42,10 +56,10 @@ const attachDjangoAuth = async (config) => {
   return config;
 };
 
-const djangoApi = axios.create({ 
+const djangoApi = axios.create({
   baseURL: DJANGO_BASE_URL,
   timeout: 60000, // 60 seconds
-  withCredentials: true 
+  withCredentials: true
 });
 djangoApi.interceptors.request.use(attachDjangoAuth, (error) => Promise.reject(error));
 
@@ -138,15 +152,50 @@ export const api = {
     return response.data;
   },
   getNonCommAging: async (filters) => {
-    const response = await djangoApi.get('/api/non-comm-aging/', { params: filters });
-    return response.data;
+    const response = await djangoApi.get('/api/site-communication-statuss/', { params: filters });
+    const sites = response.data.sites || [];
+    const buckets = {
+      '0-7 days': 0,
+      '8-30 days': 0,
+      '31-60 days': 0,
+      '61-90 days': 0,
+      '90+ days': 0,
+    };
+    sites.forEach(site => {
+      const days = site.days_since_comm ?? 0;
+      if (days <= 7) buckets['0-7 days']++;
+      else if (days <= 30) buckets['8-30 days']++;
+      else if (days <= 60) buckets['31-60 days']++;
+      else if (days <= 90) buckets['61-90 days']++;
+      else buckets['90+ days']++;
+    });
+    return {
+      status: 'success',
+      data: {
+        total_non_comm: sites.length,
+        aging_buckets: buckets,
+        bucket_labels: Object.keys(buckets),
+        bucket_values: Object.values(buckets)
+      }
+    };
   },
   getNonCommSitesList: async (filters, page = 1, pageSize = 10) => {
-    const response = await djangoApi.get('/api/non-communicating-sites/', { params: { ...filters, page, page_size: pageSize } });
-    return response.data;
+    const response = await djangoApi.get('/api/site-communication-statuss/', { params: filters });
+    const allSites = response.data.sites || [];
+    const startIdx = (page - 1) * pageSize;
+    const paginatedSites = allSites.slice(startIdx, startIdx + pageSize);
+    return {
+      sites: paginatedSites,
+      total_sites: allSites.length,
+      has_next: startIdx + pageSize < allSites.length,
+      meta: {
+        current_page: page,
+        total_records: allSites.length
+      }
+    };
   },
   getSiteDetails: async (id) => {
-    const response = await djangoApi.get('/api/merge-site-details/', { params: { imei: id } });
+    const response = await djangoApi.get(`/api/site/${id}/`);
     return response.data;
   },
   getSitesByType: async (siteType, filters, page = 1, pageSize = 1000) => {
@@ -177,8 +226,26 @@ export const api = {
       return null;
     }
   },
+  // Dashboard tab Site Vitals - single API with range filter param
   getSiteVitals: async (filters, page = 1, pageSize) => {
     const response = await djangoApi.get('/api/site-vitals-details/', { params: { ...filters, page, page_size: pageSize } });
+    return response.data;
+  },
+  // ── Sidebar specific APIs ─────────────────────────────────────────────────
+  getSitesAtRisk: async (filters, page = 1, pageSize) => {
+    const response = await djangoApi.get('/api/sites-at-risk/', { params: { ...filters, page, page_size: pageSize } });
+    return response.data;
+  },
+  getCriticalSites: async (filters, page = 1, pageSize) => {
+    const response = await djangoApi.get('/api/critical-sites/', { params: { ...filters, page, page_size: pageSize } });
+    return response.data;
+  },
+  getOperationalSites: async (filters, page = 1, pageSize) => {
+    const response = await djangoApi.get('/api/operational-sites/', { params: { ...filters, page, page_size: pageSize } });
+    return response.data;
+  },
+  getSiteNonComm: async (filters, page = 1, pageSize) => {
+    const response = await djangoApi.get('/api/site-communication-statuss/', { params: { ...filters, page, page_size: pageSize } });
     return response.data;
   },
   getAutomationStatus: async (filters) => {
@@ -195,6 +262,8 @@ export const api = {
   },
 
   // ✅ FIX: SMPS alarms → /api/alarms/  (was incorrectly hitting live-fast-alarms before)
+  getLiveAlarmsSnmp: async (filters, pageSize = 1000) => { const response = await djangoApi.get('/api/live-alarms-snmp/', { params: { ...filters, page_size: pageSize } }); return response.data; },
+
   getSmpsAlarms: async (filters, pageSize = 1000) => {
     const response = await djangoApi.get('/api/alarms/', { params: { ...filters, page_size: pageSize } });
     return response.data;
@@ -351,23 +420,51 @@ export const api = {
     return response.data;
   },
 
+
+
+
+
   // ── METADATA & DROPDOWNS ──
+  getClients: async () => {
+    const response = await djangoApi.get('/client-data/');
+    const list = toArray(response.data, 'clients');
+    const data = list.map(c => ({
+      client_id: c.client_id ?? c.ctmids ?? c.ctmid ?? c.id,
+      client_name: c.client_name ?? c.companyname ?? c.name,
+    }));
+    return { status: 'success', data };
+  },
   getStates: async () => {
-    const response = await djangoApi.get('/merge_get_state_name/');
-    return { status: 'success', data: response.data };
+    const response = await djangoApi.get('/api/filters/states/');
+    const list = toArray(response.data, 'data', 'states');
+    const data = list.map(s => ({
+      state_id: s.state_id ?? s.id,
+      state_name: s.state_name ?? s.name,
+    }));
+    return { status: 'success', data };
   },
   getDistricts: async (state_id) => {
-    const response = await djangoApi.get('/merge_get_h1_name/', { params: { state_id } });
-    const data = response.data.map(d => ({ district_id: d.dist_id, district_name: d.dist_name }));
+    const response = await djangoApi.get(`/get_districts_for_filter/${state_id}/`);
+    const list = toArray(response.data, 'districts');
+    const data = list.map(d => ({
+      district_id: d.dist_id ?? d.district_id ?? d.id,
+      district_name: d.dist_name ?? d.district_name ?? d.name,
+    }));
     return { status: 'success', data };
   },
   getClusters: async (dist_id) => {
-    const response = await djangoApi.get('/merge_get_h2_name/', { params: { dist_id } });
-    const data = response.data.map(c => ({ cluster_id: c.cluster_id, cluster_name: c.cluster_name }));
+    const response = await djangoApi.get(`/get_clusters_for_filter/${dist_id}/`);
+    const list = toArray(response.data, 'clusters');
+    const data = list.map(c => ({
+      cluster_id: c.cluster_id ?? c.id,
+      cluster_name: c.cluster_name ?? c.name,
+    }));
     return { status: 'success', data };
   },
   getMetadata: async (type) => {
-    const response = await djangoApi.get('/api/location-dropdowns/', { params: { type } });
+    const response = await djangoApi.get('/api/location-dropdowns/', {
+      params: { type },
+    });
     return response.data;
   },
 
@@ -454,3 +551,8 @@ export const api = {
     return response.data;
   },
 };
+
+
+
+
+

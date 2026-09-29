@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -122,7 +123,7 @@ export default function SiteDistributionScreen({ navigation }: Props) {
       />
 
       {loading || !counts ? (
-        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
 
@@ -164,17 +165,17 @@ export default function SiteDistributionScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
-  iconBtn: { padding: 8, position: 'relative' },
-  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+  iconBtn: { padding: moderateScale(8), position: 'relative' },
+  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
   
-  content: { padding: 16 },
-  totalText: { fontSize: 18, fontWeight: '800', color: '#1e3c72', marginBottom: 20, textAlign: 'center' },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, elevation: 3 },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  content: { padding: moderateScale(16) },
+  totalText: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e3c72', marginBottom: verticalScale(20), textAlign: 'center' },
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(16), marginBottom: verticalScale(16), elevation: 3 },
+  cardTitle: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#64748b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
   row: { flexDirection: 'row', gap: 12 },
-  box: { flex: 1, backgroundColor: '#f8fafc', padding: 16, borderRadius: 10, alignItems: 'center', borderTopWidth: 4, elevation: 1 },
-  boxVal: { fontSize: 22, fontWeight: '800', marginBottom: 4 },
-  boxLabel: { fontSize: 11, fontWeight: '700', color: '#64748b', textTransform: 'uppercase' },
+  box: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(16), borderRadius: 10, alignItems: 'center', borderTopWidth: 4, elevation: 1 },
+  boxVal: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
+  boxLabel: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b', textTransform: 'uppercase' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  gridBox: { width: '48.5%', backgroundColor: '#f8fafc', borderRadius: 12, padding: 16, alignItems: 'center', borderTopWidth: 4, elevation: 1 },
+  gridBox: { width: '48.5%', backgroundColor: '#f8fafc', borderRadius: 12, padding: moderateScale(16), alignItems: 'center', borderTopWidth: 4, elevation: 1 },
 });

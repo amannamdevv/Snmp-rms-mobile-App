@@ -21,6 +21,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -216,22 +217,22 @@ function AlarmCard({ item }: { item: any }) {
     );
 }
 const AC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 8, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3 },
-    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8, gap: 8 },
-    site: { fontSize: 12, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    siteId: { fontSize: 9, color: '#64748b' },
-    badge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: 8, fontWeight: '800', letterSpacing: 0.3 },
-    alarmName: { fontSize: 12, fontWeight: '700', color: '#1e40af', marginBottom: 8 },
-    quickRow: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 10, padding: 8 },
+    card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3 },
+    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8), gap: 8 },
+    site: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    siteId: { fontSize: responsiveFontSize(9), color: '#64748b' },
+    badge: { paddingHorizontal: moderateScale(7), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
+    badgeTxt: { fontSize: responsiveFontSize(8), fontWeight: '800', letterSpacing: 0.3 },
+    alarmName: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e40af', marginBottom: verticalScale(8) },
+    quickRow: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 10, padding: moderateScale(8) },
     quickItem: { flex: 1, alignItems: 'center' },
-    quickVal: { fontSize: 10, fontWeight: '700', color: '#0f172a' },
-    quickLab: { fontSize: 7, color: '#64748b', fontWeight: '600', marginTop: 1 },
-    detail: { marginTop: 10 },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 10 },
-    detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    detailLab: { fontSize: 11, color: '#64748b', fontWeight: '600' },
-    detailVal: { fontSize: 11, color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
+    quickVal: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#0f172a' },
+    quickLab: { fontSize: responsiveFontSize(7), color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
+    detail: { marginTop: verticalScale(10) },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
+    detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    detailLab: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+    detailVal: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
 });
 
 // ─── Filter Drawer ────────────────────────────────────────────
@@ -246,7 +247,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
                         <Text style={FD.title}>Filters</Text>
                         <TouchableOpacity onPress={onClose}><AppIcon name="x" size={22} color="#1e293b" /></TouchableOpacity>
                     </View>
-                    <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+                    <ScrollView contentContainerStyle={{ paddingBottom: verticalScale(24) }}>
                         {[
                             { key: 'date_from', label: 'DATE FROM', placeholder: 'YYYY-MM-DD', isDate: true },
                             { key: 'date_to', label: 'DATE TO', placeholder: 'YYYY-MM-DD', isDate: true },
@@ -295,7 +296,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 
                         {/* Quick dates */}
                         <Text style={FD.label}>QUICK DATE</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: verticalScale(14) }}>
                             {[
                                 { l: 'Today', s: todayStr(), e: todayStr() },
                                 { l: 'Yesterday', s: daysAgoStr(1), e: daysAgoStr(1) },
@@ -313,7 +314,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 
                         {/* Alarm type */}
                         <Text style={FD.label}>ALARM TYPE</Text>
-                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: verticalScale(16) }}>
                             {[
                                 { v: 'both', l: 'Both' },
                                 { v: 'smps', l: 'SMPS' },
@@ -344,19 +345,19 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 }
 const FD = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '85%' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-    title: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
-    label: { fontSize: 9, fontWeight: '800', color: '#5B9BD5', marginBottom: 4, marginTop: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: 2 },
-    chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
+    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: moderateScale(20), maxHeight: '85%' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(16) },
+    title: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#0f172a' },
+    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5B9BD5', marginBottom: verticalScale(4), marginTop: verticalScale(10), textTransform: 'uppercase', letterSpacing: 0.5 },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(2) },
+    chip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     chipActive: { backgroundColor: '#5B9BD5', borderColor: '#5B9BD5' },
-    chipTxt: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    chipTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     chipTxtActive: { color: '#fff' },
-    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingVertical: 14, marginBottom: 10, marginTop: 8 },
-    applyTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
-    resetBtn: { alignItems: 'center', paddingVertical: 8 },
-    resetTxt: { color: '#5B9BD5', fontWeight: '700', fontSize: 13 },
+    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingVertical: verticalScale(14), marginBottom: verticalScale(10), marginTop: verticalScale(8) },
+    applyTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    resetBtn: { alignItems: 'center', paddingVertical: verticalScale(8) },
+    resetTxt: { color: '#5B9BD5', fontWeight: '700', fontSize: responsiveFontSize(13) },
 });
 
 // ─── Export type modal ────────────────────────────────────────
@@ -382,11 +383,11 @@ function ExportModal({ visible, onClose, onExport }: { visible: boolean; onClose
     );
 }
 const EM = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 30 },
-    box: { backgroundColor: '#fff', borderRadius: 16, padding: 20 },
-    title: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 14 },
-    option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optTxt: { fontSize: 13, color: '#334155', fontWeight: '600' },
+    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(30) },
+    box: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(20) },
+    title: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    optTxt: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
 });
 
 // ─── MAIN ─────────────────────────────────────────────────────
@@ -537,7 +538,7 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 <FlatList
                     data={filtered}
                     keyExtractor={(item, i) => `${item.site_id || i}_${item.start_time || i}_${i}`}
-                    contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                    contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5B9BD5']} />}
                     ListHeaderComponent={
@@ -621,22 +622,22 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#5B9BD5', fontWeight: '600', fontSize: 13 },
-    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8, elevation: 1, gap: 8 },
-    searchInput: { flex: 1, fontSize: 12, color: '#0f172a', fontWeight: '500' },
-    statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-    statsCount: { fontSize: 11, fontWeight: '700', color: '#64748b' },
-    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-    exportTxt: { color: '#fff', fontWeight: '800', fontSize: 11 },
-    pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: 16 },
-    pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, elevation: 1 },
+    loaderTxt: { marginTop: verticalScale(12), color: '#5B9BD5', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(8), elevation: 1, gap: 8 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) },
+    statsCount: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6) },
+    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(11) },
+    pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: verticalScale(16) },
+    pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1 },
     pageBtnDisabled: { opacity: 0.4 },
-    pageBtnTxt: { fontSize: 11, fontWeight: '700', color: '#5B9BD5' },
-    pageInfo: { fontSize: 12, fontWeight: '700', color: '#1e293b' },
-    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
-    emptyTxt: { color: '#94a3b8', fontSize: 13, marginTop: 12, fontWeight: '500', textAlign: 'center', paddingHorizontal: 30 },
-    filterPromptBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginTop: 16 },
-    filterPromptTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
-    errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 10, padding: 12, marginBottom: 10 },
-    errorTxt: { flex: 1, fontSize: 12, color: '#ef4444', fontWeight: '600' },
+    pageBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#5B9BD5' },
+    pageInfo: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' },
+    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: verticalScale(60) },
+    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500', textAlign: 'center', paddingHorizontal: moderateScale(30) },
+    filterPromptBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(12), marginTop: verticalScale(16) },
+    filterPromptTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
+    errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(10) },
+    errorTxt: { flex: 1, fontSize: responsiveFontSize(12), color: '#ef4444', fontWeight: '600' },
 });

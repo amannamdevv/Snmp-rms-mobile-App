@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api, logoutApi } from '../../api';
 import { useFocusEffect } from '@react-navigation/native';
@@ -34,19 +34,31 @@ export default function HomeScreen({ navigation, route }: any) {
     total_soeb: 0,
     total_sodg: 0,
     total_sobt: 0,
+    total_slreb: 0,
+    total_slrdg: 0,
+    total_slrbt: 0,
   });
   const [offlineKpi, setOfflineKpi] = useState<any>({
     total_non_comm: 0,
     aging_buckets: {},
   });
-  const [alarmKpi, setAlarmKpi] = useState({
+  const [alarmKpi, setAlarmKpi] = useState<any>({
     major: 0,
     minor: 0,
     fire: 0,
     nightDoor: 0,
+    open: 0,
+    closed: 0,
   });
 
-  const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setRefreshing(false);
+  }, []);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
 
   // ── Fullname ──────────────────────────────────────────────────
@@ -108,6 +120,9 @@ export default function HomeScreen({ navigation, route }: any) {
           total_soeb: raw.total_soeb ?? raw.soeb ?? raw.eb ?? 0,
           total_sodg: raw.total_sodg ?? raw.sodg ?? raw.dg ?? 0,
           total_sobt: raw.total_sobt ?? raw.sobt ?? raw.bt ?? 0,
+          total_slreb: raw.total_slreb ?? 0,
+          total_slrdg: raw.total_slrdg ?? 0,
+          total_slrbt: raw.total_slrbt ?? 0,
         });
       }
 
@@ -154,7 +169,7 @@ export default function HomeScreen({ navigation, route }: any) {
           leftAction="menu"
           onLeftPress={() => setSidebarVisible(true)}
         />
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}>
 
           {/* 1. Site Status */}
           <TouchableOpacity
@@ -163,7 +178,7 @@ export default function HomeScreen({ navigation, route }: any) {
           >
             <View style={styles.cardHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <AppIcon name="activity" size={20} color="#1e3c72" style={{ marginRight: 8 }} />
+                <AppIcon name="activity" size={20} color="#1e3c72" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.cardHeader}>Site Status</Text>
               </View>
               <AppIcon name="chevron-right" size={20} color="#1e3c72" />
@@ -182,12 +197,12 @@ export default function HomeScreen({ navigation, route }: any) {
           >
             <View style={styles.cardHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <AppIcon name="wifi-off" size={20} color="#dc2626" style={{ marginRight: 8 }} />
+                <AppIcon name="wifi-off" size={20} color="#dc2626" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.cardHeader}>Non-Comm Sites Aging</Text>
               </View>
               <AppIcon name="chevron-right" size={20} color="#1e3c72" />
             </View>
-            <View style={[styles.statsRow, { marginBottom: 15 }]}>
+            <View style={[styles.statsRow, { marginBottom: verticalScale(15) }]}>
               {renderMiniKPI('Total', offlineKpi?.total_non_comm, '#dc2626')}
               {renderMiniKPI('0-7 Days', offlineKpi?.aging_buckets?.['0-7 days'], '#ca8a04')}
               {renderMiniKPI('8-30 Days', offlineKpi?.aging_buckets?.['8-30 days'], '#ea580c')}
@@ -206,15 +221,20 @@ export default function HomeScreen({ navigation, route }: any) {
           >
             <View style={styles.cardHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <AppIcon name="play-circle" size={20} color="#1e3c72" style={{ marginRight: 8 }} />
+                <AppIcon name="play-circle" size={20} color="#1e3c72" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.cardHeader}>Site Running Status</Text>
               </View>
               <AppIcon name="chevron-right" size={20} color="#1e3c72" />
             </View>
-            <View style={styles.statsRow}>
+            <View style={[styles.statsRow, { marginBottom: verticalScale(15) }]}>
               {renderMiniKPI('SOEB', runningKpi?.total_soeb, '#10b981')}
               {renderMiniKPI('SODG', runningKpi?.total_sodg, '#f59e0b')}
               {renderMiniKPI('SOBT', runningKpi?.total_sobt, '#3b82f6')}
+            </View>
+            <View style={styles.statsRow}>
+              {renderMiniKPI('SLREB', runningKpi?.total_slreb, '#059669')}
+              {renderMiniKPI('SLRDG', runningKpi?.total_slrdg, '#d97706')}
+              {renderMiniKPI('SLRBT', runningKpi?.total_slrbt, '#2563eb')}
             </View>
           </TouchableOpacity>
 
@@ -225,23 +245,22 @@ export default function HomeScreen({ navigation, route }: any) {
           >
             <View style={styles.cardHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <AppIcon name="bell" size={20} color="#ef4444" style={{ marginRight: 8 }} />
+                <AppIcon name="bell" size={20} color="#ef4444" style={{ marginRight: moderateScale(8) }} />
                 <Text style={styles.cardHeader}>Site Open Alarm Analytics</Text>
               </View>
               <AppIcon name="chevron-right" size={20} color="#1e3c72" />
             </View>
             <View style={styles.statsRow}>
-              {renderMiniKPI('Major', alarmKpi.major, '#f59e0b')}
-              {renderMiniKPI('Minor', alarmKpi.minor, '#eab308')}
-              {renderMiniKPI('Fire', alarmKpi.fire, '#ef4444')}
-              {renderMiniKPI('Night Door', alarmKpi.nightDoor, '#8b5cf6')}
+              {renderMiniKPI('Total Alarms', (alarmKpi?.open || 0) + (alarmKpi?.closed || 0), '#1e3c72')}
+              {renderMiniKPI('Active Alarms', alarmKpi?.open || 0, '#ef4444')}
+              {renderMiniKPI('Closed Today', alarmKpi?.closed || 0, '#10b981')}
             </View>
           </TouchableOpacity>
 
 
 
           {loading && (
-            <ActivityIndicator color="#1e3c72" style={{ marginVertical: 20 }} />
+            <ActivityIndicator color="#1e3c72" style={{ marginVertical: verticalScale(20) }} />
           )}
         </ScrollView>
       </SafeAreaView>
@@ -294,3 +313,5 @@ const styles = StyleSheet.create({
   },
   miniValue: { fontSize: responsiveFontSize(18), fontWeight: '800' },
 });
+
+

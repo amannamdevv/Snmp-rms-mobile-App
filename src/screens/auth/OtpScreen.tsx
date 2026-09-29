@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View,
   Text,
@@ -134,7 +135,7 @@ export default function OtpScreen({ navigation, route }: Props) {
                   <Text style={styles.stepDesc}>Tap the button below to open WhatsApp and send the authentication message.</Text>
                   <TouchableOpacity style={styles.whatsappBtn} onPress={openWhatsApp} activeOpacity={0.85}>
                     <LinearGradient colors={['#25d366', '#128c7e']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.whatsappBtnGradient}>
-                      <AppIcon name="message-circle" size={18} color="#fff" style={{ marginRight: 8 }} />
+                      <AppIcon name="message-circle" size={18} color="#fff" style={{ marginRight: moderateScale(8) }} />
                       <Text style={styles.whatsappBtnText}>Open WhatsApp</Text>
                     </LinearGradient>
                   </TouchableOpacity>
@@ -174,14 +175,14 @@ export default function OtpScreen({ navigation, route }: Props) {
 
                   {error ? (
                     <View style={styles.errorBox}>
-                      <AppIcon name="alert-triangle" size={14} color="#ef4444" style={{ marginRight: 8 }} />
+                      <AppIcon name="alert-triangle" size={14} color="#ef4444" style={{ marginRight: moderateScale(8) }} />
                       <Text style={styles.errorText}>{error}</Text>
                     </View>
                   ) : null}
 
                   {success ? (
                     <View style={styles.successBox}>
-                      <AppIcon name="check-circle" size={14} color="#10b981" style={{ marginRight: 8 }} />
+                      <AppIcon name="check-circle" size={14} color="#10b981" style={{ marginRight: moderateScale(8) }} />
                       <Text style={styles.successText}>{success}</Text>
                     </View>
                   ) : null}
@@ -208,50 +209,50 @@ export default function OtpScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 }, gradient: { flex: 1 }, scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 20, paddingBottom: 40 },
-  backBtn: { alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 24 },
-  backBtnText: { color: '#667eea', fontSize: 15, fontWeight: '600' },
-  header: { alignItems: 'center', marginBottom: 35 },
+  flex: { flex: 1 }, gradient: { flex: 1 }, scrollContent: { flexGrow: 1, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(20), paddingBottom: verticalScale(40) },
+  backBtn: { alignSelf: 'flex-start', paddingVertical: verticalScale(8), paddingHorizontal: moderateScale(4), marginBottom: verticalScale(24) },
+  backBtnText: { color: '#667eea', fontSize: responsiveFontSize(15), fontWeight: '600' },
+  header: { alignItems: 'center', marginBottom: verticalScale(35) },
   logoCircle: {
-    width: 100,
-    height: 100,
+    width: moderateScale(100),
+    height: verticalScale(100),
     borderRadius: 50,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: verticalScale(16),
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: verticalScale(4) },
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
-  logoImage: { width: 65, height: 65 },
-  title: { fontSize: 24, fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: 0.5 },
-  subtitle: { fontSize: 13, color: '#a0a5ba', marginTop: 4, textAlign: 'center' },
-  card: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  logoImage: { width: moderateScale(65), height: verticalScale(65) },
+  title: { fontSize: responsiveFontSize(24), fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: 0.5 },
+  subtitle: { fontSize: responsiveFontSize(13), color: '#a0a5ba', marginTop: verticalScale(4), textAlign: 'center' },
+  card: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 24, padding: moderateScale(24), borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   step: { flexDirection: 'row', alignItems: 'flex-start' },
-  stepNumBadge: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#667eea', justifyContent: 'center', alignItems: 'center', marginRight: 14, marginTop: 2, flexShrink: 0 },
-  stepNum: { color: '#fff', fontSize: 13, fontWeight: '700' }, stepContent: { flex: 1 },
-  stepTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 6 },
-  stepDesc: { fontSize: 13, color: '#8a8fa8', lineHeight: 20, marginBottom: 16 },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: 20 },
+  stepNumBadge: { width: moderateScale(28), height: verticalScale(28), borderRadius: 14, backgroundColor: '#667eea', justifyContent: 'center', alignItems: 'center', marginRight: moderateScale(14), marginTop: verticalScale(2), flexShrink: 0 },
+  stepNum: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: '700' }, stepContent: { flex: 1 },
+  stepTitle: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#fff', marginBottom: verticalScale(6) },
+  stepDesc: { fontSize: responsiveFontSize(13), color: '#8a8fa8', lineHeight: 20, marginBottom: verticalScale(16) },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: verticalScale(20) },
   whatsappBtn: { borderRadius: 12, overflow: 'hidden' },
-  whatsappBtnGradient: { height: 48, justifyContent: 'center', alignItems: 'center' },
-  whatsappBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  otpContainer: { marginBottom: 16 }, otpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  otpCell: { width: 44, height: 54, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  whatsappBtnGradient: { height: verticalScale(48), justifyContent: 'center', alignItems: 'center' },
+  whatsappBtnText: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '700' },
+  otpContainer: { marginBottom: verticalScale(16) }, otpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(4) },
+  otpCell: { width: moderateScale(44), height: verticalScale(54), borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
   otpCellFocused: { borderColor: '#667eea', backgroundColor: 'rgba(102, 126, 234, 0.1)' },
-  otpCellText: { color: '#fff', fontSize: 22, fontWeight: '700' },
+  otpCellText: { color: '#fff', fontSize: responsiveFontSize(22), fontWeight: '700' },
   hiddenInput: { position: 'absolute', opacity: 0, height: 0, width: 0 },
-  errorBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239, 68, 68, 0.15)', borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
-  errorIcon: { fontSize: 14, marginRight: 8 }, errorText: { color: '#fca5a5', fontSize: 13, flex: 1 },
-  successBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34, 197, 94, 0.15)', borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(34, 197, 94, 0.3)' },
-  successIcon: { fontSize: 14, marginRight: 8 }, successText: { color: '#86efac', fontSize: 13, flex: 1 },
+  errorBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239, 68, 68, 0.15)', borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(16), borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
+  errorIcon: { fontSize: responsiveFontSize(14), marginRight: moderateScale(8) }, errorText: { color: '#fca5a5', fontSize: responsiveFontSize(13), flex: 1 },
+  successBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34, 197, 94, 0.15)', borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(16), borderWidth: 1, borderColor: 'rgba(34, 197, 94, 0.3)' },
+  successIcon: { fontSize: responsiveFontSize(14), marginRight: moderateScale(8) }, successText: { color: '#86efac', fontSize: responsiveFontSize(13), flex: 1 },
   verifyBtn: { borderRadius: 12, overflow: 'hidden' }, verifyBtnDisabled: { opacity: 0.7 },
-  verifyBtnGradient: { height: 52, justifyContent: 'center', alignItems: 'center' },
-  verifyBtnText: { color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 0.5 },
-  noteBox: { marginTop: 20, backgroundColor: 'rgba(102, 126, 234, 0.08)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(102, 126, 234, 0.15)' },
-  noteText: { color: '#a5b4fc', fontSize: 12, lineHeight: 20 },
-  footer: { color: 'rgba(255,255,255,0.3)', fontSize: 11, textAlign: 'center', marginTop: 28 },
+  verifyBtnGradient: { height: verticalScale(52), justifyContent: 'center', alignItems: 'center' },
+  verifyBtnText: { color: '#fff', fontSize: responsiveFontSize(16), fontWeight: '700', letterSpacing: 0.5 },
+  noteBox: { marginTop: verticalScale(20), backgroundColor: 'rgba(102, 126, 234, 0.08)', borderRadius: 12, padding: moderateScale(14), borderWidth: 1, borderColor: 'rgba(102, 126, 234, 0.15)' },
+  noteText: { color: '#a5b4fc', fontSize: responsiveFontSize(12), lineHeight: 20 },
+  footer: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFontSize(11), textAlign: 'center', marginTop: verticalScale(28) },
 });

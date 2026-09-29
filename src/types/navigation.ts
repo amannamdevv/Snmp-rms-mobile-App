@@ -1,4 +1,4 @@
-export type RootStackParamList = {
+﻿export type RootStackParamList = {
   Splash: undefined;
   Login: undefined;
   Otp: { whatsappUrl: string, username: string };
@@ -13,7 +13,7 @@ export type RootStackParamList = {
   SiteTypeDetails: { siteType: string, title: string, filters: any };
   Dashboard: { fullname?: string } | undefined;
   SiteHealth: { status?: string } | undefined;
-  SiteVitals: { range?: string } | undefined;
+  SiteVitals: { range?: string, source?: string } | undefined;
   SiteAutomation: undefined;
   LiveAlarms: { severity?: string } | undefined;
   UptimeDetails: { state_id: string, state_name: string };
@@ -44,3 +44,4 @@ export type RootStackParamList = {
   MqttWriteData: undefined;
   SnmpTool: undefined;
 };
+

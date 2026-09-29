@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Alert, Platform,
@@ -114,25 +115,34 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
   // ── Stats ────────────────────────────────────────────────────────────────
   const stats = React.useMemo(() => {
     if (!records.length) return null;
-    let tMains = 0, tBatt = 0, tDG = 0, tNonComm = 0, tRunning = 0;
+    let tMains = 0, tBatt = 0, tDG = 0, tNonComm = 0, tRunning = 0, tSlreb = 0, tSlrbt = 0, tSlrdg = 0;
     records.forEach(r => {
       tMains += timeToSeconds(r.mains_duration);
       tBatt += timeToSeconds(r.battery_duration);
       tDG += timeToSeconds(r.dg_duration);
       tNonComm += timeToSeconds(r.non_comm_duration);
-      tRunning += timeToSeconds(totalRunning(r.mains_duration, r.battery_duration, r.dg_duration));
+      tRunning += timeToSeconds(r.total_running_duration || totalRunning(r.mains_duration, r.battery_duration, r.dg_duration));
+      tSlreb += timeToSeconds(r.slreb_duration || '00:00:00');
+      tSlrbt += timeToSeconds(r.slrbt_duration || '00:00:00');
+      tSlrdg += timeToSeconds(r.slrdg_duration || '00:00:00');
     });
     const n = records.length;
     return {
       avgMains: secondsToTime(tMains / n),
       avgBatt: secondsToTime(tBatt / n),
       avgDG: secondsToTime(tDG / n),
+      avgSlreb: secondsToTime(tSlreb / n),
+      avgSlrbt: secondsToTime(tSlrbt / n),
+      avgSlrdg: secondsToTime(tSlrdg / n),
       avgNonComm: secondsToTime(tNonComm / n),
       avgRunning: secondsToTime(tRunning / n),
       days: n,
       totalMains: secondsToTime(tMains),
       totalBatt: secondsToTime(tBatt),
       totalDG: secondsToTime(tDG),
+      totalSlreb: secondsToTime(tSlreb),
+      totalSlrbt: secondsToTime(tSlrbt),
+      totalSlrdg: secondsToTime(tSlrdg),
       totalNonComm: secondsToTime(tNonComm),
       totalRunning: secondsToTime(tRunning),
     };
@@ -149,7 +159,10 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
         'Mains Duration (SOEB)': r.mains_duration,
         'Battery Duration (SOBT)': r.battery_duration,
         'DG Duration (SODG)': r.dg_duration,
-        'Total Running Duration': totalRunning(r.mains_duration, r.battery_duration, r.dg_duration),
+        'SLREB Duration': r.slreb_duration || '00:00:00',
+        'SLRBT Duration': r.slrbt_duration || '00:00:00',
+        'SLRDG Duration': r.slrdg_duration || '00:00:00',
+        'Total Running Duration': r.total_running_duration || totalRunning(r.mains_duration, r.battery_duration, r.dg_duration),
         'Non-Comm Duration': r.non_comm_duration,
         'Primary Source': r.primary_source,
         'Sessions Count': (r.sessions || []).length,
@@ -193,11 +206,14 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
 
         {/* Duration grid */}
         <View style={styles.durationGrid}>
-          <DurCell label="Mains" val={mains} color="#27ae60" />
-          <DurCell label="Battery" val={batt} color="#856404" />
-          <DurCell label="DG" val={dg} color="#0c5460" />
+          <DurCell label="Mains (SOEB)" val={mains} color="#27ae60" />
+          <DurCell label="Battery (SOBT)" val={batt} color="#856404" />
+          <DurCell label="DG (SODG)" val={dg} color="#0c5460" />
+          <DurCell label="SLREB" val={record.slreb_duration || '00:00:00'} color="#7c3aed" />
+          <DurCell label="SLRBT" val={record.slrbt_duration || '00:00:00'} color="#db2777" />
+          <DurCell label="SLRDG" val={record.slrdg_duration || '00:00:00'} color="#0284c7" />
           <DurCell label="Non-Comm" val={nonComm} color="#dc2626" />
-          <DurCell label="Total" val={runTotal} color="#2980b9" highlight />
+          <DurCell label="Total Running" val={record.total_running_duration || runTotal} color="#2980b9" highlight />
         </View>
 
         {/* Sessions toggle */}
@@ -222,7 +238,7 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
                     <Text style={[styles.sessionSrc, { color: sc.fg }]}>{s.source}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text style={styles.sessionTime}>{fmtTime(s.start_time)}</Text>
-                      <AppIcon name="arrow-right" size={10} color="#64748b" style={{ marginHorizontal: 4 }} />
+                      <AppIcon name="arrow-right" size={10} color="#64748b" style={{ marginHorizontal: moderateScale(4) }} />
                       <Text style={styles.sessionTime}>{fmtTime(s.end_time)}</Text>
                     </View>
                   </View>
@@ -248,7 +264,7 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
         rightActions={[{ icon: exporting ? 'loader' : 'download', onPress: handleExport }]}
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: verticalScale(120) }}>
 
         {/* ── Date Filter ── */}
         <View style={styles.filterCard}>
@@ -318,9 +334,12 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
             <StatCard label="Avg Mains" val={stats.avgMains} color="#27ae60" />
             <StatCard label="Avg Battery" val={stats.avgBatt} color="#856404" />
             <StatCard label="Avg DG" val={stats.avgDG} color="#0c5460" />
+            <StatCard label="Avg SLREB" val={stats.avgSlreb} color="#7c3aed" />
+            <StatCard label="Avg SLRBT" val={stats.avgSlrbt} color="#db2777" />
+            <StatCard label="Avg SLRDG" val={stats.avgSlrdg} color="#0284c7" />
             <StatCard label="Avg Non-Comm" val={stats.avgNonComm} color="#dc2626" />
             <StatCard label="Avg Running" val={stats.avgRunning} color="#2980b9" />
-            <StatCard label="Days" val={String(stats.days)} color="#01497C" />
+            <StatCard label="Days Analyzed" val={String(stats.days)} color="#01497C" />
           </View>
         )}
 
@@ -328,7 +347,7 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Run Hours Analysis</Text>
           {loading ? (
-            <ActivityIndicator size="large" color="#01497C" style={{ marginTop: 30 }} />
+            <ActivityIndicator size="large" color="#01497C" style={{ marginTop: verticalScale(30) }} />
           ) : records.length === 0 ? (
             <View style={styles.emptyBox}>
               <AppIcon name="inbox" size={36} color="#ccc" />
@@ -349,9 +368,15 @@ export default function SiteRunHoursDetailScreen({ route, navigation }: Props) {
           <View style={styles.footerDivider} />
           <FooterItem label="DG" val={stats.totalDG} />
           <View style={styles.footerDivider} />
+          <FooterItem label="SLREB" val={stats.totalSlreb} />
+          <View style={styles.footerDivider} />
+          <FooterItem label="SLRBT" val={stats.totalSlrbt} />
+          <View style={styles.footerDivider} />
+          <FooterItem label="SLRDG" val={stats.totalSlrdg} />
+          <View style={styles.footerDivider} />
           <FooterItem label="Non-Comm" val={stats.totalNonComm} />
           <View style={styles.footerDivider} />
-          <FooterItem label="Running" val={stats.totalRunning} highlight />
+          <FooterItem label="Total" val={stats.totalRunning} />
         </View>
       )}
     </SafeAreaView>
@@ -387,71 +412,74 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#EBF2FA' },
 
   // Filter
-  filterCard: { margin: 12, backgroundColor: '#fff', borderRadius: 12, padding: 14, elevation: 2 },
-  filterRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  filterCard: { margin: moderateScale(12), backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2 },
+  filterRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(10) },
   filterField: { flex: 1 },
-  filterLabel: { fontSize: 11, color: '#01497C', fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderColor: '#01497C', borderRadius: 8, padding: 10, backgroundColor: '#F0F7FF' },
-  dateBtnTxt: { fontSize: 13, color: '#01497C', fontWeight: '700', flex: 1 },
+  filterLabel: { fontSize: responsiveFontSize(11), color: '#01497C', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
+  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderColor: '#01497C', borderRadius: 8, padding: moderateScale(10), backgroundColor: '#F0F7FF' },
+  dateBtnTxt: { fontSize: responsiveFontSize(13), color: '#01497C', fontWeight: '700', flex: 1 },
   filterBtnRow: { flexDirection: 'row', gap: 10 },
-  applyBtn: { flex: 1, backgroundColor: '#01497C', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  applyBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  resetBtn: { flex: 1, backgroundColor: '#95a5a6', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  resetBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  applyBtn: { flex: 1, backgroundColor: '#01497C', borderRadius: 8, paddingVertical: verticalScale(10), alignItems: 'center' },
+  applyBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14) },
+  resetBtn: { flex: 1, backgroundColor: '#95a5a6', borderRadius: 8, paddingVertical: verticalScale(10), alignItems: 'center' },
+  resetBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14) },
 
   // Site Info
-  siteInfoCard: { marginHorizontal: 12, marginBottom: 10, backgroundColor: '#fff', borderRadius: 12, padding: 14, elevation: 2, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  siteInfoCard: { marginHorizontal: moderateScale(12), marginBottom: verticalScale(10), backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   infoItem: { minWidth: '45%', flex: 1 },
-  infoLbl: { fontSize: 10, color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: 2 },
-  infoVal: { fontSize: 13, color: '#1C2F3E', fontWeight: '600' },
+  infoLbl: { fontSize: responsiveFontSize(10), color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoVal: { fontSize: responsiveFontSize(13), color: '#1C2F3E', fontWeight: '600' },
 
   // Stats
-  statsGrid: { marginHorizontal: 12, marginBottom: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  statCard: { backgroundColor: '#fff', borderRadius: 10, padding: 12, alignItems: 'center', borderTopWidth: 4, elevation: 2, flex: 1, minWidth: '30%' },
-  statVal: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
-  statLabel: { fontSize: 10, color: '#64748b', fontWeight: '700', textTransform: 'uppercase', textAlign: 'center' },
+  statsGrid: { marginHorizontal: moderateScale(12), marginBottom: verticalScale(10), flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  statCard: { backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(8), alignItems: 'center', borderTopWidth: 3, elevation: 2, width: '31.5%', marginBottom: verticalScale(8) },
+  statVal: { fontSize: responsiveFontSize(13), fontWeight: '800', marginBottom: verticalScale(4) },
+  statLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', textAlign: 'center' },
 
   // Section
-  section: { marginHorizontal: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#01497C', marginBottom: 10 },
+  section: { marginHorizontal: moderateScale(12) },
+  sectionTitle: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(10) },
 
   // Record card
-  recordCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 2 },
+  recordCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2 },
   recordCardAlt: { backgroundColor: '#FAFCFF' },
-  recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  recordDate: { fontSize: 15, fontWeight: '700', color: '#01497C' },
-  srcBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  srcBadgeTxt: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(12) },
+  recordDate: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C' },
+  srcBadge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
+  srcBadgeTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', textTransform: 'uppercase' },
 
   // Duration grid
-  durationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
-  durCell: { backgroundColor: '#F0F7FF', borderRadius: 8, padding: 10, minWidth: '30%', flex: 1 },
+  durationGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: verticalScale(10) },
+  durCell: { backgroundColor: '#F0F7FF', borderRadius: 8, padding: moderateScale(8), width: '23.5%', marginBottom: verticalScale(8) },
   durCellHighlight: { backgroundColor: '#EBF5FB' },
-  durLabel: { fontSize: 10, color: '#64748b', fontWeight: '600', textTransform: 'uppercase', marginBottom: 4 },
-  durVal: { fontSize: 13, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  durLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  durVal: { fontSize: responsiveFontSize(12), fontWeight: '800', fontVariant: ['tabular-nums'] },
 
   // Session toggle
-  sessionToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#F0F7FF', borderRadius: 8, alignSelf: 'flex-start' },
-  sessionToggleTxt: { fontSize: 12, color: '#01497C', fontWeight: '600' },
+  sessionToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: verticalScale(4), paddingVertical: verticalScale(6), paddingHorizontal: moderateScale(10), backgroundColor: '#F0F7FF', borderRadius: 8, alignSelf: 'flex-start' },
+  sessionToggleTxt: { fontSize: responsiveFontSize(12), color: '#01497C', fontWeight: '600' },
 
   // Session details
-  sessionBox: { marginTop: 10, backgroundColor: '#F8FAFC', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#E2EBF4' },
-  sessionBoxTitle: { fontSize: 12, fontWeight: '700', color: '#01497C', marginBottom: 8, textTransform: 'uppercase' },
-  sessionItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 8, borderRadius: 6, borderLeftWidth: 3, marginBottom: 6 },
-  sessionSrc: { fontSize: 12, fontWeight: '700', marginBottom: 2 },
-  sessionTime: { fontSize: 11, color: '#64748b' },
-  sessionDurBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  sessionDurTxt: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  sessionBox: { marginTop: verticalScale(10), backgroundColor: '#F8FAFC', borderRadius: 8, padding: moderateScale(12), borderWidth: 1, borderColor: '#E2EBF4' },
+  sessionBoxTitle: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(8), textTransform: 'uppercase' },
+  sessionItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: moderateScale(8), borderRadius: 6, borderLeftWidth: 3, marginBottom: verticalScale(6) },
+  sessionSrc: { fontSize: responsiveFontSize(12), fontWeight: '700', marginBottom: verticalScale(2) },
+  sessionTime: { fontSize: responsiveFontSize(11), color: '#64748b' },
+  sessionDurBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 10 },
+  sessionDurTxt: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '700' },
 
   // Empty
-  emptyBox: { alignItems: 'center', paddingVertical: 40 },
-  emptyTxt: { color: '#94A3B8', marginTop: 10, fontSize: 13, fontStyle: 'italic' },
+  emptyBox: { alignItems: 'center', paddingVertical: verticalScale(40) },
+  emptyTxt: { color: '#94A3B8', marginTop: verticalScale(10), fontSize: responsiveFontSize(13), fontStyle: 'italic' },
 
   // Sticky footer
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 3, borderTopColor: '#01497C', flexDirection: 'row', paddingVertical: 10, paddingHorizontal: 4, elevation: 10 },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 3, borderTopColor: '#01497C', flexDirection: 'row', paddingVertical: verticalScale(10), paddingHorizontal: moderateScale(4), elevation: 10 },
   footerItem: { flex: 1, alignItems: 'center' },
   footerDivider: { width: 1, backgroundColor: '#E2EBF4' },
-  footerLabel: { fontSize: 9, color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: 2 },
-  footerVal: { fontSize: 12, fontWeight: '800', color: '#1C2F3E' },
+  footerLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  footerVal: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#1C2F3E' },
   footerValHighlight: { color: '#2980b9' },
 });
+
+
+

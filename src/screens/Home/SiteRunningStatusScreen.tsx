@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../types/navigation';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -37,14 +40,23 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
     total_non_active: 0,
     total_soeb: 0,
     total_sobt: 0,
-    total_sodg: 0
+    total_sodg: 0,
+    total_slreb: 0,
+    total_slrdg: 0,
+    total_slrbt: 0
   });
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [activeFilters, setActiveFilters] = useState({});
+  const { globalFilters, setGlobalFilters, hasActiveFilters: gHasFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
+  const [activeFilters, setActiveFilters] = useState<any>(globalFilters)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const handleExport = async () => {
@@ -151,6 +163,9 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
     if (status === 'SOEB') return '#01497C';
     if (status === 'SOBT') return '#468FAF';
     if (status === 'SODG') return '#ea580c';
+    if (status === 'SLREB') return '#059669';
+    if (status === 'SLRDG') return '#d97706';
+    if (status === 'SLRBT') return '#2563eb';
     return '#888';
   };
 
@@ -161,9 +176,9 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
 
     // Format 3-phase voltages with 2 decimal places matching the website display
     const fmt = (v: any) => (v != null && v !== '' ? parseFloat(v).toFixed(2) : '0.00');
-    const mainsVolt = `${fmt(item.mainsVoltR)} / ${fmt(item.mainsVoltY)} / ${fmt(item.mainsVoltB)}`;
-    const dgVolt   = `${fmt(item.dgVoltR)} / ${fmt(item.dgVoltY)} / ${fmt(item.dgVoltB)}`;
-    const battVolt = item.btsBattVolt ? `${parseFloat(item.btsBattVolt).toFixed(2)} V` : '--';
+    const mainsVolt = `${fmt(item.mains_volt_r)} / ${fmt(item.mains_volt_y)} / ${fmt(item.mains_volt_b)}`;
+    const dgVolt   = `${fmt(item.dg_volt_r)} / ${fmt(item.dg_volt_y)} / ${fmt(item.dg_volt_b)}`;
+    const battVolt = item.bts_batt_volt ? `${parseFloat(item.bts_batt_volt).toFixed(2)} V` : '--';
 
     // Last Updated: prefer last_updated, fall back to start_time
     const lastUpdated = item.last_updated || item.start_time || null;
@@ -172,7 +187,7 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
       : '--';
 
     // Alarm description
-    const alarmDesc = item.alarm_description || item.alarm || '--';
+    const alarmDesc = item.alarm_desc || item.alarm_description || item.alarm || '--';
 
     return (
       <TouchableOpacity
@@ -180,61 +195,53 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         onPress={() => navigation.navigate('SiteDetails', { imei: item.imei, siteId: '' })}
         activeOpacity={0.85}
       >
-        {/* Header: Site Name + IMEI + Status badge */}
+        {/* Header: Site Name + Status badge */}
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.siteName}>{item.site_name || '--'}</Text>
+          <View style={{ flex: 1, marginRight: moderateScale(8) }}>
+            <Text style={styles.siteName} numberOfLines={1}>{item.site_name || '--'}</Text>
             <Text style={styles.imei}>IMEI: {item.imei || '--'}</Text>
-            <Text style={styles.imei}>Global ID: {item.globel_id || item.global_id || item.site_id || '--'}</Text>
           </View>
           <View style={[styles.badge, { backgroundColor: color }]}>
             <Text style={styles.badgeText}>{displayStatus}</Text>
           </View>
         </View>
 
-        {/* Row 1: Session Duration + Comm Status */}
+        {/* Row 1: Comm Status + Battery Voltage */}
         <View style={styles.row}>
-          <View style={styles.col}>
-            <Text style={styles.label}>Session Duration</Text>
-            <Text style={styles.val}>{item.current_session_duration || '--'}</Text>
-          </View>
           <View style={styles.col}>
             <Text style={styles.label}>Comm Status</Text>
-            <Text style={[styles.val, { color: isOffline ? '#dc2626' : '#16a34a' }]}>
-              {item.comm_status || '--'}
-            </Text>
+            <Text style={[styles.val, { color: isOffline ? '#dc2626' : '#16a34a' }]}>{item.comm_status || '--'}</Text>
           </View>
-        </View>
-
-        {/* Row 2: Battery Voltage */}
-        <View style={styles.row}>
           <View style={styles.col}>
-            <Text style={styles.label}>Battery Voltage</Text>
+            <Text style={styles.label}>Battery (V)</Text>
             <Text style={styles.val}>{battVolt}</Text>
           </View>
-          <View style={styles.col} />
+          <View style={styles.col}>
+            <Text style={styles.label}>Session</Text>
+            <Text style={styles.val}>{item.current_session_duration || '--'}</Text>
+          </View>
         </View>
 
         {/* Divider */}
         <View style={styles.voltDivider} />
 
-        {/* Row 3: Mains Voltage (R/Y/B) */}
+        {/* Mains Voltage */}
         <View style={styles.voltRow}>
-          <Text style={styles.voltLabel}>Mains Voltage</Text>
+          <Text style={styles.voltLabel}>Mains (R/Y/B)</Text>
           <Text style={styles.voltVal}>{mainsVolt}</Text>
         </View>
 
-        {/* Row 4: DG Voltage (R/Y/B) */}
+        {/* DG Voltage */}
         <View style={styles.voltRow}>
-          <Text style={styles.voltLabel}>DG Voltage</Text>
+          <Text style={styles.voltLabel}>DG (R/Y/B)</Text>
           <Text style={styles.voltVal}>{dgVolt}</Text>
         </View>
 
-        {/* Alarm Description */}
+        {/* Alarm Description - only if present */}
         {alarmDesc !== '--' && (
           <View style={styles.alarmBox}>
-            <AppIcon name="alert-triangle" size={14} color="#f97316" style={{ marginTop: 2 }} />
-            <Text style={styles.alarmText} numberOfLines={2}>{alarmDesc}</Text>
+            <AppIcon name="alert-triangle" size={12} color="#f97316" style={{ marginTop: verticalScale(1) }} />
+            <Text style={styles.alarmText} numberOfLines={1}>{alarmDesc}</Text>
           </View>
         )}
 
@@ -250,7 +257,7 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
           onPress={() => navigation.navigate('SiteRunHoursDetail', { imei: item.imei, siteName: item.site_name || '' })}
         >
           <Text style={styles.runHoursBtnTxt}>Run Hours Detail</Text>
-          <AppIcon name="arrow-right" size={14} color="#fff" style={{ marginLeft: 6 }} />
+          <AppIcon name="arrow-right" size={14} color="#fff" style={{ marginLeft: moderateScale(6) }} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -264,10 +271,11 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: gFilterCount > 0 },
         ]}
       />
 
+      <GlobalFilterBanner />
       <FilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
@@ -275,34 +283,42 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         initialFilters={activeFilters}
       />
 
-      {!loading && (
         <View style={styles.kpiContainer}>
-          <View style={styles.kpiRow}>
-            <View style={[styles.kpiBox, { borderLeftColor: '#3b82f6' }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.kpiScrollContainer}>
+            <TouchableOpacity onPress={() => handleTabChange('All')} style={[styles.kpiBox, { borderBottomColor: '#3b82f6', backgroundColor: activeTab === 'All' ? '#e2e8f0' : '#fff' }]}>
               <Text style={styles.kpiTitle}>Total</Text>
               <Text style={styles.kpiVal}>{data.length}</Text>
-            </View>
-            <View style={[styles.kpiBox, { borderLeftColor: '#10b981' }]}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SOEB')} style={[styles.kpiBox, { borderBottomColor: '#10b981', backgroundColor: activeTab === 'SOEB' ? '#d1fae5' : '#fff' }]}>
               <Text style={styles.kpiTitle}>SOEB</Text>
               <Text style={[styles.kpiVal, { color: '#10b981' }]}>{counts.total_soeb || 0}</Text>
-            </View>
-            <View style={[styles.kpiBox, { borderLeftColor: '#3b82f6' }]}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SOBT')} style={[styles.kpiBox, { borderBottomColor: '#3b82f6', backgroundColor: activeTab === 'SOBT' ? '#dbeafe' : '#fff' }]}>
               <Text style={styles.kpiTitle}>SOBT</Text>
               <Text style={[styles.kpiVal, { color: '#3b82f6' }]}>{counts.total_sobt || 0}</Text>
-            </View>
-          </View>
-          <View style={styles.kpiRow}>
-             <View style={[styles.kpiBox, { borderLeftColor: '#f59e0b' }]}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SODG')} style={[styles.kpiBox, { borderBottomColor: '#f59e0b', backgroundColor: activeTab === 'SODG' ? '#fef3c7' : '#fff' }]}>
               <Text style={styles.kpiTitle}>SODG</Text>
               <Text style={[styles.kpiVal, { color: '#f59e0b' }]}>{counts.total_sodg || 0}</Text>
-            </View>
-            <View style={[styles.kpiBox, { borderLeftColor: '#ef4444' }]}>
-              <Text style={styles.kpiTitle}>Offline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('Non-Comm')} style={[styles.kpiBox, { borderBottomColor: '#ef4444', backgroundColor: activeTab === 'Non-Comm' ? '#fee2e2' : '#fff' }]}>
+              <Text style={styles.kpiTitle}>Non-Comm</Text>
               <Text style={[styles.kpiVal, { color: '#ef4444' }]}>{counts.total_non_active || 0}</Text>
-            </View>
-          </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SLREB')} style={[styles.kpiBox, { borderBottomColor: '#059669', backgroundColor: activeTab === 'SLREB' ? '#d1fae5' : '#fff' }]}>
+              <Text style={styles.kpiTitle}>SLREB</Text>
+              <Text style={[styles.kpiVal, { color: '#059669' }]}>{counts.total_slreb || 0}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SLRDG')} style={[styles.kpiBox, { borderBottomColor: '#d97706', backgroundColor: activeTab === 'SLRDG' ? '#fef3c7' : '#fff' }]}>
+              <Text style={styles.kpiTitle}>SLRDG</Text>
+              <Text style={[styles.kpiVal, { color: '#d97706' }]}>{counts.total_slrdg || 0}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleTabChange('SLRBT')} style={[styles.kpiBox, { borderBottomColor: '#2563eb', backgroundColor: activeTab === 'SLRBT' ? '#dbeafe' : '#fff' }]}>
+              <Text style={styles.kpiTitle}>SLRBT</Text>
+              <Text style={[styles.kpiVal, { color: '#2563eb' }]}>{counts.total_slrbt || 0}</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
-      )}
 
       <TouchableOpacity
         style={styles.smallCard}
@@ -330,22 +346,16 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         )}
       </View>
 
-      <View style={styles.tabsContainer}>
-        {['All', 'SOEB', 'SOBT', 'SODG', 'Non-Comm'].map(tab => (
-          <TouchableOpacity key={tab} style={[styles.tab, activeTab === tab && styles.tabActive]} onPress={() => handleTabChange(tab)}>
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
 
       {loading ? (
-        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />
       ) : (
         <FlatList
           data={filteredData}
           keyExtractor={(item, index) => (item.imei || item.site_id || index).toString()}
           renderItem={renderCard}
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{ padding: moderateScale(16) }}
           ListEmptyComponent={
             filteredData.length === 0 ? (
               <View style={styles.emptyContainer}>
@@ -364,34 +374,44 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  iconBtn: { padding: 8, marginLeft: 5, position: 'relative' },
-  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+  iconBtn: { padding: moderateScale(8), marginLeft: moderateScale(5), position: 'relative' },
+  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
-  kpiContainer: { paddingHorizontal: 16, paddingTop: 12, gap: 10 },
-  kpiRow: { flexDirection: 'row', gap: 10 },
-  kpiBox: { flex: 1, backgroundColor: '#fff', padding: 12, borderRadius: 10, elevation: 2, borderLeftWidth: 4, justifyContent: 'center' },
-  kpiVal: { fontSize: 20, fontWeight: '800', color: '#1e3c72' },
-  kpiTitle: { fontSize: 10, color: '#64748b', fontWeight: '700', marginBottom: 2, textTransform: 'uppercase' },
+  kpiContainer: { paddingTop: verticalScale(12) },
+  kpiScrollContainer: { paddingHorizontal: moderateScale(16), gap: 12, paddingBottom: verticalScale(6) },
+  kpiBox: { 
+    backgroundColor: '#fff', 
+    paddingVertical: verticalScale(12), 
+    paddingHorizontal: moderateScale(20), 
+    borderRadius: 12, 
+    elevation: 2, 
+    borderBottomWidth: 4, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 90
+  },
+  kpiVal: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#1e3c72' },
+  kpiTitle: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
 
   // Updated Today's Event Card (matching Run Hours Button style)
   smallCard: { 
-    marginHorizontal: 16, 
-    marginVertical: 10, 
+    marginHorizontal: moderateScale(16), 
+    marginVertical: verticalScale(10), 
     backgroundColor: '#01497C', 
     borderRadius: 8, 
-    padding: 12, 
+    padding: moderateScale(12), 
     elevation: 3, 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center',
   },
-  smallCardTitle: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  smallCardTitle: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#fff' },
 
   searchContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingHorizontal: 12,
+    marginHorizontal: moderateScale(16),
+    marginBottom: verticalScale(12),
+    paddingHorizontal: moderateScale(12),
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -400,54 +420,58 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    height: 48,
+    height: verticalScale(48),
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: '#1e293b',
     height: '100%',
-    padding: 0,
+    padding: moderateScale(0),
   },
-  emptyContainer: { alignItems: 'center', marginTop: 50 },
-  emptyText: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 12 },
-  emptySubtitle: { fontSize: 14, color: '#94a3b8', marginTop: 4 },
+  emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
+  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
 
-  tabsContainer: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 10, flexWrap: 'wrap', gap: 8 },
-  tab: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, backgroundColor: '#e2e8f0' },
+  tabsContainer: { flexDirection: 'row', paddingHorizontal: moderateScale(16), marginBottom: verticalScale(10), flexWrap: 'wrap', gap: 8 },
+  tab: { paddingVertical: verticalScale(6), paddingHorizontal: moderateScale(14), borderRadius: 20, backgroundColor: '#e2e8f0' },
   tabActive: { backgroundColor: '#1e3c72' },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  tabText: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#475569' },
   tabTextActive: { color: '#fff' },
 
-  card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, elevation: 2, borderLeftWidth: 5 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  siteName: { fontSize: 16, fontWeight: '700', color: '#1e3c72' },
-  imei: { fontSize: 12, color: '#666', marginTop: 2 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  card: { backgroundColor: '#fff', padding: moderateScale(10), borderRadius: 10, marginBottom: verticalScale(8), elevation: 2, borderLeftWidth: 4 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: verticalScale(6) },
+  siteName: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#1e3c72' },
+  imei: { fontSize: responsiveFontSize(12), color: '#666', marginTop: verticalScale(2) },
+  badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
+  badgeText: { color: '#fff', fontSize: responsiveFontSize(11), fontWeight: '700' },
 
-  row: { flexDirection: 'row', marginTop: 8 },
+  row: { flexDirection: 'row', marginTop: verticalScale(5) },
   col: { flex: 1 },
-  label: { fontSize: 11, color: '#888', textTransform: 'uppercase', marginBottom: 2 },
-  val: { fontSize: 13, color: '#333', fontWeight: '600' },
+  label: { fontSize: responsiveFontSize(11), color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  val: { fontSize: responsiveFontSize(13), color: '#333', fontWeight: '600' },
 
   // Voltage rows (full-width label : value)
-  voltDivider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 10 },
-  voltRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  voltLabel: { fontSize: 11, color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
-  voltVal: { fontSize: 13, color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
+  voltDivider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(6) },
+  voltRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(3) },
+  voltLabel: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
+  voltVal: { fontSize: responsiveFontSize(13), color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
 
   // Alarm description
-  alarmBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff7ed', borderRadius: 8, padding: 8, marginTop: 10, gap: 6, borderLeftWidth: 3, borderLeftColor: '#f97316' },
-  alarmIcon: { fontSize: 14, color: '#f97316', lineHeight: 18 },
-  alarmText: { fontSize: 12, color: '#9a3412', flex: 1, fontWeight: '600' },
+  alarmBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff7ed', borderRadius: 8, padding: moderateScale(8), marginTop: verticalScale(10), gap: 6, borderLeftWidth: 3, borderLeftColor: '#f97316' },
+  alarmIcon: { fontSize: responsiveFontSize(14), color: '#f97316', lineHeight: 18 },
+  alarmText: { fontSize: responsiveFontSize(12), color: '#9a3412', flex: 1, fontWeight: '600' },
 
   // Last Updated
-  lastUpdatedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
-  lastUpdatedVal: { fontSize: 12, color: '#475569', fontWeight: '500' },
+  lastUpdatedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: verticalScale(10), paddingTop: verticalScale(8), borderTopWidth: 1, borderTopColor: '#f0f0f0' },
+  lastUpdatedVal: { fontSize: responsiveFontSize(12), color: '#475569', fontWeight: '500' },
 
   // Run Hours button
-  runHoursBtn: { marginTop: 10, backgroundColor: '#01497C', borderRadius: 8, paddingVertical: 9, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  runHoursBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  runHoursBtn: { marginTop: verticalScale(10), backgroundColor: '#01497C', borderRadius: 8, paddingVertical: verticalScale(9), alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
+  runHoursBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(13) },
 });
+
+
+
+

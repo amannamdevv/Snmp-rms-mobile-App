@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -429,7 +430,7 @@ export default function NocAnalytics({ navigation }: any) {
                 </View>
 
                 {/* Row 2: Site info + Alarm name */}
-                <View style={[styles.cardRow, { marginTop: 8 }]}>
+                <View style={[styles.cardRow, { marginTop: verticalScale(8) }]}>
                     <View style={{ flex: 1.2 }}>
                         <Text style={styles.siteName} numberOfLines={1}>{item.site_name || '—'}</Text>
                         <Text style={styles.siteId}>Global ID: {item.global_id || item.site_id}</Text>
@@ -575,8 +576,8 @@ export default function NocAnalytics({ navigation }: any) {
 
                             {/* Legend for Top Alarms Type */}
                             {topAlarms.length > 0 && (
-                                <View style={[styles.chartCard, { marginTop: -4, paddingBottom: 8 }]}>
-                                    <Text style={[styles.chartTitle, { fontSize: 10, color: '#64748b' }]}>TOP 5 ALARM DETAILS</Text>
+                                <View style={[styles.chartCard, { marginTop: -4, paddingBottom: verticalScale(8) }]}>
+                                    <Text style={[styles.chartTitle, { fontSize: responsiveFontSize(10), color: '#64748b' }]}>TOP 5 ALARM DETAILS</Text>
                                     {topAlarms.map(([name, count], i) => (
                                         <View key={name} style={styles.legendRow}>
                                             <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
@@ -634,7 +635,7 @@ export default function NocAnalytics({ navigation }: any) {
                         </View>
                     </View>
                 }
-                contentContainerStyle={{ paddingBottom: 24 }}
+                contentContainerStyle={{ paddingBottom: verticalScale(24) }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -676,7 +677,7 @@ const chartConfigSmall = (barColor: string) => ({
     decimalPlaces: 0,
     color: (opacity = 1) => barColor + Math.round(opacity * 255).toString(16).padStart(2, '0'),
     labelColor: (opacity = 1) => `rgba(100,116,139,${opacity})`,
-    propsForLabels: { fontSize: 9 }, // Increased from 7
+    propsForLabels: { fontSize: responsiveFontSize(9) }, // Increased from 7
     barPercentage: 0.6,
 });
 
@@ -686,93 +687,93 @@ const chartConfigSmall = (barColor: string) => ({
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-    loaderText: { marginTop: 10, color: '#1e3c72', fontWeight: '600', fontSize: 14 },
+    loaderText: { marginTop: verticalScale(10), color: '#1e3c72', fontWeight: '600', fontSize: responsiveFontSize(14) },
 
     // Header
-    header: { paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    headerBtn: { padding: 6 },
+    header: { paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(14), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    headerBtn: { padding: moderateScale(6) },
     headerCenter: { alignItems: 'center' },
-    headerTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 1.2 },
-    liveRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
-    liveDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#10b981', marginRight: 5 },
-    liveText: { color: '#10b981', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+    headerTitle: { color: '#fff', fontSize: responsiveFontSize(18), fontWeight: '800', letterSpacing: 1.2 },
+    liveRow: { flexDirection: 'row', alignItems: 'center', marginTop: verticalScale(3) },
+    liveDot: { width: moderateScale(7), height: verticalScale(7), borderRadius: 3.5, backgroundColor: '#10b981', marginRight: moderateScale(5) },
+    liveText: { color: '#10b981', fontSize: responsiveFontSize(11), fontWeight: '800', letterSpacing: 0.5 },
 
     // KPI
-    kpiWrapper: { backgroundColor: '#fff', paddingVertical: 14 },
-    kpiScroll: { paddingHorizontal: 16, gap: 10 },
+    kpiWrapper: { backgroundColor: '#fff', paddingVertical: verticalScale(14) },
+    kpiScroll: { paddingHorizontal: moderateScale(16), gap: 10 },
     searchWrap: {
         flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-        marginHorizontal: 16, marginVertical: 8, borderRadius: 10,
-        paddingHorizontal: 12, paddingVertical: 10, elevation: 1, gap: 8,
+        marginHorizontal: moderateScale(16), marginVertical: verticalScale(8), borderRadius: 10,
+        paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), elevation: 1, gap: 8,
         borderWidth: 1, borderColor: '#e2e8f0',
     },
-    searchInput: { flex: 1, fontSize: 13, color: '#0f172a', fontWeight: '500', padding: 0 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#0f172a', fontWeight: '500', padding: moderateScale(0) },
     statCard: {
-        backgroundColor: '#fff', padding: 16, borderRadius: 12,
-        width: 100, alignItems: 'center', elevation: 2,
+        backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12,
+        width: moderateScale(100), alignItems: 'center', elevation: 2,
     },
-    statValue: { fontSize: 24, fontWeight: '700', lineHeight: 28 },
-    statLabel: { fontSize: 12, color: '#666', fontWeight: '500', marginTop: 4 },
+    statValue: { fontSize: responsiveFontSize(24), fontWeight: '700', lineHeight: 28 },
+    statLabel: { fontSize: responsiveFontSize(12), color: '#666', fontWeight: '500', marginTop: verticalScale(4) },
 
     // Charts
-    chartsSection: { padding: 12 },
+    chartsSection: { padding: moderateScale(12) },
     chartCard: {
-        backgroundColor: '#fff', borderRadius: 14, padding: 14,
-        marginBottom: 12, elevation: 2,
+        backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14),
+        marginBottom: verticalScale(12), elevation: 2,
         shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4,
     },
     chartRow: { flexDirection: 'row', gap: 10 },
     chartHalf: { flex: 1 },
-    chartTitle: { fontSize: 13, fontWeight: '800', color: '#1e293b', marginBottom: 10, letterSpacing: 0.5 },
-    chartTitleSm: { fontSize: 11, fontWeight: '800', color: '#1e293b', marginBottom: 8, textAlign: 'center', letterSpacing: 0.4 },
-    noDataBox: { height: 80, justifyContent: 'center', alignItems: 'center' },
-    noDataText: { color: '#94a3b8', fontSize: 13 },
+    chartTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(10), letterSpacing: 0.5 },
+    chartTitleSm: { fontSize: responsiveFontSize(11), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(8), textAlign: 'center', letterSpacing: 0.4 },
+    noDataBox: { height: verticalScale(80), justifyContent: 'center', alignItems: 'center' },
+    noDataText: { color: '#94a3b8', fontSize: responsiveFontSize(13) },
 
     // Filter Row
     filterRow: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingHorizontal: 16, paddingBottom: 12, paddingTop: 4,
+        paddingHorizontal: moderateScale(16), paddingBottom: verticalScale(12), paddingTop: verticalScale(4),
     },
-    incidentCount: { fontSize: 14, fontWeight: '800', color: '#64748b', marginRight: 8 },
+    incidentCount: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#64748b', marginRight: moderateScale(8) },
     filterBtns: { flexDirection: 'row', gap: 6 },
-    filterBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#e2e8f0' },
+    filterBtn: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 8, backgroundColor: '#e2e8f0' },
     filterBtnActive: { backgroundColor: '#3b82f6' },
-    filterBtnText: { fontSize: 12, fontWeight: '700', color: '#64748b' },
+    filterBtnText: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
     filterBtnTextActive: { color: '#fff' },
 
     // Incident Card
     incidentCard: {
-        backgroundColor: '#fff', marginHorizontal: 12, marginBottom: 10,
-        borderRadius: 14, padding: 16, elevation: 2,
+        backgroundColor: '#fff', marginHorizontal: moderateScale(12), marginBottom: verticalScale(10),
+        borderRadius: 14, padding: moderateScale(16), elevation: 2,
         shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4,
     },
     cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    eventId: { fontSize: 12, fontWeight: '700', color: '#94a3b8' },
+    eventId: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#94a3b8' },
     badgeRow: { flexDirection: 'row', gap: 6 },
-    badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1 },
-    badgeText: { fontSize: 10, fontWeight: '800' },
-    siteName: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    siteId: { fontSize: 12, color: '#64748b' },
-    alarmName: { fontSize: 13, fontWeight: '700', color: '#3b82f6', textAlign: 'right' },
+    badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6, borderWidth: 1 },
+    badgeText: { fontSize: responsiveFontSize(10), fontWeight: '800' },
+    siteName: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    siteId: { fontSize: responsiveFontSize(12), color: '#64748b' },
+    alarmName: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#3b82f6', textAlign: 'right' },
 
     // Time row
     timeRow: {
         flexDirection: 'row', backgroundColor: '#f8fafc',
-        borderRadius: 10, padding: 12, marginTop: 12,
+        borderRadius: 10, padding: moderateScale(12), marginTop: verticalScale(12),
         alignItems: 'flex-start',
     },
     timeItem: { flex: 1, alignItems: 'center' },
-    timeDivider: { width: 1, backgroundColor: '#e2e8f0', marginHorizontal: 6, alignSelf: 'stretch' },
-    timeLabel: { fontSize: 9, color: '#94a3b8', fontWeight: '800', letterSpacing: 0.4, marginBottom: 4 },
-    timeText: { fontSize: 11, color: '#1e293b', fontWeight: '600', textAlign: 'center', lineHeight: 14 },
+    timeDivider: { width: 1, backgroundColor: '#e2e8f0', marginHorizontal: moderateScale(6), alignSelf: 'stretch' },
+    timeLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', fontWeight: '800', letterSpacing: 0.4, marginBottom: verticalScale(4) },
+    timeText: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '600', textAlign: 'center', lineHeight: 14 },
 
     // Empty
-    emptyBox: { alignItems: 'center', padding: 48 },
-    emptyText: { color: '#94a3b8', fontSize: 15, marginTop: 12, fontWeight: '500' },
+    emptyBox: { alignItems: 'center', padding: moderateScale(48) },
+    emptyText: { color: '#94a3b8', fontSize: responsiveFontSize(15), marginTop: verticalScale(12), fontWeight: '500' },
 
     // Legend Styles
-    legendRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: '#f1f5f9' },
-    legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-    legendName: { flex: 1, fontSize: 12, color: '#475569', fontWeight: '500' },
-    legendCount: { fontSize: 13, fontWeight: '700', color: '#1e293b', marginLeft: 10 },
+    legendRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: verticalScale(6), borderBottomWidth: 0.5, borderBottomColor: '#f1f5f9' },
+    legendDot: { width: moderateScale(10), height: verticalScale(10), borderRadius: 5, marginRight: moderateScale(10) },
+    legendName: { flex: 1, fontSize: responsiveFontSize(12), color: '#475569', fontWeight: '500' },
+    legendCount: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b', marginLeft: moderateScale(10) },
 });

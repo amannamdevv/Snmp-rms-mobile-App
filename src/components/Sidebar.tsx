@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   Animated, Dimensions, TouchableWithoutFeedback, Modal, SafeAreaView, Easing
@@ -155,16 +155,16 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
 
               {expandedMenu === 'Live Sites Status' && (
                 <View style={styles.subMenu}>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'critical' })}>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'critical', source: 'sidebar' })}>
                     <Text style={styles.subText}>• Critical Sites</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'low' })}>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'low', source: 'sidebar' })}>
                     <Text style={styles.subText}>• Sites at Risk</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'normal' })}>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'normal', source: 'sidebar' })}>
                     <Text style={styles.subText}>• Operational Sites</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'noncomm' })}>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('SiteVitals', { range: 'noncomm', source: 'sidebar' })}>
                     <Text style={styles.subText}>• Non-Communicating</Text>
                   </TouchableOpacity>
                 </View>

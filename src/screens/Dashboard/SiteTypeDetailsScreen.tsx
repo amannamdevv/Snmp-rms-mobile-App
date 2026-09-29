@@ -209,7 +209,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
       />
 
       <View style={styles.categoryBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: moderateScale(12) }}>
           {DIST_CATEGORIES.map((cat) => {
             const isActive = activeType === cat.value;
             return (
@@ -222,7 +222,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
                   setSearchQuery('');
                 }}
               >
-                <AppIcon name={cat.icon as any} size={14} color={isActive ? '#fff' : '#64748b'} style={{ marginRight: 6 }} />
+                <AppIcon name={cat.icon as any} size={14} color={isActive ? '#fff' : '#64748b'} style={{ marginRight: moderateScale(6) }} />
                 <Text style={[styles.catLabel, isActive && styles.catLabelActive]}>
                   {cat.label}{getCountFor(cat.value)}
                 </Text>
@@ -233,7 +233,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.searchContainer}>
-        <AppIcon name="search" size={18} color="#64748b" style={{ marginRight: 8 }} />
+        <AppIcon name="search" size={18} color="#64748b" style={{ marginRight: moderateScale(8) }} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search site name or ID..."
@@ -249,13 +249,13 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
       </View>
 
       {loading && !refreshing ? (
-        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />
       ) : (
         <FlatList
           data={filteredData}
           keyExtractor={(item, index) => (item.id || item.site_global_id || index).toString()}
           renderItem={renderCard}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          contentContainerStyle={{ padding: moderateScale(16), paddingBottom: verticalScale(100) }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); fetchCounts(); }} />}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -272,23 +272,23 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
   categoryBar: { backgroundColor: '#fff', paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-  catPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f1f5f9', marginHorizontal: 5, borderWidth: 1, borderColor: '#e2e8f0' },
+  catPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: 20, backgroundColor: '#f1f5f9', marginHorizontal: moderateScale(5), borderWidth: 1, borderColor: '#e2e8f0' },
   catPillActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
   catLabel: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
   catLabelActive: { color: '#fff' },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: 16, marginTop: verticalScale(12), paddingHorizontal: 12, borderRadius: 12, height: 48, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-  searchInput: { flex: 1, fontSize: 14, color: '#1e293b', padding: 0, fontWeight: '500' },
-  card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: moderateScale(16), marginTop: verticalScale(12), paddingHorizontal: moderateScale(12), borderRadius: 12, height: verticalScale(48), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', padding: moderateScale(0), fontWeight: '500' },
+  card: { backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, marginBottom: verticalScale(12), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(4) },
   siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72', flex: 1 },
-  badge: { backgroundColor: '#e2e8f0', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 10, fontWeight: '700', color: '#1e3c72' },
-  subIdText: { fontSize: 12, color: '#64748b', marginBottom: 8 },
-  divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 10 },
+  badge: { backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12 },
+  badgeText: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#1e3c72' },
+  subIdText: { fontSize: responsiveFontSize(12), color: '#64748b', marginBottom: verticalScale(8) },
+  divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(10) },
   infoRow: { flexDirection: 'row' },
   infoCol: { flex: 1 },
-  infoLabel: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 2 },
-  infoValue: { fontSize: 13, fontWeight: '700', color: '#334155' },
-  empty: { alignItems: 'center', marginTop: 50 },
-  emptyText: { color: '#94a3b8', marginTop: 12, fontSize: 16, fontWeight: '600' }
+  infoLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoValue: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#334155' },
+  empty: { alignItems: 'center', marginTop: verticalScale(50) },
+  emptyText: { color: '#94a3b8', marginTop: verticalScale(12), fontSize: responsiveFontSize(16), fontWeight: '600' }
 });

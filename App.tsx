@@ -1,3 +1,4 @@
+import { FilterProvider } from './src/context/FilterContext';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
@@ -76,8 +77,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+    <FilterProvider>
+      <SafeAreaProvider>
+        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="Splash"
@@ -136,5 +138,6 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+    </FilterProvider>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+﻿import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, ScrollView, Alert, TextInput
@@ -6,6 +7,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -53,12 +56,19 @@ const convertToCSV = (objArray: any[]) => {
 export default function LiveAlarmsScreen({ route, navigation }: Props) {
     const { severity: initialSeverity } = (route.params as any) || {};
 
-    const [alarms, setAlarms] = useState<any[]>([]);
+  const { globalFilters, setGlobalFilters, hasActiveFilters: gHasFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
+
+  const [alarms, setAlarms] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [exporting, setExporting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [severityFilter, setSeverityFilter] = useState<string>(initialSeverity || 'all');
-    const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+    const [activeFilters, setActiveFilters] = useState<Record<string, any>>(globalFilters)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -69,14 +79,9 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
         async (showLoading = false) => {
             if (showLoading && !refreshing) setLoading(true);
             try {
-                const [smpsRes, rmsRes] = await Promise.all([
-                    api.getSmpsAlarms(activeFilters).catch(() => []),
-                    api.getRmsAlarms(activeFilters).catch(() => []),
-                ]);
-
-                // ── Merge, Normalise & Dedup via Shared Utility ──
-                const merged = normaliseAndMerge(smpsRes, rmsRes);
-                setAlarms(merged);
+                const res = await api.getLiveAlarmsSnmp(activeFilters);
+                const data = res?.data || res || [];
+                setAlarms(data);
             } catch (e) {
                 console.error('Alarm Fetch Error:', e);
             } finally {
@@ -180,39 +185,37 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
     // ─── Render card ──────────────────────────
     // ─── Render card ──────────────────────────
     const renderAlarmCard = ({ item }: { item: any }) => {
-        const status = getAlarmStatus(item);
-        const severity = getSeverity(item);
+        const status    = getAlarmStatus(item);
         const alarmName = getAlarmName(item);
-        const globalId = item.global_id || item.globel_id || item.site_id || item.imei || 'N/A';
+        const globalId  = item.global_id || item.globel_id || item.site_id || 'N/A';
         const siteStatus = item.site_running_status || 'N/A';
-        const alarmType = item._alarmSource === 'tpms' ? 'RMS' : (item.alarm_type || item.type || 'SMPS');
-        const deviceMake = item.device_make || item.make || 'N/A';
+        const isOpen     = status === 'Open';
 
         const startVolt = item.start_volt != null ? `${parseFloat(item.start_volt).toFixed(2)}V` : 'N/A';
-        const endVolt = item.end_volt != null ? `${parseFloat(item.end_volt).toFixed(2)}V` : 'N/A';
-
-        const severityColors: Record<string, string> = {
-            Fire: '#ef4444',
-            NightDoor: '#8b5cf6',
-            Major: '#f59e0b',
-            Minor: '#eab308',
-        };
-        const borderColor = severityColors[severity] || '#94a3b8';
+        const endVolt   = item.end_volt   != null ? `${parseFloat(item.end_volt).toFixed(2)}V`   : 'N/A';
 
         const formatDate = (ts: any) => {
-            if (!ts || ts === '—' || ts === 'None') return '—';
+            if (!ts || ts === '—' || ts === 'None' || ts === null) return '—';
             const d = new Date(ts);
-            // If it's a valid date, format it nicely
             if (!isNaN(d.getTime())) {
-                return d.toLocaleString([], {
-                    hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', year: 'numeric'
+                return d.toLocaleString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true,
                 });
             }
-            // If it's already a string (like "4/11/2026 05:21 PM"), return it as is
             return String(ts);
         };
 
-        const siteStatusColor = siteStatus === 'SOEB' ? '#10b981' : siteStatus === 'SODG' ? '#f59e0b' : siteStatus === 'SOBT' ? '#ef4444' : '#64748b';
+        const siteStatusColors: Record<string, { bg: string; text: string }> = {
+            SOEB:  { bg: '#dcfce7', text: '#16a34a' },
+            SODG:  { bg: '#fef9c3', text: '#ca8a04' },
+            SOBT:  { bg: '#fee2e2', text: '#dc2626' },
+            SLREB: { bg: '#dbeafe', text: '#2563eb' },
+        };
+        const ssColor = siteStatusColors[siteStatus] || { bg: '#f1f5f9', text: '#64748b' };
+
+        // border color: open=blue accent, closed=green
+        const borderColor = isOpen ? '#1e3c72' : '#22c55e';
 
         return (
             <TouchableOpacity
@@ -220,67 +223,54 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
                 onPress={() => navigation.navigate('SiteDetails', { imei: item.imei, siteId: item.site_id })}
                 activeOpacity={0.85}
             >
-                {/* Header: Site & Global ID */}
+                {/* ── Header: Site Name + Status badge ── */}
                 <View style={styles.cardHeader}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.siteName}>{item.site_name || 'Unnamed Site'}</Text>
+                    <View style={{ flex: 1, marginRight: moderateScale(10) }}>
+                        <Text style={styles.siteName} numberOfLines={1}>{item.site_name || 'Unnamed Site'}</Text>
                         <Text style={styles.siteId}>Global ID: {globalId}</Text>
                     </View>
-                    <View style={[styles.badge, { backgroundColor: status === 'Open' ? '#fee2e2' : '#dcfce7' }]}>
-                        <Text style={[styles.badgeText, { color: status === 'Open' ? '#ef4444' : '#22c55e' }]}>
-                            {status === 'Open' ? 'ACTIVE' : 'CLOSED'}
+                    <View style={[styles.badge, {
+                        backgroundColor: isOpen ? '#eff6ff' : '#dcfce7',
+                        borderWidth: 1,
+                        borderColor: isOpen ? '#93c5fd' : '#86efac',
+                    }]}>
+                        <Text style={[styles.badgeText, { color: isOpen ? '#1d4ed8' : '#15803d' }]}>
+                            {isOpen ? 'ACTIVE' : 'CLOSED'}
                         </Text>
                     </View>
                 </View>
 
-                {/* Alarm Name & Severity */}
-                <View style={styles.alarmTitleRow}>
-                    <Text style={styles.alarmDesc} numberOfLines={2}>{alarmName}</Text>
-                    <Text style={[styles.sevText, { color: borderColor }]}>{severity.toUpperCase()}</Text>
-                </View>
+                {/* ── Alarm Name ── */}
+                <Text style={styles.alarmDesc} numberOfLines={3}>{alarmName}</Text>
 
-                {/* Grid-like Data Rows */}
+                {/* ── Meta grid ── */}
                 <View style={styles.metadataContainer}>
-                    {/* Row 1: Site Status, Active Time, Device Make */}
+                    {/* Row 1: Site Status | Start Volt | End Volt */}
                     <View style={styles.metaRow}>
                         <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>Site Status</Text>
-                            <Text style={[styles.metaValue, { color: siteStatusColor }]}>{siteStatus}</Text>
+                            <Text style={styles.metaLabel}>SITE STATUS</Text>
+                            <View style={[styles.siteStatusBadge, { backgroundColor: ssColor.bg }]}>
+                                <Text style={[styles.siteStatusText, { color: ssColor.text }]}>{siteStatus}</Text>
+                            </View>
                         </View>
                         <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>Active Time</Text>
-                            <Text style={styles.metaValue}>{item.active_time_formatted || '—'}</Text>
-                        </View>
-                        <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>Device Make</Text>
-                            <Text style={styles.metaValue}>{deviceMake}</Text>
-                        </View>
-                    </View>
-
-                    {/* Row 2: Voltages & Type */}
-                    <View style={styles.metaRow}>
-                        <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>Start Volt</Text>
+                            <Text style={styles.metaLabel}>START VOLT</Text>
                             <Text style={[styles.metaValue, { color: '#1e3c72' }]}>{startVolt}</Text>
                         </View>
                         <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>End Volt</Text>
-                            <Text style={[styles.metaValue, { color: '#64748b' }]}>{endVolt}</Text>
-                        </View>
-                        <View style={styles.metaCol}>
-                            <Text style={styles.metaLabel}>Alarm Type</Text>
-                            <Text style={styles.metaValue}>{alarmType}</Text>
+                            <Text style={styles.metaLabel}>END VOLT</Text>
+                            <Text style={styles.metaValue}>{endVolt}</Text>
                         </View>
                     </View>
 
-                    {/* Row 3: Timestamps */}
-                    <View style={[styles.metaRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                    {/* Row 2: Start Time | End Time */}
+                    <View style={[styles.metaRow, { borderBottomWidth: 0, paddingBottom: verticalScale(0) }]}>
                         <View style={[styles.metaCol, { flex: 2 }]}>
-                            <Text style={styles.metaLabel}>Start Time</Text>
-                            <Text style={styles.metaValue}>{formatDate(item.start_time_display || item.start_time || item.create_dt || item.created_dt)}</Text>
+                            <Text style={styles.metaLabel}>START TIME</Text>
+                            <Text style={styles.metaValue}>{formatDate(item.start_time_display || item.start_time || item.create_dt)}</Text>
                         </View>
                         <View style={[styles.metaCol, { flex: 2 }]}>
-                            <Text style={styles.metaLabel}>End Time</Text>
+                            <Text style={styles.metaLabel}>END TIME</Text>
                             <Text style={styles.metaValue}>{formatDate(item.end_time_display || item.end_time)}</Text>
                         </View>
                     </View>
@@ -289,7 +279,6 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
         );
     };
 
-    // ─── KPI pill ─────────────────────────────
     const KpiPill = ({
         label,
         count,
@@ -327,12 +316,13 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
                         {
                             icon: 'filter',
                             onPress: () => setFilterModalVisible(true),
-                            badge: Object.keys(activeFilters).length > 0,
+                            badge: gFilterCount > 0,
                         },
                     ]}
                 />
 
-                <FilterModal
+                <GlobalFilterBanner />
+      <FilterModal
                     visible={filterModalVisible}
                     onClose={() => setFilterModalVisible(false)}
                     onApply={f => {
@@ -355,10 +345,6 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
                             { key: 'all', label: 'All Alarms' },
                             { key: 'Open', label: 'Active' },
                             { key: 'Closed', label: 'Closed' },
-                            { key: 'Major', label: 'Major' },
-                            { key: 'Minor', label: 'Minor' },
-                            { key: 'Fire', label: 'Fire & Smoke' },
-                            { key: 'NightDoor', label: 'Night Door' },
                         ].map(f => (
                             <TouchableOpacity
                                 key={f.key}
@@ -409,7 +395,7 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
                         data={filteredAlarms}
                         keyExtractor={(_, index) => index.toString()}
                         renderItem={renderAlarmCard}
-                        contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                        contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                         refreshControl={
                             <RefreshControl
                                 refreshing={refreshing}
@@ -441,54 +427,57 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
 // Styles
 // ─────────────────────────────────────────────
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#c5d4ee' },
+    container: { flex: 1, backgroundColor: '#eef2f7' },
 
+    // KPI strip
     kpiStrip: {
         flexDirection: 'row',
-        paddingHorizontal: 10,
-        paddingVertical: 8,
+        paddingHorizontal: moderateScale(12),
+        paddingVertical: verticalScale(10),
         backgroundColor: '#fff',
-        gap: 6,
+        gap: 8,
         flexWrap: 'wrap',
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: '#e2e8f0',
     },
     kpiPill: {
         alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 10,
+        paddingHorizontal: moderateScale(14),
+        paddingVertical: verticalScale(8),
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: '#e2e8f0',
         backgroundColor: '#f8fafc',
-        minWidth: 52,
+        minWidth: 60,
     },
-    kpiCount: { fontSize: 18, fontWeight: '800' },
-    kpiLabel: { fontSize: 9, color: '#64748b', fontWeight: '600', marginTop: 1 },
+    kpiCount: { fontSize: responsiveFontSize(20), fontWeight: '800' },
+    kpiLabel: { fontSize: responsiveFontSize(10), color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) },
 
+    // Filter
     filterWrapper: {
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: '#e2e8f0',
     },
-    filterBar: { padding: 10, gap: 8 },
+    filterBar: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8, flexGrow: 1 },
     filterBtn: {
-        paddingHorizontal: 14,
-        paddingVertical: 7,
+        paddingHorizontal: moderateScale(16),
+        paddingVertical: verticalScale(8),
         borderRadius: 20,
         backgroundColor: '#f1f5f9',
         borderWidth: 1,
         borderColor: '#e2e8f0',
     },
     filterBtnActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-    filterBtnText: { fontSize: 12, fontWeight: '700', color: '#475569' },
+    filterBtnText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#475569' },
 
+    // Search
     searchContainer: {
         backgroundColor: '#fff',
-        marginHorizontal: 14,
-        marginTop: 10,
-        paddingHorizontal: 12,
-        borderRadius: 12,
+        marginHorizontal: moderateScale(14),
+        marginTop: verticalScale(10),
+        paddingHorizontal: moderateScale(14),
+        borderRadius: 14,
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 2,
@@ -496,43 +485,67 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.08,
         shadowRadius: 2,
-        height: 46,
+        height: verticalScale(48),
     },
-    searchIcon: { marginRight: 8 },
-    searchInput: { flex: 1, fontSize: 14, color: '#1e293b', height: '100%', padding: 0 },
+    searchIcon: { marginRight: moderateScale(10) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', height: '100%', padding: moderateScale(0) },
 
+    // Card
     card: {
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 10,
+        borderRadius: 14,
+        padding: moderateScale(16),
+        marginBottom: verticalScale(12),
         borderLeftWidth: 5,
         elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: verticalScale(2) },
         shadowOpacity: 0.08,
         shadowRadius: 4,
     },
-    cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-    siteName: { fontSize: 15, fontWeight: '800', color: '#1e293b' },
-    siteId: { fontSize: 11, color: '#64748b', marginTop: 1 },
-    badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-    badgeText: { fontSize: 10, fontWeight: '900' },
+    cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8) },
+    siteName: { fontSize: responsiveFontSize(13), fontWeight: '600', color: '#64748b' },
+    siteId: { fontSize: responsiveFontSize(16), color: '#1e293b', marginTop: verticalScale(2), fontWeight: '800' },
+    badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8 },
+    badgeText: { fontSize: responsiveFontSize(11), fontWeight: '800', letterSpacing: 0.3 },
 
-    alarmTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-    alarmDesc: { flex: 1, fontSize: 13, fontWeight: '800', color: '#1e293b', lineHeight: 18, marginRight: 10 },
-    sevText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+    alarmDesc: { fontSize: responsiveFontSize(14), fontWeight: '500', color: '#475569', lineHeight: 20, marginBottom: verticalScale(12) },
 
-    metadataContainer: { backgroundColor: '#f8fafc', borderRadius: 8, padding: 10, gap: 10 },
-    metaRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 8 },
-    metaCol: { flex: 1, gap: 2 },
-    metaLabel: { fontSize: 9, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
-    metaValue: { fontSize: 11, color: '#334155', fontWeight: '700' },
+    // Meta grid
+    metadataContainer: {
+        backgroundColor: '#f8fafc',
+        borderRadius: 10,
+        padding: moderateScale(12),
+        gap: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    metaRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        paddingBottom: verticalScale(10),
+    },
+    metaCol: { flex: 1, gap: 4 },
+    metaLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
+    metaValue: { fontSize: responsiveFontSize(12), color: '#334155', fontWeight: '700' },
 
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 80 },
-    loadingText: { marginTop: 12, fontSize: 14, color: '#64748b' },
+    siteStatusBadge: {
+        paddingHorizontal: moderateScale(8),
+        paddingVertical: verticalScale(3),
+        borderRadius: 6,
+        alignSelf: 'flex-start',
+        marginTop: verticalScale(2),
+    },
+    siteStatusText: { fontSize: responsiveFontSize(12), fontWeight: '800' },
 
-    emptyContainer: { alignItems: 'center', marginTop: 80 },
-    emptyText: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 12 },
-    emptySubtitle: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
+    // Utils
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: verticalScale(80) },
+    loadingText: { marginTop: verticalScale(12), fontSize: responsiveFontSize(15), color: '#64748b' },
+
+    emptyContainer: { alignItems: 'center', marginTop: verticalScale(80) },
+    emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+    emptySubtitle: { fontSize: responsiveFontSize(13), color: '#94a3b8', marginTop: verticalScale(4) },
 });
+
+

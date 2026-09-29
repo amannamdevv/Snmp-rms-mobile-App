@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, FlatList, RefreshControl, TextInput, Platform
@@ -278,28 +279,28 @@ export default function UptimeSiteDetails({ route, navigation }: any) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
-    statsContainer: { backgroundColor: '#f1f5f9', paddingVertical: 12 },
-    statsScroll: { paddingHorizontal: 12 },
+    statsContainer: { backgroundColor: '#f1f5f9', paddingVertical: verticalScale(12) },
+    statsScroll: { paddingHorizontal: moderateScale(12) },
     statPill: { 
         backgroundColor: '#fff', 
-        paddingVertical: 12, 
-        paddingHorizontal: 16, 
+        paddingVertical: verticalScale(12), 
+        paddingHorizontal: moderateScale(16), 
         borderRadius: 12, 
-        marginHorizontal: 6,
+        marginHorizontal: moderateScale(6),
         minWidth: 120,
         borderTopWidth: 4,
         elevation: 3,
         alignItems: 'center'
     },
-    statVal: { fontSize: 18, fontWeight: '800', color: '#1e3c72' },
-    statLab: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', marginTop: 3, fontWeight: '700' },
+    statVal: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e3c72' },
+    statLab: { fontSize: responsiveFontSize(10), color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(3), fontWeight: '700' },
     
     // NEW Filter Styles
-    filterSection: { backgroundColor: '#fff', padding: 16, marginHorizontal: 16, marginTop: 12, borderRadius: 16, elevation: 4 },
-    datePickerRow: { flexDirection: 'row', gap: 12, marginBottom: 15 },
-    dateInput: { flex: 1, backgroundColor: '#f8fafc', padding: 10, borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' },
-    dateLabel: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 3, fontWeight: '700' },
-    dateValue: { fontSize: 14, color: '#1e3c72', fontWeight: '800' },
+    filterSection: { backgroundColor: '#fff', padding: moderateScale(16), marginHorizontal: moderateScale(16), marginTop: verticalScale(12), borderRadius: 16, elevation: 4 },
+    datePickerRow: { flexDirection: 'row', gap: 12, marginBottom: verticalScale(15) },
+    dateInput: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' },
+    dateLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(3), fontWeight: '700' },
+    dateValue: { fontSize: responsiveFontSize(14), color: '#1e3c72', fontWeight: '800' },
     actionButtons: { flexDirection: 'row', gap: 10 },
     applyBtn: { 
         flex: 2, 
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        paddingVertical: 10, 
+        paddingVertical: verticalScale(10), 
         borderRadius: 8,
         gap: 6
     },
@@ -317,49 +318,49 @@ const styles = StyleSheet.create({
         flexDirection: 'row', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        paddingVertical: 10, 
+        paddingVertical: verticalScale(10), 
         borderRadius: 8,
         gap: 6
     },
-    btnText: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
+    btnText: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: 'bold' },
 
     searchContainer: { 
         flexDirection: 'row', 
         alignItems: 'center', 
         backgroundColor: '#fff', 
-        margin: 15, 
-        paddingHorizontal: 15, 
+        margin: moderateScale(15), 
+        paddingHorizontal: moderateScale(15), 
         borderRadius: 12,
-        height: 48,
+        height: verticalScale(48),
         borderWidth: 1,
         borderColor: '#e2e8f0',
         elevation: 2
     },
-    searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: '#334155' },
-    listContent: { padding: 15, paddingTop: 0, paddingBottom: 30 },
-    siteCard: { backgroundColor: '#fff', borderRadius: 16, padding: 15, marginBottom: 15, elevation: 3 },
+    searchInput: { flex: 1, marginLeft: moderateScale(10), fontSize: responsiveFontSize(14), color: '#334155' },
+    listContent: { padding: moderateScale(15), paddingTop: verticalScale(0), paddingBottom: verticalScale(30) },
+    siteCard: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(15), marginBottom: verticalScale(15), elevation: 3 },
     cardTop: { flexDirection: 'row', alignItems: 'center' },
     uptimeRing: { 
-        width: 65, 
-        height: 65, 
+        width: moderateScale(65), 
+        height: verticalScale(65), 
         borderRadius: 33, 
         borderWidth: 4, 
         alignItems: 'center', 
         justifyContent: 'center',
-        marginRight: 15
+        marginRight: moderateScale(15)
     },
-    uptimePercent: { fontSize: 14, fontWeight: 'bold' },
+    uptimePercent: { fontSize: responsiveFontSize(14), fontWeight: 'bold' },
     siteInfo: { flex: 1 },
-    siteName: { fontSize: 14, fontWeight: 'bold', color: '#1e293b' },
-    siteId: { fontSize: 11, color: '#64748b', marginTop: 3 },
-    slaBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginTop: 5 },
-    slaText: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 12 },
+    siteName: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e293b' },
+    siteId: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(3) },
+    slaBadge: { alignSelf: 'flex-start', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 10, marginTop: verticalScale(5) },
+    slaText: { color: '#fff', fontSize: responsiveFontSize(9), fontWeight: 'bold' },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(12) },
     metricsRow: { flexDirection: 'row', justifyContent: 'space-between' },
     metric: { flex: 1, alignItems: 'center' },
-    metricVal: { fontSize: 14, fontWeight: 'bold', color: '#1e3c72' },
-    metricLab: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
-    center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 50 },
-    loadingText: { marginTop: 10, color: '#64748b', fontSize: 14 },
-    emptyText: { marginTop: 10, color: '#94a3b8', textAlign: 'center' }
+    metricVal: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e3c72' },
+    metricLab: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2) },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: verticalScale(50) },
+    loadingText: { marginTop: verticalScale(10), color: '#64748b', fontSize: responsiveFontSize(14) },
+    emptyText: { marginTop: verticalScale(10), color: '#94a3b8', textAlign: 'center' }
 });

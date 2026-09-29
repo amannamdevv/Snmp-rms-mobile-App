@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -63,9 +64,9 @@ function KpiCard({ label, value, color }: { label: string; value: any; color: st
     );
 }
 const KS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: 3 },
-    val: { fontSize: 22, fontWeight: '800', marginBottom: 4 },
-    lab: { fontSize: 9, color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: moderateScale(3) },
+    val: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
+    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // ─── Equipment Card ───────────────────────────────────────────
@@ -106,18 +107,18 @@ function EquipmentCard({ item }: { item: any }) {
     );
 }
 const EC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
     row: { flexDirection: 'row', alignItems: 'flex-start' },
-    site: { fontSize: 13, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    type: { fontSize: 10, color: '#64748b' },
-    badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, gap: 5 },
-    dot: { width: 7, height: 7, borderRadius: 4 },
-    badgeTxt: { fontSize: 10, fontWeight: '700' },
-    detail: { marginTop: 10 },
-    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 10 },
-    row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rl: { fontSize: 11, color: '#64748b', fontWeight: '600' },
-    rv: { fontSize: 11, color: '#1e293b', fontWeight: '700' },
+    site: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    type: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 8, borderWidth: 1, gap: 5 },
+    dot: { width: moderateScale(7), height: verticalScale(7), borderRadius: 4 },
+    badgeTxt: { fontSize: responsiveFontSize(10), fontWeight: '700' },
+    detail: { marginTop: verticalScale(10) },
+    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
+    row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    rl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+    rv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700' },
 });
 
 // ─── Ticket Card ──────────────────────────────────────────────
@@ -165,18 +166,18 @@ function TicketCard({ item }: { item: any }) {
     );
 }
 const TC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
     row: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    code: { fontSize: 12, fontWeight: '800', color: '#01497c', marginBottom: 2 },
-    sub: { fontSize: 10, color: '#64748b' },
-    date: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
-    badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: 9, fontWeight: '800' },
-    detail: { marginTop: 10 },
-    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 10 },
-    row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rl: { fontSize: 11, color: '#64748b', fontWeight: '600' },
-    rv: { fontSize: 11, color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
+    code: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#01497c', marginBottom: verticalScale(2) },
+    sub: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    date: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2) },
+    badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
+    badgeTxt: { fontSize: responsiveFontSize(9), fontWeight: '800' },
+    detail: { marginTop: verticalScale(10) },
+    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
+    row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    rl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+    rv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
 });
 
 // ─── Tab definitions per entry point ──────────────────────────
@@ -221,7 +222,7 @@ function RaiseForm({ onSubmit, submitting }: {
                 placeholder="Enter Site ID or Name" placeholderTextColor="#94a3b8" />
 
             <Text style={RF.label}>Issue Category *</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(12) }}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                     {CATEGORIES.map(c => (
                         <TouchableOpacity key={c}
@@ -234,7 +235,7 @@ function RaiseForm({ onSubmit, submitting }: {
             </ScrollView>
 
             <Text style={RF.label}>Issue Description *</Text>
-            <TextInput style={[RF.input, { height: 90, textAlignVertical: 'top' }]}
+            <TextInput style={[RF.input, { height: verticalScale(90), textAlignVertical: 'top' }]}
                 value={form.description}
                 onChangeText={v => setForm(f => ({ ...f, description: v }))}
                 placeholder="Describe the issue in detail"
@@ -242,7 +243,7 @@ function RaiseForm({ onSubmit, submitting }: {
                 multiline numberOfLines={4} />
 
             <Text style={RF.label}>Priority *</Text>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: verticalScale(14) }}>
                 {PRIORITIES.map(p => {
                     const col = priorityColor(p);
                     const active = form.priority === p;
@@ -274,37 +275,37 @@ function RaiseForm({ onSubmit, submitting }: {
     );
 }
 const RF = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2 },
-    title: { fontSize: 14, fontWeight: '800', color: '#0f172a', marginBottom: 14 },
-    label: { fontSize: 9, fontWeight: '800', color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: 10 },
-    chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7', alignItems: 'center' },
+    card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
+    title: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(5), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(4) },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(10) },
+    chip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7', alignItems: 'center' },
     chipActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    chipTxt: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    chipTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     chipTxtActive: { color: '#fff' },
-    fileBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1.5, borderColor: '#d0e4f7', borderStyle: 'dashed', marginBottom: 14 },
-    fileBtnTxt: { fontSize: 12, color: '#01497c', fontWeight: '600', flex: 1 },
-    submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14 },
-    submitTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
+    fileBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(12), borderWidth: 1.5, borderColor: '#d0e4f7', borderStyle: 'dashed', marginBottom: verticalScale(14) },
+    fileBtnTxt: { fontSize: responsiveFontSize(12), color: '#01497c', fontWeight: '600', flex: 1 },
+    submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: verticalScale(14) },
+    submitTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
 });
 
 // ─── My Tickets Table Component ──────────────────────────────
 function MyTicketsTable({ filteredMy, onExport, exporting }: { filteredMy: any[], onExport: () => void, exporting: boolean }) {
     return (
         <View style={styles.myTicketsCard}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(12) }}>
                 <Text style={styles.secHead}>My Tickets</Text>
             </View>
             <View style={styles.tblHeader}>
                 {['TT No', 'Site ID', 'Category', 'Status', 'Raised On'].map((h, i) => (
-                    <Text key={h} style={[styles.th, i === 0 ? { width: 44 } : { flex: 1 }]}>{h}</Text>
+                    <Text key={h} style={[styles.th, i === 0 ? { width: moderateScale(44) } : { flex: 1 }]}>{h}</Text>
                 ))}
             </View>
             {filteredMy.length === 0
                 ? <Text style={styles.noData}>No tickets found</Text>
                 : filteredMy.map((t: any, i: number) => (
                     <View key={t.id || i} style={[styles.tblRow, i % 2 === 0 && { backgroundColor: '#f8fafc' }]}>
-                        <Text style={[styles.td, { width: 44, fontWeight: '800', color: '#01497c' }]}>#{t.id}</Text>
+                        <Text style={[styles.td, { width: moderateScale(44), fontWeight: '800', color: '#01497c' }]}>#{t.id}</Text>
                         <Text style={[styles.td, { flex: 1 }]} numberOfLines={1}>{t.site_id}</Text>
                         <Text style={[styles.td, { flex: 1 }]} numberOfLines={1}>{t.issue_category}</Text>
                         <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -353,10 +354,10 @@ function MaintenanceTopTabs({ activeKey, onTabPress }: {
 
 const QS = StyleSheet.create({
     bar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#cbd5e1' },
-    scroll: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
-    btn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
+    scroll: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8 },
+    btn: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     btnActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    txt: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    txt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     txtActive: { color: '#fff' },
 });
 
@@ -569,12 +570,12 @@ export default function TTToolScreen({ navigation, route }: any) {
                     ══════════════════════════════════════════════ */}
                     {activeTab === 'raise' && (
                         <ScrollView
-                            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+                            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
                             showsVerticalScrollIndicator={false}
                             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />}
                         >
                             {/* KPI counts */}
-                            <View style={{ flexDirection: 'row', marginBottom: 14 }}>
+                            <View style={{ flexDirection: 'row', marginBottom: verticalScale(14) }}>
                                 <KpiCard label="Open Tickets" value={counts.open} color="#ef4444" />
                                 <KpiCard label="In Progress" value={counts.progress} color="#f59e0b" />
                                 <KpiCard label="Closed" value={counts.closed} color="#10b981" />
@@ -603,12 +604,12 @@ export default function TTToolScreen({ navigation, route }: any) {
                             </View>
                             <ScrollView
                                 style={{ flex: 1 }}
-                                contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                                contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                                 showsVerticalScrollIndicator={false}
                                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />}
                             >
                                 {/* KPIs */}
-                                <View style={{ flexDirection: 'row', marginBottom: 14 }}>
+                                <View style={{ flexDirection: 'row', marginBottom: verticalScale(14) }}>
                                     <KpiCard label="Open" value={ticketMeta.total_open} color="#ef4444" />
                                     <KpiCard label="In Progress" value={ticketMeta.total_in_progress} color="#f59e0b" />
                                     <KpiCard label="Resolved" value={ticketMeta.resolved_this_month} color="#10b981" />
@@ -616,14 +617,14 @@ export default function TTToolScreen({ navigation, route }: any) {
                                 </View>
 
                                 {/* Open Tickets from tool API */}
-                                <Text style={[styles.secHead, { marginTop: 8 }]}>Open Tickets ({filteredOpen.length})</Text>
+                                <Text style={[styles.secHead, { marginTop: verticalScale(8) }]}>Open Tickets ({filteredOpen.length})</Text>
                                 {filteredOpen.length === 0
                                     ? <EmptyState msg="No open tickets" />
                                     : filteredOpen.map((t: any, i: number) => <TicketCard key={t.ticket_code || i} item={t} />)
                                 }
 
                                 {/* Closed Tickets */}
-                                <Text style={[styles.secHead, { marginTop: 14 }]}>Recently Closed ({filteredClosed.length})</Text>
+                                <Text style={[styles.secHead, { marginTop: verticalScale(14) }]}>Recently Closed ({filteredClosed.length})</Text>
                                 {filteredClosed.length === 0
                                     ? <EmptyState msg="No closed tickets" />
                                     : filteredClosed.map((t: any, i: number) => <TicketCard key={`c_${t.ticket_code || i}`} item={t} />)
@@ -657,7 +658,7 @@ export default function TTToolScreen({ navigation, route }: any) {
                             <FlatList
                                 data={filteredEq}
                                 keyExtractor={(item, i) => `${item.site_id}_${i}`}
-                                contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                                contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                                 showsVerticalScrollIndicator={false}
                                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />}
                                 ListHeaderComponent={<Text style={styles.secCount}>{filteredEq.length} RECORDS — {eqTab.toUpperCase()}</Text>}
@@ -683,12 +684,12 @@ export default function TTToolScreen({ navigation, route }: any) {
                             <FlatList
                                 data={filteredRepairs}
                                 keyExtractor={(item, i) => `r_${item.ticket_code || i}`}
-                                contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                                contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                                 showsVerticalScrollIndicator={false}
                                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />}
                                 ListHeaderComponent={
                                     <View>
-                                        <View style={{ flexDirection: 'row', marginBottom: 14 }}>
+                                        <View style={{ flexDirection: 'row', marginBottom: verticalScale(14) }}>
                                             <KpiCard label="Total Open" value={repairMeta.total_open} color="#ef4444" />
                                             <KpiCard label="In Progress" value={repairMeta.total_in_progress} color="#f59e0b" />
                                             <KpiCard label="Resolved" value={repairMeta.resolved_this_month} color="#10b981" />
@@ -723,9 +724,9 @@ export default function TTToolScreen({ navigation, route }: any) {
 
 function EmptyState({ msg }: { msg: string }) {
     return (
-        <View style={{ alignItems: 'center', paddingTop: 30 }}>
+        <View style={{ alignItems: 'center', paddingTop: verticalScale(30) }}>
             <AppIcon name="inbox" size={32} color="#cbd5e1" />
-            <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 10, fontWeight: '500' }}>{msg}</Text>
+            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(12), marginTop: verticalScale(10), fontWeight: '500' }}>{msg}</Text>
         </View>
     );
 }
@@ -733,24 +734,24 @@ function EmptyState({ msg }: { msg: string }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#01497c', fontWeight: '600', fontSize: 13 },
-    eqTabBar: { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 8, gap: 8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-    eqTabBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
+    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    eqTabBar: { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), gap: 8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
+    eqTabBtn: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     eqTabBtnActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    eqTabTxt: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    eqTabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     eqTabTxtActive: { color: '#fff' },
-    searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 8, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, elevation: 1, gap: 8 },
-    searchInput: { flex: 1, fontSize: 12, color: '#0f172a', fontWeight: '500' },
-    secHead: { fontSize: 12, fontWeight: '800', color: '#0f172a', marginBottom: 10 },
-    secCount: { fontSize: 10, fontWeight: '800', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-    myTicketsCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 14, elevation: 2 },
-    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-    exportTxt: { color: '#fff', fontSize: 10, fontWeight: '800' },
-    tblHeader: { flexDirection: 'row', backgroundColor: '#01497c', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 4 },
-    th: { fontSize: 9, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
-    tblRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', borderRadius: 4 },
-    td: { fontSize: 10, color: '#334155', fontWeight: '500' },
-    sBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, borderWidth: 1, alignSelf: 'flex-start' },
-    sTxt: { fontSize: 8, fontWeight: '800' },
-    noData: { color: '#94a3b8', textAlign: 'center', padding: 16, fontSize: 12 },
+    searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: moderateScale(12), marginVertical: verticalScale(8), borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1, gap: 8 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
+    secHead: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(10) },
+    secCount: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
+    myTicketsCard: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(14), marginBottom: verticalScale(14), elevation: 2 },
+    exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5) },
+    exportTxt: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '800' },
+    tblHeader: { flexDirection: 'row', backgroundColor: '#01497c', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), marginBottom: verticalScale(4) },
+    th: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+    tblRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', borderRadius: 4 },
+    td: { fontSize: responsiveFontSize(10), color: '#334155', fontWeight: '500' },
+    sBadge: { paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 10, borderWidth: 1, alignSelf: 'flex-start' },
+    sTxt: { fontSize: responsiveFontSize(8), fontWeight: '800' },
+    noData: { color: '#94a3b8', textAlign: 'center', padding: moderateScale(16), fontSize: responsiveFontSize(12) },
 });

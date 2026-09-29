@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Platform,
@@ -130,7 +131,7 @@ function FilterModal({
               <Text style={styles.clearBtnText}>Clear All Filters</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 30 }} />
+            <View style={{ height: verticalScale(30) }} />
           </ScrollView>
         </View>
       </View>
@@ -409,7 +410,7 @@ export default function ResourceMappingScreen({ navigation }: any) {
             <StateStatsTable mappingData={summary.mapping_data} />
           )}
 
-          <View style={{ height: 80 }} />
+          <View style={{ height: verticalScale(80) }} />
         </ScrollView>
       ) : (
         /* ── LIST TAB ── */
@@ -450,7 +451,7 @@ export default function ResourceMappingScreen({ navigation }: any) {
               </Text>
             </View>
           )}
-          <View style={{ height: 80 }} />
+          <View style={{ height: verticalScale(80) }} />
         </ScrollView>
       )}
 
@@ -491,108 +492,108 @@ const styles = StyleSheet.create({
   // Header
   header: {
     paddingTop: Platform.OS === 'ios' ? 0 : 10,
-    paddingHorizontal: 16,
-    paddingBottom: 0,
+    paddingHorizontal: moderateScale(16),
+    paddingBottom: verticalScale(0),
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-    marginHorizontal: 16, marginVertical: 10, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, elevation: 2, gap: 8,
+    marginHorizontal: moderateScale(16), marginVertical: verticalScale(10), borderRadius: 10,
+    paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), elevation: 2, gap: 8,
     borderWidth: 1, borderColor: '#e2e8f0',
   },
-  searchInput: { flex: 1, fontSize: 13, color: '#0f172a', fontWeight: '500', padding: 0 },
+  searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#0f172a', fontWeight: '500', padding: moderateScale(0) },
   topBar: {
     flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', marginBottom: 14,
+    justifyContent: 'space-between', marginBottom: verticalScale(14),
   },
-  headerTitle: { color: '#fff', fontSize: 18, fontWeight: '700', flex: 1, textAlign: 'center' },
+  headerTitle: { color: '#fff', fontSize: responsiveFontSize(18), fontWeight: '700', flex: 1, textAlign: 'center' },
   headerActions: { flexDirection: 'row', gap: 4 },
-  headerBtn: { padding: 8, borderRadius: 8, position: 'relative' },
+  headerBtn: { padding: moderateScale(8), borderRadius: 8, position: 'relative' },
   filterActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
   filterDot: {
     position: 'absolute', top: 6, right: 6,
-    width: 8, height: 8, borderRadius: 4,
+    width: moderateScale(8), height: verticalScale(8), borderRadius: 4,
     backgroundColor: '#fbbf24', borderWidth: 1, borderColor: '#fff',
   },
 
   // KPI
   kpiRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: verticalScale(12),
     gap: 10,
   },
   kpiBox: { 
     flex: 1, 
     backgroundColor: '#fff', 
-    padding: 12, 
+    padding: moderateScale(12), 
     borderRadius: 10, 
     alignItems: 'center', 
     elevation: 3,
     borderTopWidth: 4,
   },
-  kpiVal: { fontSize: 20, fontWeight: '800', color: '#1e3c72' },
-  kpiLab: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', marginTop: 2, fontWeight: '700' },
+  kpiVal: { fontSize: responsiveFontSize(20), fontWeight: '800', color: '#1e3c72' },
+  kpiLab: { fontSize: responsiveFontSize(10), color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(2), fontWeight: '700' },
 
   // Tab bar
   tabBar: {
     flexDirection: 'row', gap: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: moderateScale(16),
+    paddingBottom: verticalScale(12),
   },
   tab: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     justifyContent: 'center', gap: 6,
-    paddingVertical: 10, borderRadius: 20,
+    paddingVertical: verticalScale(10), borderRadius: 20,
     backgroundColor: '#e2e8f0',
   },
   tabActive: { backgroundColor: '#fff', elevation: 2 },
-  tabText: { fontSize: 13, color: '#64748b', fontWeight: '700' },
+  tabText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '700' },
   tabTextActive: { color: '#1e3c72' },
 
   // Map tab
-  mapScrollContent: { padding: 16 },
+  mapScrollContent: { padding: moderateScale(16) },
   mapCard: {
     backgroundColor: '#fff', borderRadius: 16,
-    padding: 16, marginBottom: 16,
+    padding: moderateScale(16), marginBottom: verticalScale(16),
     elevation: 3, shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08, shadowRadius: 4,
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#1e293b', marginBottom: 4 },
-  mapHint: { fontSize: 11, color: '#94a3b8', marginBottom: 12 },
-  mapEmpty: { alignItems: 'center', paddingVertical: 40 },
-  mapEmptyText: { color: '#94a3b8', marginTop: 10, fontSize: 13 },
+  sectionTitle: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(4) },
+  mapHint: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginBottom: verticalScale(12) },
+  mapEmpty: { alignItems: 'center', paddingVertical: verticalScale(40) },
+  mapEmptyText: { color: '#94a3b8', marginTop: verticalScale(10), fontSize: responsiveFontSize(13) },
 
   // State stats
   statsCard: {
     backgroundColor: '#fff', borderRadius: 16,
-    padding: 16, marginBottom: 16,
+    padding: moderateScale(16), marginBottom: verticalScale(16),
     elevation: 3, shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08, shadowRadius: 4,
   },
   stateRow: {
     flexDirection: 'row', alignItems: 'center',
-    marginBottom: 10, gap: 8,
+    marginBottom: verticalScale(10), gap: 8,
   },
-  stateName: { width: 110, fontSize: 12, color: '#334155', fontWeight: '500' },
+  stateName: { width: moderateScale(110), fontSize: responsiveFontSize(12), color: '#334155', fontWeight: '500' },
   barTrack: {
-    flex: 1, height: 8, backgroundColor: '#f1f5f9',
+    flex: 1, height: verticalScale(8), backgroundColor: '#f1f5f9',
     borderRadius: 4, overflow: 'hidden',
   },
   barFill: { height: '100%', backgroundColor: '#2a5298', borderRadius: 4 },
-  stateCount: { width: 32, fontSize: 12, fontWeight: '700', color: '#1e293b', textAlign: 'right' },
+  stateCount: { width: moderateScale(32), fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b', textAlign: 'right' },
 
   // List tab
-  listScrollContent: { padding: 16 },
+  listScrollContent: { padding: moderateScale(16) },
 
   // Card
   card: {
     backgroundColor: '#fff', borderRadius: 14,
-    padding: 14, marginBottom: 12,
+    padding: moderateScale(14), marginBottom: verticalScale(12),
     elevation: 3, shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08, shadowRadius: 4,
@@ -600,59 +601,59 @@ const styles = StyleSheet.create({
   },
   cardActive: { borderLeftColor: '#22c55e' },
   cardInactive: { borderLeftColor: '#ef4444' },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
-  siteName: { fontSize: 15, fontWeight: '700', color: '#1e293b', marginBottom: 2 },
-  siteId: { fontSize: 11, color: '#94a3b8' },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(10) },
+  siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(2) },
+  siteId: { fontSize: responsiveFontSize(11), color: '#94a3b8' },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20,
+    paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 20,
   },
   badgeActive: { backgroundColor: '#dcfce7' },
   badgeInactive: { backgroundColor: '#fee2e2' },
-  statusText: { fontSize: 11, fontWeight: '600' },
+  statusText: { fontSize: responsiveFontSize(11), fontWeight: '600' },
   cardBody: { gap: 6 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  infoText: { fontSize: 13, color: '#475569' },
+  infoText: { fontSize: responsiveFontSize(13), color: '#475569' },
   phoneLink: { color: '#1e3c72', textDecorationLine: 'underline' },
 
   // States
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  loadingText: { color: '#94a3b8', marginTop: 12, fontSize: 14 },
-  empty: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 16 },
-  emptyText: { fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 6 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(40) },
+  loadingText: { color: '#94a3b8', marginTop: verticalScale(12), fontSize: responsiveFontSize(14) },
+  empty: { alignItems: 'center', paddingTop: verticalScale(80), paddingHorizontal: moderateScale(40) },
+  emptyTitle: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(16) },
+  emptyText: { fontSize: responsiveFontSize(13), color: '#94a3b8', textAlign: 'center', marginTop: verticalScale(6) },
 
   // Filter Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: '#fff', borderTopLeftRadius: 24,
-    borderTopRightRadius: 24, padding: 24, maxHeight: '85%',
+    borderTopRightRadius: 24, padding: moderateScale(24), maxHeight: '85%',
   },
   modalHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 20,
+    alignItems: 'center', marginBottom: verticalScale(20),
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#1e293b' },
-  filterLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginBottom: 6, marginTop: 14, textTransform: 'uppercase' },
+  modalTitle: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#1e293b' },
+  filterLabel: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#64748b', marginBottom: verticalScale(6), marginTop: verticalScale(14), textTransform: 'uppercase' },
   filterInput: {
     backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0',
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 14, color: '#1e293b',
+    borderRadius: 10, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(10),
+    fontSize: responsiveFontSize(14), color: '#1e293b',
   },
-  statusRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginTop: 4 },
+  statusRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginTop: verticalScale(4) },
   statusChip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: 20,
     backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0',
   },
   statusChipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  statusChipText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
+  statusChipText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '500' },
   statusChipTextActive: { color: '#fff' },
   applyBtn: {
     backgroundColor: '#1e3c72', flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center',
-    padding: 14, borderRadius: 12, marginTop: 20, gap: 8,
+    padding: moderateScale(14), borderRadius: 12, marginTop: verticalScale(20), gap: 8,
   },
-  applyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  clearBtn: { alignItems: 'center', padding: 12, marginTop: 8 },
-  clearBtnText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
+  applyBtnText: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(15) },
+  clearBtn: { alignItems: 'center', padding: moderateScale(12), marginTop: verticalScale(8) },
+  clearBtnText: { color: '#ef4444', fontSize: responsiveFontSize(14), fontWeight: '600' },
 });

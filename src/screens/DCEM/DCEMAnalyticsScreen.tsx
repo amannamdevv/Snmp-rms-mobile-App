@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -61,9 +62,9 @@ function MetaCard({ label, value, color }: { label: string; value: string; color
     );
 }
 const MCS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, minWidth: 100, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginRight: 10 },
-    val: { fontSize: 22, fontWeight: '800' },
-    lab: { fontSize: 11, color: '#64748b', fontWeight: '700', marginTop: 3, textAlign: 'center' },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), minWidth: 100, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginRight: moderateScale(10) },
+    val: { fontSize: responsiveFontSize(22), fontWeight: '800' },
+    lab: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '700', marginTop: verticalScale(3), textAlign: 'center' },
 });
 
 // ─── Operator badge ───────────────────────────────────────────
@@ -79,11 +80,11 @@ function OpBadge({ op }: { op: any }) {
     );
 }
 const OBS = StyleSheet.create({
-    wrap: { backgroundColor: '#dbeafe', borderRadius: 6, padding: 8, marginRight: 6, marginBottom: 4 },
-    name: { fontSize: 11, fontWeight: '800', color: '#1e40af' },
-    val: { fontSize: 13, fontWeight: '700', color: '#1e40af' },
-    pct: { backgroundColor: '#10b981', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, alignSelf: 'flex-start', marginTop: 2 },
-    pctTxt: { fontSize: 10, color: '#fff', fontWeight: '800' },
+    wrap: { backgroundColor: '#dbeafe', borderRadius: 6, padding: moderateScale(8), marginRight: moderateScale(6), marginBottom: verticalScale(4) },
+    name: { fontSize: responsiveFontSize(11), fontWeight: '800', color: '#1e40af' },
+    val: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e40af' },
+    pct: { backgroundColor: '#10b981', borderRadius: 4, paddingHorizontal: moderateScale(4), paddingVertical: verticalScale(1), alignSelf: 'flex-start', marginTop: verticalScale(2) },
+    pctTxt: { fontSize: responsiveFontSize(10), color: '#fff', fontWeight: '800' },
 });
 
 // ─── Site Card ────────────────────────────────────────────────
@@ -123,12 +124,12 @@ function SiteCard({ item, onPress }: { item: any; onPress: () => void }) {
 
             {/* Expanded */}
             {open && (
-                <View style={{ marginTop: 10 }}>
+                <View style={{ marginTop: verticalScale(10) }}>
                     <View style={SCC.divider} />
 
                     {/* Operator consumptions */}
                     <Text style={SCC.secTitle}>Operator Consumption</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: verticalScale(10) }}>
                         {(item.operator_consumptions || []).map((op: any, i: number) => (
                             <OpBadge key={i} op={op} />
                         ))}
@@ -141,7 +142,7 @@ function SiteCard({ item, onPress }: { item: any; onPress: () => void }) {
                     {item.tenant_consumptions && item.tenant_consumptions.length > 0 && (
                         <>
                             <Text style={SCC.secTitle}>Tenant Split</Text>
-                            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                            <View style={{ flexDirection: 'row', gap: 8, marginBottom: verticalScale(10) }}>
                                 {item.tenant_consumptions.map((t: any, i: number) => (
                                     <View key={i} style={[SCC.tenantCard, { borderLeftColor: i === 0 ? '#3b82f6' : '#10b981' }]}>
                                         <Text style={SCC.tenantTitle}>{t.tenant}</Text>
@@ -164,26 +165,26 @@ function SiteCard({ item, onPress }: { item: any; onPress: () => void }) {
     );
 }
 const SCC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 10, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
-    header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 },
-    name: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    sub: { fontSize: 11, color: '#64748b' },
-    kwh: { backgroundColor: 'rgba(59,130,246,0.10)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-    kwhTxt: { fontSize: 13, fontWeight: '800', color: '#1e40af' },
-    quickRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#f8fafc', borderRadius: 10, padding: 10 },
+    card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
+    header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: verticalScale(10) },
+    name: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    sub: { fontSize: responsiveFontSize(11), color: '#64748b' },
+    kwh: { backgroundColor: 'rgba(59,130,246,0.10)', borderRadius: 8, paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4) },
+    kwhTxt: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1e40af' },
+    quickRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#f8fafc', borderRadius: 10, padding: moderateScale(10) },
     quickItem: { alignItems: 'center', flex: 1 },
-    quickVal: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
-    quickLbl: { fontSize: 10, color: '#64748b', fontWeight: '600', marginTop: 2 },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 12 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 8, padding: 8, fontSize: 14, color: '#0f172a', fontWeight: '600', flex: 1 },
-    secTitle: { fontSize: 12, fontWeight: '800', color: '#64748b', marginBottom: 6, letterSpacing: 0.5 },
-    noData: { fontSize: 13, color: '#94a3b8' },
-    tenantCard: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 8, padding: 10, borderLeftWidth: 3 },
-    tenantTitle: { fontSize: 12, fontWeight: '700', color: '#64748b', marginBottom: 4 },
-    tenantKwh: { fontSize: 18, fontWeight: '800', marginBottom: 2 },
-    tenantPct: { fontSize: 12, color: '#64748b' },
-    detailBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#3b82f6', borderRadius: 10, padding: 10, marginTop: 4 },
-    detailBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
+    quickVal: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#0f172a' },
+    quickLbl: { fontSize: responsiveFontSize(10), color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 8, padding: moderateScale(8), fontSize: responsiveFontSize(14), color: '#0f172a', fontWeight: '600', flex: 1 },
+    secTitle: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(6), letterSpacing: 0.5 },
+    noData: { fontSize: responsiveFontSize(13), color: '#94a3b8' },
+    tenantCard: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 8, padding: moderateScale(10), borderLeftWidth: 3 },
+    tenantTitle: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b', marginBottom: verticalScale(4) },
+    tenantKwh: { fontSize: responsiveFontSize(18), fontWeight: '800', marginBottom: verticalScale(2) },
+    tenantPct: { fontSize: responsiveFontSize(12), color: '#64748b' },
+    detailBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#3b82f6', borderRadius: 10, padding: moderateScale(10), marginTop: verticalScale(4) },
+    detailBtnTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
 });
 
 // ─── Date Picker Row ──────────────────────────────────────────
@@ -192,15 +193,15 @@ function DateRow({ label, value, onPress }: { label: string; value: string; onPr
         <View style={DRS.wrap}>
             <Text style={DRS.label}>{label}</Text>
             <TouchableOpacity style={DRS.input} onPress={onPress}>
-                <Text style={{ color: value ? '#0f172a' : '#94a3b8', fontSize: 14, fontWeight: '600' }}>{value || 'YYYY-MM-DD'}</Text>
+                <Text style={{ color: value ? '#0f172a' : '#94a3b8', fontSize: responsiveFontSize(14), fontWeight: '600' }}>{value || 'YYYY-MM-DD'}</Text>
             </TouchableOpacity>
         </View>
     );
 }
 const DRS = StyleSheet.create({
     wrap: { flex: 1 },
-    label: { fontSize: 12, fontWeight: '700', color: '#64748b', marginBottom: 4 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 8, padding: 8, fontSize: 14, color: '#0f172a', fontWeight: '600' },
+    label: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b', marginBottom: verticalScale(4) },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 8, padding: moderateScale(8), fontSize: responsiveFontSize(14), color: '#0f172a', fontWeight: '600' },
 });
 
 // ─── MAIN ─────────────────────────────────────────────────────
@@ -305,7 +306,7 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
                     <FlatList
                         data={sites}
                         keyExtractor={(item, i) => `${item.imei || i}`}
-                        contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+                        contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
                         showsVerticalScrollIndicator={false}
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
                         ListHeaderComponent={
@@ -402,7 +403,7 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
 
                                 {/* Meta KPI scroll */}
                                 {data && (
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(14) }}>
                                         {metaKpis.map((k, i) => (
                                             <MetaCard key={k.label} label={k.label} value={k.value} color={kpiColor(i)} />
                                         ))}
@@ -411,7 +412,7 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
 
                                 {/* Search */}
                                 <View style={styles.searchRow}>
-                                    <AppIcon name="search" size={14} color="#94a3b8" style={{ marginRight: 6 }} />
+                                    <AppIcon name="search" size={14} color="#94a3b8" style={{ marginRight: moderateScale(6) }} />
                                     <TextInput
                                         style={styles.searchInput}
                                         placeholder="Search by Global ID or Name..."
@@ -439,9 +440,9 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
                             />
                         )}
                         ListEmptyComponent={
-                            <View style={{ alignItems: 'center', paddingTop: 60 }}>
+                            <View style={{ alignItems: 'center', paddingTop: verticalScale(60) }}>
                                 <AppIcon name="inbox" size={38} color="#cbd5e1" />
-                                <Text style={{ color: '#94a3b8', fontSize: 16, marginTop: 12, fontWeight: '500' }}>
+                                <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(16), marginTop: verticalScale(12), fontWeight: '500' }}>
                                     {data ? 'No sites found' : 'Fetch data to begin'}
                                 </Text>
                             </View>
@@ -468,20 +469,20 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#1e3c72', fontWeight: '600', fontSize: 15 },
-    header: { paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    hBtn: { padding: 6 },
-    hTitle: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 1.2 },
-    hSub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600', marginTop: 2 },
-    dateRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 14 },
-    fetchBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#1e3c72', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginLeft: 8 },
-    fetchBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
-    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 10, elevation: 1 },
-    searchInput: { flex: 1, fontSize: 14, color: '#0f172a', fontWeight: '500' },
-    count: { fontSize: 12, fontWeight: '800', color: '#64748b', marginBottom: 8 },
-    tabContainer: { flexDirection: 'row', backgroundColor: '#e2e8f0', borderRadius: 12, padding: 4, marginBottom: 15 },
-    tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 10 },
+    loaderTxt: { marginTop: verticalScale(12), color: '#1e3c72', fontWeight: '600', fontSize: responsiveFontSize(15) },
+    header: { paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(12), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    hBtn: { padding: moderateScale(6) },
+    hTitle: { color: '#fff', fontSize: responsiveFontSize(18), fontWeight: '800', letterSpacing: 1.2 },
+    hSub: { color: 'rgba(255,255,255,0.75)', fontSize: responsiveFontSize(11), fontWeight: '600', marginTop: verticalScale(2) },
+    dateRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: verticalScale(14) },
+    fetchBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#1e3c72', borderRadius: 10, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(10), marginLeft: moderateScale(8) },
+    fetchBtnTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(10), elevation: 1 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#0f172a', fontWeight: '500' },
+    count: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8) },
+    tabContainer: { flexDirection: 'row', backgroundColor: '#e2e8f0', borderRadius: 12, padding: moderateScale(4), marginBottom: verticalScale(15) },
+    tabBtn: { flex: 1, paddingVertical: verticalScale(8), alignItems: 'center', borderRadius: 10 },
     tabActive: { backgroundColor: '#fff', elevation: 2 },
-    tabTxt: { fontSize: 13, fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: '#1e3c72' },
 });

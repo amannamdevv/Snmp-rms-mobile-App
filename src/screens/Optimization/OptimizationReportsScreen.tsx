@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions,
@@ -64,8 +65,8 @@ const convertToCSV = (objArray: any[]) => {
 
 function MBar({ pct, color }: { pct: number; color: string }) {
     return (
-        <View style={{ height: 6, backgroundColor: '#f1f5f9', borderRadius: 3, marginTop: 4 }}>
-            <View style={{ height: 6, width: `${Math.min(pct || 0, 100)}%`, backgroundColor: color, borderRadius: 3 }} />
+        <View style={{ height: verticalScale(6), backgroundColor: '#f1f5f9', borderRadius: 3, marginTop: verticalScale(4) }}>
+            <View style={{ height: verticalScale(6), width: `${Math.min(pct || 0, 100)}%`, backgroundColor: color, borderRadius: 3 }} />
         </View>
     );
 }
@@ -77,19 +78,19 @@ function KpiCard({ title, value, sub, trend, up }: any) {
             <Text style={KS.value}>{value}</Text>
             {!!sub && <Text style={KS.sub}>{sub}</Text>}
             {!!trend && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: verticalScale(6) }}>
                     <Icon name={up ? 'trending-up' : 'trending-down'} size={11} color={up ? C.success : C.danger} />
-                    <Text style={{ fontSize: 10, fontWeight: '700', color: up ? C.success : C.danger }}>{trend}</Text>
+                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: up ? C.success : C.danger }}>{trend}</Text>
                 </View>
             )}
         </View>
     );
 }
 const KS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, flex: 1, marginHorizontal: 3, elevation: 2, borderTopWidth: 3, borderTopColor: C.primary, minWidth: (SW - 44) / 2 },
-    title: { fontSize: 9, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 },
-    value: { fontSize: 20, fontWeight: '800', color: C.primary, marginBottom: 3 },
-    sub: { fontSize: 9, color: '#94a3b8' },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), flex: 1, marginHorizontal: moderateScale(3), elevation: 2, borderTopWidth: 3, borderTopColor: C.primary, minWidth: (SW - 44) / 2 },
+    title: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(5) },
+    value: { fontSize: responsiveFontSize(20), fontWeight: '800', color: C.primary, marginBottom: verticalScale(3) },
+    sub: { fontSize: responsiveFontSize(9), color: '#94a3b8' },
 });
 
 function RevCard({ item }: { item: any }) {
@@ -139,21 +140,21 @@ function RevCard({ item }: { item: any }) {
     );
 }
 const RC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 8, borderLeftWidth: 4, elevation: 2 },
-    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
-    sid: { fontSize: 13, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    imei: { fontSize: 9, color: '#64748b' },
-    badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-    btxt: { fontSize: 10, fontWeight: '800' },
-    stats: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 8, padding: 8 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(8), borderLeftWidth: 4, elevation: 2 },
+    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8) },
+    sid: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    imei: { fontSize: responsiveFontSize(9), color: '#64748b' },
+    badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
+    btxt: { fontSize: responsiveFontSize(10), fontWeight: '800' },
+    stats: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 8, padding: moderateScale(8) },
     stat: { flex: 1, alignItems: 'center' },
-    sv: { fontSize: 12, fontWeight: '800', color: '#0f172a' },
-    sl: { fontSize: 8, color: '#64748b', fontWeight: '600', marginTop: 1 },
-    detail: { marginTop: 10 },
-    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 10 },
-    drow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    dl: { fontSize: 11, color: '#64748b', fontWeight: '600' },
-    dv: { fontSize: 11, color: '#1e293b', fontWeight: '700' },
+    sv: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a' },
+    sl: { fontSize: responsiveFontSize(8), color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
+    detail: { marginTop: verticalScale(10) },
+    div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
+    drow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    dl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+    dv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700' },
 });
 
 function STable({ headers, rows }: { headers: string[]; rows: string[][] }) {
@@ -174,8 +175,8 @@ function STable({ headers, rows }: { headers: string[]; rows: string[][] }) {
 }
 const ST = StyleSheet.create({
     row: { flexDirection: 'row' },
-    th: { fontSize: 9, fontWeight: '800', color: '#fff', padding: 10, minWidth: 100, textTransform: 'uppercase' },
-    td: { fontSize: 11, color: '#334155', fontWeight: '500', padding: 10, minWidth: 100, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    th: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#fff', padding: moderateScale(10), minWidth: 100, textTransform: 'uppercase' },
+    td: { fontSize: responsiveFontSize(11), color: '#334155', fontWeight: '500', padding: moderateScale(10), minWidth: 100, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
 });
 
 export default function OptimizationReportsScreen({ navigation, route }: any) {
@@ -328,40 +329,40 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                     <FlatList
                         data={pageRows}
                         keyExtractor={(item, i) => `${item.site_id || i}_${i}`}
-                        contentContainerStyle={{ padding: 12, paddingBottom: 30 }}
+                        contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                         showsVerticalScrollIndicator={false}
                         refreshControl={<RefreshControl refreshing={revRefresh} onRefresh={() => { setRevRefresh(true); loadRevenue(filterType, true); }} colors={[C.primary]} />}
                         ListHeaderComponent={revData ? (
-                            <View style={{ paddingTop: 5 }}>
+                            <View style={{ paddingTop: verticalScale(5) }}>
                                 <Text style={S.rowCount}>{filtered.length} records  ·  Page {page} of {totalPages || 1}</Text>
                                 <View style={S.card}>
                                     <Text style={S.cardTitle}>Revenue Leakage — National · Last 30 days</Text>
-                                    <View style={{ flexDirection: 'row', height: 18, borderRadius: 9, overflow: 'hidden', marginBottom: 12 }}>
+                                    <View style={{ flexDirection: 'row', height: verticalScale(18), borderRadius: 9, overflow: 'hidden', marginBottom: verticalScale(12) }}>
                                         <View style={{ flex: revData.leakage_percent || 0.5, backgroundColor: C.blue1 }} />
                                         <View style={{ flex: revData.no_leakage_percent || 0.5, backgroundColor: C.blue3 }} />
                                         <View style={{ flex: revData.null_percent > 0 ? revData.null_percent : 0.2, backgroundColor: C.blue4 }} />
                                     </View>
-                                    <Text style={{ fontSize: 32, fontWeight: '800', color: C.primary, textAlign: 'center', marginBottom: 4 }}>{revData.total_sites}</Text>
-                                    <Text style={{ fontSize: 11, color: '#64748b', fontWeight: '600', textAlign: 'center', marginBottom: 14 }}>Site Count</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(32), fontWeight: '800', color: C.primary, textAlign: 'center', marginBottom: verticalScale(4) }}>{revData.total_sites}</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600', textAlign: 'center', marginBottom: verticalScale(14) }}>Site Count</Text>
                                     {[
                                         { color: C.blue1, label: 'Leakage', pct: revData.leakage_percent, cnt: revData.leakage_count },
                                         { color: C.blue3, label: 'No Leakage', pct: revData.no_leakage_percent, cnt: revData.no_leakage_count },
                                         { color: C.blue4, label: 'Null', pct: revData.null_percent, cnt: revData.null_count },
                                     ].map(l => (
-                                        <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                            <View style={{ width: 14, height: 14, borderRadius: 3, backgroundColor: l.color }} />
-                                            <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>{l.pct}%  ({l.cnt})  <Text style={{ color: '#64748b', fontWeight: '500' }}>{l.label}</Text></Text>
+                                        <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(6) }}>
+                                            <View style={{ width: moderateScale(14), height: verticalScale(14), borderRadius: 3, backgroundColor: l.color }} />
+                                            <Text style={{ fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' }}>{l.pct}%  ({l.cnt})  <Text style={{ color: '#64748b', fontWeight: '500' }}>{l.label}</Text></Text>
                                         </View>
                                     ))}
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#f1f5f9' }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: verticalScale(14), paddingTop: verticalScale(14), borderTopWidth: 1, borderTopColor: '#f1f5f9' }}>
                                         {[
                                             { l: 'Peak Load kW', v: revData.avg_peak_load },
                                             { l: 'Avg Load kW', v: revData.avg_avg_load },
                                             { l: 'SO Load kW', v: revData.avg_total_declared },
                                         ].map(m => (
                                             <View key={m.l} style={{ alignItems: 'center' }}>
-                                                <Text style={{ fontSize: 20, fontWeight: '800', color: C.primary }}>{m.v ?? '—'}</Text>
-                                                <Text style={{ fontSize: 9, color: '#64748b', fontWeight: '600', marginTop: 2 }}>{m.l}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(20), fontWeight: '800', color: C.primary }}>{m.v ?? '—'}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) }}>{m.l}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -373,16 +374,16 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                         { l: 'Leakage Sites', v: revData.leakage_count, pct: revData.leakage_percent, color: C.danger },
                                         { l: 'No Leakage', v: revData.no_leakage_count, pct: revData.no_leakage_percent, color: C.success },
                                     ].map(b => (
-                                        <View key={b.l} style={{ marginBottom: 12 }}>
+                                        <View key={b.l} style={{ marginBottom: verticalScale(12) }}>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: 11, fontWeight: '700', color: '#334155' }}>{b.l}</Text>
-                                                <Text style={{ fontSize: 11, fontWeight: '800', color: b.color }}>{b.v}  ({b.pct}%)</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(11), fontWeight: '700', color: '#334155' }}>{b.l}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(11), fontWeight: '800', color: b.color }}>{b.v}  ({b.pct}%)</Text>
                                             </View>
                                             <MBar pct={b.pct} color={b.color} />
                                         </View>
                                     ))}
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 15 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: verticalScale(15) }}>
                                     <View style={S.searchBox}>
                                         <Icon name="search" size={14} color="#94a3b8" />
                                         <TextInput style={S.searchInput} value={search} onChangeText={setSearch} placeholder="Search by Global ID or Name..." placeholderTextColor="#94a3b8" />
@@ -408,17 +409,17 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                             </View>
                         ) : null}
                         ListEmptyComponent={!revLoading ? (
-                            <View style={{ alignItems: 'center', paddingTop: 40 }}><Icon name="droplet" size={36} color="#cbd5e1" /><Text style={{ color: '#94a3b8', fontSize: 13, marginTop: 12 }}>{search ? 'No sites match your search' : 'No revenue data available'}</Text></View>
+                            <View style={{ alignItems: 'center', paddingTop: verticalScale(40) }}><Icon name="droplet" size={36} color="#cbd5e1" /><Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12) }}>{search ? 'No sites match your search' : 'No revenue data available'}</Text></View>
                         ) : null}
                     />
                 )
             )}
 
             {activeTab !== 'leakage' && (
-                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 14, paddingBottom: 30 }} showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }} showsVerticalScrollIndicator={false}>
                     {activeTab === 'overview' && (
                         <View>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: verticalScale(12) }}>
                                 <KpiCard title="Total Sites" value="2,847" sub="Active monitoring" trend="12 New" up />
                                 <KpiCard title="Active Alerts" value="34" sub="Last 24h" trend="8 Resolved" up={false} />
                                 <KpiCard title="Energy Savings" value="₹34.5K" sub="vs Last Month" trend="12.5%" up />
@@ -432,8 +433,8 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                     { l: 'Solar', v: '9,200 kWh', pct: 23, color: C.blue3 },
                                     { l: 'Battery', v: '7,200 kWh', pct: 12, color: C.blue4 },
                                 ].map(b => (
-                                    <View key={b.l} style={{ marginBottom: 10 }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#334155' }}>{b.l}</Text><Text style={{ fontSize: 11, fontWeight: '800', color: b.color }}>{b.v} ({b.pct}%)</Text></View>
+                                    <View key={b.l} style={{ marginBottom: verticalScale(10) }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontSize: responsiveFontSize(11), fontWeight: '700', color: '#334155' }}>{b.l}</Text><Text style={{ fontSize: responsiveFontSize(11), fontWeight: '800', color: b.color }}>{b.v} ({b.pct}%)</Text></View>
                                         <MBar pct={b.pct} color={b.color} />
                                     </View>
                                 ))}
@@ -461,7 +462,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                         <View style={S.card}><Text style={S.cardTitle}>Power Factor Analysis</Text><STable headers={['Site', 'PF', 'Status', 'Penalty']} rows={[['Delhi-Central-01', '0.82', '🟡 Warning', '₹465'], ['Kolkata-East-12', '0.91', '🟢 Normal', 'No penalty'], ['Mumbai-West-19', '0.88', '🔵 Attention', 'Monitoring'], ['Chennai-South-05', '0.80', '🔴 Critical', '₹610']]} /></View>
                     )}
                     {activeTab === 'sanctioned' && (
-                        <View style={S.card}><Text style={S.cardTitle}>Load Optimization</Text><View style={S.warnBanner}><Icon name="alert-triangle" size={14} color="#f59e0b" /><Text style={{ fontSize: 11, color: '#f59e0b', fontWeight: '600', flex: 1 }}>1 site within 5% of sanctioned load limit.</Text></View><STable headers={['Site', 'Sanctioned (kW)', 'Current (kW)', 'Status']} rows={[['Delhi-Central-01', '60', '58', '🟡 Approaching'], ['Jaipur-City-03', '75', '63', '🟢 Normal'], ['Chennai-South-05', '80', '72', '🔵 Attention']]} /></View>
+                        <View style={S.card}><Text style={S.cardTitle}>Load Optimization</Text><View style={S.warnBanner}><Icon name="alert-triangle" size={14} color="#f59e0b" /><Text style={{ fontSize: responsiveFontSize(11), color: '#f59e0b', fontWeight: '600', flex: 1 }}>1 site within 5% of sanctioned load limit.</Text></View><STable headers={['Site', 'Sanctioned (kW)', 'Current (kW)', 'Status']} rows={[['Delhi-Central-01', '60', '58', '🟡 Approaching'], ['Jaipur-City-03', '75', '63', '🟢 Normal'], ['Chennai-South-05', '80', '72', '🔵 Attention']]} /></View>
                     )}
                     {activeTab === 'events' && (
                         <View>
@@ -470,7 +471,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                 { title: "Rath Yatra Coverage", type: 'Festival', color: C.warning, detail: "Load increased 18% in covered regions. Additional generator deployed. No downtime reported." },
                                 { title: "VVIP Visit Monitoring", type: 'VVIP', color: '#3b82f6', detail: "High-availability enabled for 15 city sites. Status updates every 15 min. 1 minor voltage dip resolved." },
                             ].map(ev => (
-                                <View key={ev.title} style={[S.eventCard, { borderLeftColor: ev.color }]}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}><Text style={{ fontSize: 13, fontWeight: '800', color: '#0f172a', flex: 1 }}>{ev.title}</Text><View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: `${ev.color}15`, borderWidth: 1, borderColor: ev.color }}><Text style={{ fontSize: 9, fontWeight: '800', color: ev.color }}>{ev.type}</Text></View></View><Text style={{ fontSize: 11, color: '#64748b', lineHeight: 17 }}>{ev.detail}</Text></View>
+                                <View key={ev.title} style={[S.eventCard, { borderLeftColor: ev.color }]}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(8) }}><Text style={{ fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', flex: 1 }}>{ev.title}</Text><View style={{ paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 12, backgroundColor: `${ev.color}15`, borderWidth: 1, borderColor: ev.color }}><Text style={{ fontSize: responsiveFontSize(9), fontWeight: '800', color: ev.color }}>{ev.type}</Text></View></View><Text style={{ fontSize: responsiveFontSize(11), color: '#64748b', lineHeight: 17 }}>{ev.detail}</Text></View>
                             ))}
                         </View>
                     )}
@@ -489,42 +490,42 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
 }
 
 const FM = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 40 },
-    box: { backgroundColor: '#fff', borderRadius: 16, padding: 20 },
-    title: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 14 },
-    opt: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 10, borderRadius: 10, marginBottom: 4 },
+    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(40) },
+    box: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(20) },
+    title: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    opt: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(12), paddingHorizontal: moderateScale(10), borderRadius: 10, marginBottom: verticalScale(4) },
     optActive: { backgroundColor: `${C.primary}10` },
-    optTxt: { fontSize: 13, color: '#334155', fontWeight: '600' },
+    optTxt: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
 });
 
 const S = StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: C.primary, fontWeight: '600', fontSize: 13 },
+    loaderTxt: { marginTop: verticalScale(12), color: C.primary, fontWeight: '600', fontSize: responsiveFontSize(13) },
     tabBarContainer: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-    tabScroll: { paddingHorizontal: 10, paddingVertical: 8, gap: 6, alignItems: 'center' },
-    tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, borderColor: '#e2e8f0', backgroundColor: '#f8fafc' },
+    tabScroll: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), gap: 6, alignItems: 'center' },
+    tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: moderateScale(11), paddingVertical: verticalScale(7), borderRadius: 20, borderWidth: 1.5, borderColor: '#e2e8f0', backgroundColor: '#f8fafc' },
     tabBtnActive: { backgroundColor: `${C.primary}12`, borderColor: C.primary },
-    tabTxt: { fontSize: 10, fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: C.primary },
-    resetBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#64748b', borderRadius: 10, paddingHorizontal: 15, paddingVertical: 8, elevation: 1 },
-    resetTxt: { color: '#fff', fontSize: 12, fontWeight: '700' },
-    card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2 },
-    cardTitle: { fontSize: 13, fontWeight: '800', color: '#0f172a', marginBottom: 14 },
-    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1.5, borderColor: '#d0e4f7', elevation: 1 },
-    filterBtnTxt: { fontSize: 11, fontWeight: '700', color: C.primary },
-    searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, elevation: 1, gap: 6 },
-    searchInput: { flex: 1, fontSize: 11, color: '#0f172a', fontWeight: '500' },
-    rowCount: { fontSize: 10, fontWeight: '800', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-    pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: 16 },
-    pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, elevation: 1 },
+    resetBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#64748b', borderRadius: 10, paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(8), elevation: 1 },
+    resetTxt: { color: '#fff', fontSize: responsiveFontSize(12), fontWeight: '700' },
+    card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
+    cardTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), borderWidth: 1.5, borderColor: '#d0e4f7', elevation: 1 },
+    filterBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: C.primary },
+    searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), elevation: 1, gap: 6 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(11), color: '#0f172a', fontWeight: '500' },
+    rowCount: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
+    pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: verticalScale(16) },
+    pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1 },
     pageBtnDis: { opacity: 0.4 },
-    pageBtnTxt: { fontSize: 11, fontWeight: '700', color: C.primary },
-    pageInfo: { fontSize: 12, fontWeight: '700', color: '#1e293b' },
-    errBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30 },
-    errTxt: { color: C.danger, fontSize: 13, fontWeight: '600', marginTop: 12, marginBottom: 16, textAlign: 'center' },
-    retryBtn: { backgroundColor: C.primary, borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10 },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
-    warnBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.1)', borderRadius: 8, padding: 10, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
-    eventCard: { backgroundColor: '#fff', borderRadius: 14, padding: 16, marginBottom: 12, borderLeftWidth: 5, elevation: 2 },
+    pageBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: C.primary },
+    pageInfo: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' },
+    errBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(30) },
+    errTxt: { color: C.danger, fontSize: responsiveFontSize(13), fontWeight: '600', marginTop: verticalScale(12), marginBottom: verticalScale(16), textAlign: 'center' },
+    retryBtn: { backgroundColor: C.primary, borderRadius: 10, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10) },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
+    warnBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.1)', borderRadius: 8, padding: moderateScale(10), marginBottom: verticalScale(12), borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
+    eventCard: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(12), borderLeftWidth: 5, elevation: 2 },
 });

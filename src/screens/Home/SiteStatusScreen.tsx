@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
   View,
   Text,
@@ -18,6 +19,8 @@ import { api } from '../../api';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -61,11 +64,29 @@ type Site = {
   battery_v: string;
   last_communication: string;
   site_status: string;
+    aging?: string;
   commData?: any; // Added to store pre-loaded comm data
 };
 
 // --- SiteCard Component ---
 const SiteCard = ({ item, onSiteDetailsClick }: { item: Site; onSiteDetailsClick: () => void }) => {
+  const getAging = (lastComm) => {
+    if (!lastComm || lastComm === '-') return '-';
+    // try to parse '2026-09-26 17:15:51' or ISO
+    const commDate = new Date(lastComm.replace(' ', 'T'));
+    if (isNaN(commDate.getTime())) return '-';
+    const now = new Date();
+    const diffMs = now - commDate;
+    if (diffMs < 0) return '0 mins ago';
+    
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) return diffMins + ' mins ago';
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return diffHours + ' hours ago';
+    const diffDays = Math.floor(diffHours / 24);
+    return diffDays + ' days ago';
+  };
+
   const [expanded, setExpanded] = useState(false);
 
   const toggleDetails = () => {
@@ -78,21 +99,25 @@ const SiteCard = ({ item, onSiteDetailsClick }: { item: Site; onSiteDetailsClick
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.siteId}>Global ID: {item.global_id || item.site_id || '—'}</Text>
+        <Text style={styles.siteId}>Global ID: {item.global_id || '—'}</Text>
         <View style={[styles.badge, item.site_status === 'Active' ? styles.activeBadge : styles.downBadge]}>
           <Text style={styles.badgeText}>{item.site_status}</Text>
         </View>
       </View>
-      <Text style={styles.siteName}>{item.site_name}</Text>
-
-      <View style={styles.infoRow}>
-        <View style={styles.infoCol}><Text style={styles.infoLabel}>IMEI</Text><Text style={styles.infoValue}>{item.imei}</Text></View>
-        <View style={styles.infoCol}><Text style={styles.infoLabel}>Site ID</Text><Text style={styles.infoValue}>{item.site_id || '-'}</Text></View>
-      </View>
-      <View style={styles.infoRow}>
-        <View style={styles.infoCol}><Text style={styles.infoLabel}>Battery</Text><Text style={styles.infoValue}>{item.battery_v ? `${item.battery_v} V` : '-'}</Text></View>
-        <View style={styles.infoCol}><Text style={styles.infoLabel}>Last Comm</Text><Text style={styles.infoValue}>{item.last_communication || '-'}</Text></View>
-      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: moderateScale(5) }}>
+          <Text style={[styles.siteName, { flex: 1, marginRight: moderateScale(10) }]}>{item.site_name}</Text>
+          <Text style={{ fontSize: responsiveFontSize(12), color: '#475569', fontWeight: 'bold' }}>IMEI: {item.imei}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <View style={styles.infoCol}><Text style={styles.infoLabel}>Site ID</Text><Text style={styles.infoValue}>{item.site_id || '—'}</Text></View>
+          <View style={styles.infoCol}><Text style={styles.infoLabel}>Battery</Text><Text style={styles.infoValue}>{item.battery_v ? `${item.battery_v} V` : '-'}</Text></View>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <View style={styles.infoCol}><Text style={styles.infoLabel}>Last Comm</Text><Text style={styles.infoValue}>{item.last_communication || '—'}</Text></View>
+          <View style={styles.infoCol}><Text style={styles.infoLabel}>Aging</Text><Text style={styles.infoValue}>{item.aging || getAging(item.last_communication)}</Text></View>
+        </View>
 
       {expanded && (
         <View style={styles.expandedContainer}>
@@ -114,11 +139,11 @@ const SiteCard = ({ item, onSiteDetailsClick }: { item: Site; onSiteDetailsClick
       <View style={styles.actionRow}>
         <TouchableOpacity style={styles.actionBtnOutline} onPress={toggleDetails}>
           <Text style={styles.actionBtnOutlineText}>{expanded ? 'Hide Details' : 'View Details'}</Text>
-          <AppIcon name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#475569" style={{ marginLeft: 6 }} />
+          <AppIcon name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#475569" style={{ marginLeft: moderateScale(6) }} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtnSolid} onPress={onSiteDetailsClick}>
           <Text style={styles.actionBtnSolidText}>Site Details</Text>
-          <AppIcon name="arrow-right" size={16} color="#fff" style={{ marginLeft: 6 }} />
+          <AppIcon name="arrow-right" size={16} color="#fff" style={{ marginLeft: moderateScale(6) }} />
         </TouchableOpacity>
       </View>
     </View>
@@ -138,7 +163,13 @@ export default function SiteStatusScreen({ navigation }: Props) {
 
   // Filter States
   const [statusFilter, setStatusFilter] = useState('');
-  const [activeFilters, setActiveFilters] = useState({});
+  const { globalFilters, setGlobalFilters, hasActiveFilters: gHasFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
+  const [activeFilters, setActiveFilters] = useState<any>(globalFilters)
+  // SYNC_GLOBAL_FILTER: Keep local activeFilters in sync with global on mount
+  React.useEffect(() => {
+    setActiveFilters(globalFilters);
+  }, [JSON.stringify(globalFilters)]);
+;
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const loadSites = async (pageNumber = 1, replace = false, currentFilters = activeFilters) => {
@@ -198,6 +229,7 @@ export default function SiteStatusScreen({ navigation }: Props) {
   };
 
   const handleApplyFilters = (newFilters: any) => {
+    setGlobalFilters(newFilters); // persist globally
     setActiveFilters(newFilters);
   };
 
@@ -228,6 +260,7 @@ export default function SiteStatusScreen({ navigation }: Props) {
         'Status': site.site_status || '',
         'Battery (V)': site.battery_v || '',
         'Last Communication': site.last_communication || '',
+          'Aging': site.aging || '',
       }));
 
       const csvString = convertToCSV(csvRows);
@@ -271,10 +304,11 @@ export default function SiteStatusScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: gFilterCount > 0 },
         ]}
       />
 
+      <GlobalFilterBanner />
       <FilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
@@ -284,26 +318,26 @@ export default function SiteStatusScreen({ navigation }: Props) {
 
       {/* KPIs */}
       <View style={styles.kpiContainer}>
-        <TouchableOpacity 
-          style={[styles.kpiCard, { borderTopColor: '#3b82f6' }, statusFilter === '' && styles.kpiActive]} 
+        <TouchableOpacity
+          style={[styles.kpiCard, { borderTopColor: '#3b82f6' }, statusFilter === '' && styles.kpiActive]}
           onPress={() => setStatusFilter('')}
         >
           <Text style={styles.kpiValue}>{kpi.total_sites}</Text>
           <Text style={styles.kpiLabel}>Total</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.kpiCard, { borderTopColor: '#10b981' }, statusFilter === 'active' && styles.kpiActive]} 
+        <TouchableOpacity
+          style={[styles.kpiCard, { borderTopColor: '#10b981' }, statusFilter === 'active' && styles.kpiActive]}
           onPress={() => setStatusFilter('active')}
         >
           <Text style={[styles.kpiValue, { color: '#10b981' }]}>{kpi.active_sites}</Text>
           <Text style={styles.kpiLabel}>Active</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.kpiCard, { borderTopColor: '#ef4444' }, statusFilter === 'down' && styles.kpiActive]} 
+        <TouchableOpacity
+          style={[styles.kpiCard, { borderTopColor: '#ef4444' }, statusFilter === 'down' && styles.kpiActive]}
           onPress={() => setStatusFilter('down')}
         >
           <Text style={[styles.kpiValue, { color: '#ef4444' }]}>{kpi.non_active_sites}</Text>
-          <Text style={styles.kpiLabel}>Offline</Text>
+          <Text style={styles.kpiLabel}>NON-ACTIVE</Text>
         </TouchableOpacity>
       </View>
 
@@ -333,11 +367,11 @@ export default function SiteStatusScreen({ navigation }: Props) {
             onSiteDetailsClick={() => navigation.navigate('SiteDetails', { imei: item.imei, siteId: item.site_id })}
           />
         )}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ padding: moderateScale(16) }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: 20 }} /> : null}
+        ListFooterComponent={loading ? <ActivityIndicator size="small" color="#1e3c72" style={{ margin: moderateScale(20) }} /> : null}
         ListEmptyComponent={
           !loading && filteredSites.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -355,20 +389,20 @@ export default function SiteStatusScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  iconBtn: { padding: 8, marginLeft: 10, position: 'relative' },
-  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
+  iconBtn: { padding: moderateScale(8), marginLeft: moderateScale(10), position: 'relative' },
+  activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
-  kpiContainer: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
-  kpiCard: { flex: 1, backgroundColor: '#fff', padding: 12, borderRadius: 10, alignItems: 'center', elevation: 3, borderTopWidth: 4 },
+  kpiContainer: { flexDirection: 'row', paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(12), gap: 10 },
+  kpiCard: { flex: 1, backgroundColor: '#fff', padding: moderateScale(12), borderRadius: 10, alignItems: 'center', elevation: 3, borderTopWidth: 4 },
   kpiActive: { backgroundColor: '#f0f4ff', elevation: 1 },
-  kpiValue: { fontSize: 22, fontWeight: '800', color: '#1e3c72' },
-  kpiLabel: { fontSize: 11, color: '#64748b', marginTop: 2, fontWeight: '700', textTransform: 'uppercase' },
+  kpiValue: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#1e3c72' },
+  kpiLabel: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(2), fontWeight: '700', textTransform: 'uppercase' },
 
   searchContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 10,
-    paddingHorizontal: 12,
+    marginHorizontal: moderateScale(16),
+    marginBottom: verticalScale(10),
+    paddingHorizontal: moderateScale(12),
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -377,50 +411,50 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    height: 48,
+    height: verticalScale(48),
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: '#1e293b',
     height: '100%',
-    padding: 0,
+    padding: moderateScale(0),
   },
-  emptyContainer: { alignItems: 'center', marginTop: 50 },
-  emptyText: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 12 },
-  emptySubtitle: { fontSize: 14, color: '#94a3b8', marginTop: 4 },
+  emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
+  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
 
-  card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, elevation: 2 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  siteId: { fontSize: 16, fontWeight: '700', color: '#1e3c72' },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  card: { backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, marginBottom: verticalScale(12), elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12) },
+  siteId: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#1e293b' },
+  badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
   activeBadge: { backgroundColor: '#d1fae5' },
   downBadge: { backgroundColor: '#fee2e2' },
-  badgeText: { fontSize: 12, fontWeight: '600', color: '#333' },
-  siteName: { fontSize: 16, fontWeight: '600', marginBottom: 12, color: '#111' },
+  badgeText: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#333' },
+  siteName: { fontSize: responsiveFontSize(13), fontWeight: '600', marginBottom: verticalScale(12), color: '#64748b' },
 
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(8) },
   infoCol: { flex: 1 },
-  infoLabel: { fontSize: 11, color: '#888', textTransform: 'uppercase', marginBottom: 2 },
-  infoValue: { fontSize: 13, color: '#333', fontWeight: '500' },
+  infoLabel: { fontSize: responsiveFontSize(11), color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoValue: { fontSize: responsiveFontSize(13), color: '#333', fontWeight: '500' },
 
   // Expanded Section Styles
-  expandedContainer: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#eee' },
-  commGrid: { flexDirection: 'column', gap: 8, marginBottom: 10 },
-  commBox: { backgroundColor: '#f8fafc', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-  commBoxTitle: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 8 },
-  commLabel: { fontSize: 11, color: '#64748b', marginBottom: 4 },
-  commValue: { fontSize: 12, color: '#0f172a', fontWeight: '600' },
-  remarksBox: { backgroundColor: '#f0f9ff', padding: 12, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: '#38bdf8' },
-  remarksTitle: { fontSize: 12, fontWeight: '700', color: '#0369a1', marginBottom: 4 },
-  remarksText: { fontSize: 12, color: '#0c4a6e' },
-  noDataText: { textAlign: 'center', color: '#888', fontSize: 13, marginVertical: 10 },
+  expandedContainer: { marginTop: verticalScale(12), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#eee' },
+  commGrid: { flexDirection: 'column', gap: 8, marginBottom: verticalScale(10) },
+  commBox: { backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  commBoxTitle: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8) },
+  commLabel: { fontSize: responsiveFontSize(11), color: '#64748b', marginBottom: verticalScale(4) },
+  commValue: { fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600' },
+  remarksBox: { backgroundColor: '#f0f9ff', padding: moderateScale(12), borderRadius: 8, borderLeftWidth: 4, borderLeftColor: '#38bdf8' },
+  remarksTitle: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#0369a1', marginBottom: verticalScale(4) },
+  remarksText: { fontSize: responsiveFontSize(12), color: '#0c4a6e' },
+  noDataText: { textAlign: 'center', color: '#888', fontSize: responsiveFontSize(13), marginVertical: verticalScale(10) },
 
   // Action Buttons Row
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, gap: 10 },
-  actionBtnOutline: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#64748b', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  actionBtnOutlineText: { color: '#475569', fontSize: 13, fontWeight: '600' },
-  actionBtnSolid: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#1e3c72', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  actionBtnSolidText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: verticalScale(16), gap: 10 },
+  actionBtnOutline: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, borderWidth: 1, borderColor: '#64748b', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
+  actionBtnOutlineText: { color: '#475569', fontSize: responsiveFontSize(13), fontWeight: '600' },
+  actionBtnSolid: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, backgroundColor: '#1e3c72', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
+  actionBtnSolidText: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: '600' },
 });

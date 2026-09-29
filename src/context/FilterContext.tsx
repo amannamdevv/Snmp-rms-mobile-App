@@ -1,0 +1,92 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+export interface GlobalFilters {
+  state_id?: string;
+  state_name?: string;
+  district_id?: string;
+  district_name?: string;
+  cluster_id?: string;
+  cluster_name?: string;
+  search_type?: string;
+  site_id?: string;
+  imei?: string;
+  global_id?: string;
+  site_name?: string;
+  date_from?: string;
+  date_to?: string;
+  alarm_t?: string;
+  customer_id?: string;
+  operator_id?: string;
+  site_status?: string;
+  site_category?: string;
+  site_sub_category?: string;
+  customer_site_id?: string;
+  technician_id?: string;
+  tenant_id?: string;
+  site_type?: string;
+  site_on?: string;
+}
+
+interface FilterContextType {
+  globalFilters: GlobalFilters;
+  setGlobalFilters: (filters: GlobalFilters) => void;
+  clearGlobalFilters: () => void;
+  hasActiveFilters: boolean;
+  activeFilterCount: number;
+  getFilterLabel: () => string;
+}
+
+const FilterContext = createContext<FilterContextType | undefined>(undefined);
+
+export const FilterProvider = ({ children }: { children: ReactNode }) => {
+  const [globalFilters, setGlobalFiltersState] = useState<GlobalFilters>({});
+
+  const setGlobalFilters = (filters: GlobalFilters) => {
+    const cleaned: GlobalFilters = {};
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') {
+        (cleaned as any)[k] = v;
+      }
+    });
+    setGlobalFiltersState(cleaned);
+  };
+
+  const clearGlobalFilters = () => setGlobalFiltersState({});
+
+  const labelKeys = ['state_name', 'district_name', 'cluster_name'];
+  const activeFilterCount = Object.keys(globalFilters).filter(
+    k => !labelKeys.includes(k)
+  ).length;
+
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const getFilterLabel = (): string => {
+    const parts: string[] = [];
+    if (globalFilters.state_name) parts.push(String(globalFilters.state_name));
+    if (globalFilters.district_name) parts.push(String(globalFilters.district_name));
+    if (globalFilters.cluster_name) parts.push(String(globalFilters.cluster_name));
+    if (globalFilters.site_name) parts.push(String(globalFilters.site_name));
+    if (globalFilters.imei) parts.push('IMEI: ' + globalFilters.imei);
+    if (parts.length === 0 && hasActiveFilters) return 'Filters Active';
+    return parts.join(' > ');
+  };
+
+  return (
+    <FilterContext.Provider value={{
+      globalFilters,
+      setGlobalFilters,
+      clearGlobalFilters,
+      hasActiveFilters,
+      activeFilterCount,
+      getFilterLabel,
+    }}>
+      {children}
+    </FilterContext.Provider>
+  );
+};
+
+export const useGlobalFilter = (): FilterContextType => {
+  const ctx = useContext(FilterContext);
+  if (!ctx) throw new Error('useGlobalFilter must be used within FilterProvider');
+  return ctx;
+};

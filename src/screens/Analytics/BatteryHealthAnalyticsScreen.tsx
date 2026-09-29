@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -277,7 +278,7 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                             <Text style={styles.ibLabel}>BANKS</Text>
                             <Text style={[styles.ibValue, { color: '#0891b2' }]}>{banks} bank{banks !== 1 ? 's' : ''}</Text>
                             {banks > 1 && (
-                                <Text style={{ fontSize: 9, color: '#0891b2', marginTop: 2, fontWeight: '700' }}>
+                                <Text style={{ fontSize: responsiveFontSize(9), color: '#0891b2', marginTop: verticalScale(2), fontWeight: '700' }}>
                                     {isParallel ? '⚡ Parallel' : '→ Series'}
                                 </Text>
                             )}
@@ -394,7 +395,7 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                                     {cr.discharge_efficiency && cr.discharge_efficiency !== 'N/A' && (
                                         <View style={styles.voltItem}>
                                             <Text style={styles.voltLabel}>EFFICIENCY</Text>
-                                            <Text style={[styles.voltValue, { fontSize: 11 }]}>{cr.discharge_efficiency}</Text>
+                                            <Text style={[styles.voltValue, { fontSize: responsiveFontSize(11) }]}>{cr.discharge_efficiency}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -410,7 +411,7 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                                 const isMet = conds[c.key] === true;
                                 return (
                                     <View key={c.key} style={[styles.condItem, isMet ? styles.condMet : styles.condUnmet]}>
-                                        <Text style={{ fontSize: 11, color: isMet ? '#16a34a' : '#dc2626', fontWeight: '800' }}>
+                                        <Text style={{ fontSize: responsiveFontSize(11), color: isMet ? '#16a34a' : '#dc2626', fontWeight: '800' }}>
                                             {isMet ? '✓' : '✗'}
                                         </Text>
                                         <Text style={[styles.condText, { color: isMet ? '#16a34a' : '#9ca3af' }]}>{c.label}</Text>
@@ -532,8 +533,8 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                         <Text style={[styles.filterPillText, { color: CATEGORY_CONFIG[activeCategoryFilter]?.color }]}>
                             {CATEGORY_CONFIG[activeCategoryFilter]?.label}
                         </Text>
-                        <TouchableOpacity onPress={() => setActiveCategoryFilter('all')} style={{ marginLeft: 6 }}>
-                            <Text style={{ color: CATEGORY_CONFIG[activeCategoryFilter]?.color, fontSize: 16, fontWeight: '900' }}>×</Text>
+                        <TouchableOpacity onPress={() => setActiveCategoryFilter('all')} style={{ marginLeft: moderateScale(6) }}>
+                            <Text style={{ color: CATEGORY_CONFIG[activeCategoryFilter]?.color, fontSize: responsiveFontSize(16), fontWeight: '900' }}>×</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -576,7 +577,7 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                 renderItem={renderSiteCard}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
                 ListHeaderComponent={<ListHeader />}
-                contentContainerStyle={{ paddingBottom: 60 }}
+                contentContainerStyle={{ paddingBottom: verticalScale(60) }}
                 ListEmptyComponent={
                     !loading ? (
                         <View style={styles.emptyBox}>
@@ -607,123 +608,123 @@ const styles = StyleSheet.create({
 
     // Loader
     loaderOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(255,255,255,0.85)', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
-    loaderText: { marginTop: 10, color: '#1e3c72', fontWeight: '700', fontSize: 13 },
+    loaderText: { marginTop: verticalScale(10), color: '#1e3c72', fontWeight: '700', fontSize: responsiveFontSize(13) },
 
     // Filter Bar
-    filterBar: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', paddingHorizontal: 14, paddingVertical: 10, gap: 8, backgroundColor: 'rgba(238,242,249,0.9)', borderBottomWidth: 1, borderBottomColor: 'rgba(221,228,240,0.8)' },
-    filterPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(42,111,151,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, gap: 4, borderWidth: 1, borderColor: '#2a6f97' },
-    filterPillText: { fontSize: 11, fontWeight: '800', color: '#1a4f70' },
-    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(26,36,64,0.15)', backgroundColor: 'rgba(255,255,255,0.8)' },
-    filterBtnText: { fontSize: 11, fontWeight: '700', color: '#1e3c72' },
+    filterBar: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(10), gap: 8, backgroundColor: 'rgba(238,242,249,0.9)', borderBottomWidth: 1, borderBottomColor: 'rgba(221,228,240,0.8)' },
+    filterPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(42,111,151,0.1)', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 20, gap: 4, borderWidth: 1, borderColor: '#2a6f97' },
+    filterPillText: { fontSize: responsiveFontSize(11), fontWeight: '800', color: '#1a4f70' },
+    filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(6), borderRadius: 8, borderWidth: 1, borderColor: 'rgba(26,36,64,0.15)', backgroundColor: 'rgba(255,255,255,0.8)' },
+    filterBtnText: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#1e3c72' },
 
     // Type Tabs
-    typeTab: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dde4f0' },
+    typeTab: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dde4f0' },
     typeTabActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-    typeTabText: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    typeTabText: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     typeTabTextActive: { color: '#fff' },
 
     // KPI
-    kpiGrid: { padding: 14, gap: 10 },
+    kpiGrid: { padding: moderateScale(14), gap: 10 },
     kpiRow: { flexDirection: 'row', gap: 10 },
-    kpiCard: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 12, borderTopWidth: 4, borderWidth: 1, borderColor: 'rgba(228,232,239,0.8)', elevation: 2, shadowColor: '#1a2440', shadowOpacity: 0.1, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6, position: 'relative', overflow: 'hidden' },
-    kpiValue: { fontSize: 26, fontWeight: '900', lineHeight: 30 },
-    kpiLabel: { fontSize: 9, color: '#64748b', fontWeight: '700', marginTop: 4, textTransform: 'uppercase', lineHeight: 13 },
-    activeDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4 },
+    kpiCard: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), borderTopWidth: 4, borderWidth: 1, borderColor: 'rgba(228,232,239,0.8)', elevation: 2, shadowColor: '#1a2440', shadowOpacity: 0.1, shadowOffset: { width: 0, height: verticalScale(2) }, shadowRadius: 6, position: 'relative', overflow: 'hidden' },
+    kpiValue: { fontSize: responsiveFontSize(26), fontWeight: '900', lineHeight: 30 },
+    kpiLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', marginTop: verticalScale(4), textTransform: 'uppercase', lineHeight: 13 },
+    activeDot: { position: 'absolute', top: 8, right: 8, width: moderateScale(8), height: verticalScale(8), borderRadius: 4 },
 
     // Results
-    resultsBar: { paddingHorizontal: 16, paddingBottom: 8 },
-    resultsText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
+    resultsBar: { paddingHorizontal: moderateScale(16), paddingBottom: verticalScale(8) },
+    resultsText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '500' },
 
     // Site Card
-    siteCard: { backgroundColor: '#fff', marginHorizontal: 14, marginBottom: 16, borderRadius: 16, borderLeftWidth: 4, elevation: 3, shadowColor: '#1a2440', shadowOpacity: 0.12, shadowOffset: { width: 0, height: 3 }, shadowRadius: 8, overflow: 'hidden' },
-    scHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 14, backgroundColor: '#eef2f9', borderBottomWidth: 1, borderBottomColor: '#e4e8ef', gap: 10 },
-    scName: { fontSize: 15, fontWeight: '700', color: '#1a2540', marginBottom: 3 },
+    siteCard: { backgroundColor: '#fff', marginHorizontal: moderateScale(14), marginBottom: verticalScale(16), borderRadius: 16, borderLeftWidth: 4, elevation: 3, shadowColor: '#1a2440', shadowOpacity: 0.12, shadowOffset: { width: 0, height: verticalScale(3) }, shadowRadius: 8, overflow: 'hidden' },
+    scHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: moderateScale(14), backgroundColor: '#eef2f9', borderBottomWidth: 1, borderBottomColor: '#e4e8ef', gap: 10 },
+    scName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1a2540', marginBottom: verticalScale(3) },
     scMeta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
-    scMetaText: { fontSize: 10, color: '#8a96b0', fontWeight: '500' },
-    scMetaDot: { fontSize: 10, color: '#c8d0e0' },
-    scBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, flexShrink: 0, maxWidth: 140 },
-    scBadgeText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
+    scMetaText: { fontSize: responsiveFontSize(10), color: '#8a96b0', fontWeight: '500' },
+    scMetaDot: { fontSize: responsiveFontSize(10), color: '#c8d0e0' },
+    scBadge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 20, borderWidth: 1, flexShrink: 0, maxWidth: 140 },
+    scBadgeText: { fontSize: responsiveFontSize(9), fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
 
-    scBody: { padding: 14, gap: 12 },
+    scBody: { padding: moderateScale(14), gap: 12 },
 
     // Info boxes
     row3: { flexDirection: 'row', gap: 8 },
-    infoBox: { flex: 1, backgroundColor: '#f4f7fc', borderWidth: 1, borderColor: '#dde4f0', borderRadius: 8, padding: 10 },
-    ibLabel: { fontSize: 9, fontWeight: '700', color: '#8a96b0', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 3 },
-    ibValue: { fontSize: 13, fontWeight: '700', color: '#1a2540' },
-    subNote: { fontSize: 9, color: '#8a96b0', marginTop: 2 },
-    ageBadge: { marginTop: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start' },
-    ageBadgeText: { fontSize: 9, fontWeight: '800' },
+    infoBox: { flex: 1, backgroundColor: '#f4f7fc', borderWidth: 1, borderColor: '#dde4f0', borderRadius: 8, padding: moderateScale(10) },
+    ibLabel: { fontSize: responsiveFontSize(9), fontWeight: '700', color: '#8a96b0', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(3) },
+    ibValue: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1a2540' },
+    subNote: { fontSize: responsiveFontSize(9), color: '#8a96b0', marginTop: verticalScale(2) },
+    ageBadge: { marginTop: verticalScale(4), paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 8, alignSelf: 'flex-start' },
+    ageBadgeText: { fontSize: responsiveFontSize(9), fontWeight: '800' },
 
     // Status bar
-    statusBar: { flexDirection: 'row', borderRadius: 8, padding: 10, borderWidth: 1, gap: 8, alignItems: 'flex-start' },
-    statusIcon: { fontSize: 16, marginTop: 1 },
-    statusTitle: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2 },
-    statusMsg: { fontSize: 11, color: '#4a5878', lineHeight: 16 },
-    statusMetrics: { flexDirection: 'row', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)', gap: 4 },
+    statusBar: { flexDirection: 'row', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, gap: 8, alignItems: 'flex-start' },
+    statusIcon: { fontSize: responsiveFontSize(16), marginTop: verticalScale(1) },
+    statusTitle: { fontSize: responsiveFontSize(9), fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(2) },
+    statusMsg: { fontSize: responsiveFontSize(11), color: '#4a5878', lineHeight: 16 },
+    statusMetrics: { flexDirection: 'row', marginTop: verticalScale(8), paddingTop: verticalScale(8), borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)', gap: 4 },
     smBox: { flex: 1, alignItems: 'center' },
-    smVal: { fontSize: 13, fontWeight: '800', color: '#1a2540' },
-    smLbl: { fontSize: 8, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 1 },
+    smVal: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1a2540' },
+    smLbl: { fontSize: responsiveFontSize(8), color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: verticalScale(1) },
 
     // Section label
-    sectionLabel: { fontSize: 9, fontWeight: '800', color: '#8a96b0', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 },
+    sectionLabel: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#8a96b0', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: verticalScale(8) },
 
     // Rates
-    rateRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-    rateBox: { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 8, padding: 10, borderWidth: 1, gap: 8 },
+    rateRow: { flexDirection: 'row', gap: 8, marginBottom: verticalScale(8) },
+    rateBox: { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, gap: 8 },
     rateDischarge: { backgroundColor: 'rgba(220,38,38,0.05)', borderColor: 'rgba(220,38,38,0.18)' },
     rateCharge: { backgroundColor: 'rgba(22,163,74,0.05)', borderColor: 'rgba(22,163,74,0.18)' },
-    rateIcon: { fontSize: 18, fontWeight: '900' },
-    rateLbl: { fontSize: 8, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
-    rateVal: { fontSize: 12, fontWeight: '800', marginTop: 1 },
-    rateBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
-    rateBadgeText: { fontSize: 9, fontWeight: '800' },
+    rateIcon: { fontSize: responsiveFontSize(18), fontWeight: '900' },
+    rateLbl: { fontSize: responsiveFontSize(8), color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
+    rateVal: { fontSize: responsiveFontSize(12), fontWeight: '800', marginTop: verticalScale(1) },
+    rateBadge: { paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 8 },
+    rateBadgeText: { fontSize: responsiveFontSize(9), fontWeight: '800' },
 
     // Voltage
-    voltRow: { flexDirection: 'row', backgroundColor: 'rgba(42,111,151,0.06)', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(42,111,151,0.18)', gap: 12 },
+    voltRow: { flexDirection: 'row', backgroundColor: 'rgba(42,111,151,0.06)', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, borderColor: 'rgba(42,111,151,0.18)', gap: 12 },
     voltItem: { flex: 1 },
-    voltLabel: { fontSize: 8, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
-    voltValue: { fontSize: 13, fontWeight: '800', color: '#1a4f70', marginTop: 2 },
+    voltLabel: { fontSize: responsiveFontSize(8), color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
+    voltValue: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1a4f70', marginTop: verticalScale(2) },
 
     // Conditions
     condGrid: { flexDirection: 'row', gap: 6 },
-    condItem: { flex: 1, borderRadius: 8, padding: 7, borderWidth: 1, alignItems: 'center', gap: 3 },
+    condItem: { flex: 1, borderRadius: 8, padding: moderateScale(7), borderWidth: 1, alignItems: 'center', gap: 3 },
     condMet: { backgroundColor: 'rgba(22,163,74,0.06)', borderColor: 'rgba(22,163,74,0.3)' },
     condUnmet: { backgroundColor: 'rgba(220,38,38,0.04)', borderColor: 'rgba(220,38,38,0.15)' },
-    condText: { fontSize: 8, fontWeight: '700', textAlign: 'center' },
+    condText: { fontSize: responsiveFontSize(8), fontWeight: '700', textAlign: 'center' },
 
     // Expand
-    expandBtn: { padding: 10, borderWidth: 1, borderColor: '#e4e8ef', borderRadius: 8, alignItems: 'center', backgroundColor: 'transparent' },
-    expandBtnText: { fontSize: 11, fontWeight: '700', color: '#4a5878' },
+    expandBtn: { padding: moderateScale(10), borderWidth: 1, borderColor: '#e4e8ef', borderRadius: 8, alignItems: 'center', backgroundColor: 'transparent' },
+    expandBtnText: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#4a5878' },
 
     // Recommendations
-    recBox: { backgroundColor: 'rgba(202,138,4,0.06)', borderWidth: 1, borderColor: 'rgba(202,138,4,0.18)', borderRadius: 8, padding: 12 },
-    recTitle: { fontSize: 11, fontWeight: '800', color: '#92400e', marginBottom: 8 },
-    recItem: { flexDirection: 'row', gap: 6, marginBottom: 4 },
-    recArrow: { fontSize: 11, color: '#ca8a04', fontWeight: '900' },
-    recText: { flex: 1, fontSize: 11, color: '#4a5878', lineHeight: 16 },
-    recEmpty: { fontSize: 11, color: '#8a96b0' },
+    recBox: { backgroundColor: 'rgba(202,138,4,0.06)', borderWidth: 1, borderColor: 'rgba(202,138,4,0.18)', borderRadius: 8, padding: moderateScale(12) },
+    recTitle: { fontSize: responsiveFontSize(11), fontWeight: '800', color: '#92400e', marginBottom: verticalScale(8) },
+    recItem: { flexDirection: 'row', gap: 6, marginBottom: verticalScale(4) },
+    recArrow: { fontSize: responsiveFontSize(11), color: '#ca8a04', fontWeight: '900' },
+    recText: { flex: 1, fontSize: responsiveFontSize(11), color: '#4a5878', lineHeight: 16 },
+    recEmpty: { fontSize: responsiveFontSize(11), color: '#8a96b0' },
 
     // Empty
-    emptyBox: { alignItems: 'center', marginTop: 80, gap: 12 },
-    emptyIcon: { fontSize: 48, opacity: 0.35 },
-    emptyText: { color: '#8a96b0', fontSize: 14, fontWeight: '500' },
+    emptyBox: { alignItems: 'center', marginTop: verticalScale(80), gap: 12 },
+    emptyIcon: { fontSize: responsiveFontSize(48), opacity: 0.35 },
+    emptyText: { color: '#8a96b0', fontSize: responsiveFontSize(14), fontWeight: '500' },
 
     // Modal
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-    modalBox: { backgroundColor: '#fff', width: '100%', maxWidth: 420, borderRadius: 20, padding: 24, elevation: 24 },
-    modalTitle: { fontSize: 18, fontWeight: '800', color: '#1a2540', marginBottom: 6 },
-    modalSub: { fontSize: 13, color: '#8a96b0', marginBottom: 20 },
-    modalOption: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: '#f4f7fc', borderRadius: 12, borderWidth: 2, borderColor: '#e4e8ef', marginBottom: 10, gap: 12 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: moderateScale(20) },
+    modalBox: { backgroundColor: '#fff', width: '100%', maxWidth: 420, borderRadius: 20, padding: moderateScale(24), elevation: 24 },
+    modalTitle: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1a2540', marginBottom: verticalScale(6) },
+    modalSub: { fontSize: responsiveFontSize(13), color: '#8a96b0', marginBottom: verticalScale(20) },
+    modalOption: { flexDirection: 'row', alignItems: 'center', padding: moderateScale(16), backgroundColor: '#f4f7fc', borderRadius: 12, borderWidth: 2, borderColor: '#e4e8ef', marginBottom: verticalScale(10), gap: 12 },
     modalOptionSelected: { borderColor: '#1e3c72', backgroundColor: 'rgba(30,60,114,0.05)' },
-    modalOptionIcon: { fontSize: 20 },
-    modalOptionLabel: { fontSize: 14, fontWeight: '700', color: '#4a5878', flex: 1 },
-    modalOptionSub: { fontSize: 11, color: '#8a96b0', marginTop: 2 },
-    modalApplyBtn: { backgroundColor: '#1e3c72', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 8 },
-    modalApplyText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+    modalOptionIcon: { fontSize: responsiveFontSize(20) },
+    modalOptionLabel: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#4a5878', flex: 1 },
+    modalOptionSub: { fontSize: responsiveFontSize(11), color: '#8a96b0', marginTop: verticalScale(2) },
+    modalApplyBtn: { backgroundColor: '#1e3c72', padding: moderateScale(16), borderRadius: 12, alignItems: 'center', marginTop: verticalScale(8) },
+    modalApplyText: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
 
     // Search
-    searchWrap: { paddingHorizontal: 14, paddingBottom: 10, backgroundColor: 'rgba(238,242,249,0.9)' },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 12, height: 44, borderWidth: 1, borderColor: '#dde4f0' },
-    searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: '#1a2540', fontWeight: '600', padding: 0 },
+    searchWrap: { paddingHorizontal: moderateScale(14), paddingBottom: verticalScale(10), backgroundColor: 'rgba(238,242,249,0.9)' },
+    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: moderateScale(12), height: verticalScale(44), borderWidth: 1, borderColor: '#dde4f0' },
+    searchInput: { flex: 1, marginLeft: moderateScale(8), fontSize: responsiveFontSize(14), color: '#1a2540', fontWeight: '600', padding: moderateScale(0) },
 });

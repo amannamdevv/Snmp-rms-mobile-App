@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -66,7 +67,7 @@ function statusBg(s: string): string {
 function SummaryRow({ items }: { items: { label: string; value: any; color: string }[] }) {
     return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingVertical: 4, paddingHorizontal: 2 }}>
+            contentContainerStyle={{ gap: 8, paddingVertical: verticalScale(4), paddingHorizontal: moderateScale(2) }}>
             {items.map(c => (
                 <View key={c.label} style={[SRS.card, { borderTopColor: c.color }]}>
                     <Text style={[SRS.val, { color: c.color }]}>{c.value ?? 0}</Text>
@@ -77,9 +78,9 @@ function SummaryRow({ items }: { items: { label: string; value: any; color: stri
     );
 }
 const SRS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, minWidth: 84, borderTopWidth: 3, elevation: 2, alignItems: 'center' },
-    val: { fontSize: 22, fontWeight: '800' },
-    lab: { fontSize: 9, color: '#64748b', fontWeight: '700', marginTop: 2, textAlign: 'center' },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), minWidth: 84, borderTopWidth: 3, elevation: 2, alignItems: 'center' },
+    val: { fontSize: responsiveFontSize(22), fontWeight: '800' },
+    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', marginTop: verticalScale(2), textAlign: 'center' },
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -98,7 +99,7 @@ function SiteCard({ site, statusField, rows, note }: {
         <TouchableOpacity style={SC.card} onPress={() => setOpen(o => !o)} activeOpacity={0.85}>
             {/* Top row */}
             <View style={SC.top}>
-                <View style={{ flex: 1, paddingRight: 8 }}>
+                <View style={{ flex: 1, paddingRight: moderateScale(8) }}>
                     <Text style={SC.name} numberOfLines={1}>{site.site_name || '—'}</Text>
                     <Text style={SC.sub}>
                         Global ID: {site.global_id || site.site_id || '—'}{site.state_name ? `  ·  ${site.state_name}` : ''}
@@ -116,7 +117,7 @@ function SiteCard({ site, statusField, rows, note }: {
 
             {/* Expanded rows */}
             {open && (
-                <View style={{ marginTop: 10 }}>
+                <View style={{ marginTop: verticalScale(10) }}>
                     <View style={SC.divider} />
                     {rows.filter(r => r.value !== undefined && r.value !== null && r.value !== '—' && String(r.value).trim() !== '').map(r => (
                         <View key={r.label} style={SC.row}>
@@ -137,25 +138,25 @@ function SiteCard({ site, statusField, rows, note }: {
     );
 }
 const SC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 10, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
+    card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
     top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    name: { fontSize: 13, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
-    sub: { fontSize: 10, color: '#64748b' },
-    badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: 8, fontWeight: '800', letterSpacing: 0.4 },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: 10 },
-    row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rowL: { fontSize: 11, color: '#64748b', fontWeight: '600' },
-    rowV: { fontSize: 11, color: '#1e293b', fontWeight: '700', maxWidth: '58%', textAlign: 'right' },
-    noteBox: { marginTop: 10, padding: 10, borderRadius: 10 },
-    noteTxt: { fontSize: 11, fontWeight: '600', lineHeight: 16 },
+    name: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    sub: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
+    badgeTxt: { fontSize: responsiveFontSize(8), fontWeight: '800', letterSpacing: 0.4 },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
+    row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    rowL: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+    rowV: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '58%', textAlign: 'right' },
+    noteBox: { marginTop: verticalScale(10), padding: moderateScale(10), borderRadius: 10 },
+    noteTxt: { fontSize: responsiveFontSize(11), fontWeight: '600', lineHeight: 16 },
 });
 
 function Empty({ msg }: { msg: string }) {
     return (
-        <View style={{ alignItems: 'center', paddingTop: 60 }}>
+        <View style={{ alignItems: 'center', paddingTop: verticalScale(60) }}>
             <Icon name="search" size={38} color="#cbd5e1" />
-            <Text style={{ color: '#94a3b8', fontSize: 13, marginTop: 12, fontWeight: '500' }}>{msg}</Text>
+            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500' }}>{msg}</Text>
         </View>
     );
 }
@@ -206,11 +207,11 @@ function BatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `bat_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="Battery Health" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -275,11 +276,11 @@ function DGScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) {
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `dg_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="DG Health" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -343,11 +344,11 @@ function RectifierScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `rect_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="Rectifier Health" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -408,11 +409,11 @@ function SolarScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) 
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `sol_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="Solar Health" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -471,11 +472,11 @@ function DGBatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `dgb_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="DG Battery Health" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -526,11 +527,11 @@ function LightningScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
         <FlatList
             data={sites}
             keyExtractor={(item, i) => `la_${item.site_id || i}`}
-            contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
             ListHeaderComponent={
-                <View style={{ marginBottom: 14 }}>
+                <View style={{ marginBottom: verticalScale(14) }}>
                     <SectionHeader label="Lightning Arrester" total={sites.length} />
                     <SummaryRow items={summItems} />
                 </View>
@@ -556,11 +557,11 @@ function LightningScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
 
 function SectionHeader({ label, total }: { label: string; total?: number }) {
     return (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <Text style={{ fontSize: 13, fontWeight: '800', color: '#0f172a' }}>{label}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) }}>
+            <Text style={{ fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a' }}>{label}</Text>
             {total != null && (
-                <View style={{ backgroundColor: '#e2e8f0', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748b' }}>{total} Sites</Text>
+                <View style={{ backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(3), borderRadius: 8 }}>
+                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' }}>{total} Sites</Text>
                 </View>
             )}
         </View>
@@ -632,9 +633,9 @@ export default function AssetHealthScreen({ navigation, route }: any) {
     function renderScreen() {
         if (isLoading && !currData) {
             return (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: verticalScale(80) }}>
                     <ActivityIndicator size="large" color="#1e3c72" />
-                    <Text style={{ marginTop: 12, color: '#1e3c72', fontWeight: '600', fontSize: 13 }}>
+                    <Text style={{ marginTop: verticalScale(12), color: '#1e3c72', fontWeight: '600', fontSize: responsiveFontSize(13) }}>
                         Loading {currTab?.label}...
                     </Text>
                 </View>
@@ -665,7 +666,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
 
                 <View style={MS.tabBar}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 8, gap: 7 }}>
+                        contentContainerStyle={{ paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), gap: 7 }}>
                         {TABS.map(tab => {
                             const active = activeTab === tab.key;
                             return (
@@ -681,7 +682,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
                                     <Icon name={tab.icon} size={12} color={active ? '#1e3c72' : '#64748b'} />
                                     <Text style={[MS.tabTxt, active && MS.tabTxtOn]}>{tab.label}</Text>
                                     {tabLoading[tab.key] && (
-                                        <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: '#ef4444', marginLeft: 2 }} />
+                                        <View style={{ width: moderateScale(5), height: verticalScale(5), borderRadius: 3, backgroundColor: '#ef4444', marginLeft: moderateScale(2) }} />
                                     )}
                                 </TouchableOpacity>
                             );
@@ -729,25 +730,25 @@ export default function AssetHealthScreen({ navigation, route }: any) {
 const MS = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 10, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0' },
+    tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: moderateScale(11), paddingVertical: verticalScale(7), borderRadius: 10, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0' },
     tabBtnOn: { backgroundColor: '#e8f0fe', borderColor: '#1e3c72' },
-    tabTxt: { fontSize: 10, fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' },
     tabTxtOn: { color: '#1e3c72' },
     searchContainer: { 
         backgroundColor: '#fff', 
-        paddingHorizontal: 14, 
-        paddingVertical: 6, 
+        paddingHorizontal: moderateScale(14), 
+        paddingVertical: verticalScale(6), 
         flexDirection: 'row', 
         alignItems: 'center',
-        marginHorizontal: 14,
-        marginVertical: 10,
+        marginHorizontal: moderateScale(14),
+        marginVertical: verticalScale(10),
         borderRadius: 12,
         elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: verticalScale(2) },
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-    searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 13, color: '#1e293b', height: 38, padding: 0, fontWeight: '500' },
+    searchIcon: { marginRight: moderateScale(10) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 });

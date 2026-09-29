@@ -46,8 +46,8 @@ function yesterdayStr() { return daysAgoStr(1); }
 function HBar({ value, max, color }: { value: number; max: number; color: string }) {
     const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
     return (
-        <View style={{ height: 6, backgroundColor: '#f1f5f9', borderRadius: 3, marginTop: 4 }}>
-            <View style={{ height: 6, width: `${pct}%`, backgroundColor: color, borderRadius: 3 }} />
+        <View style={{ height: verticalScale(6), backgroundColor: '#f1f5f9', borderRadius: 3, marginTop: verticalScale(4) }}>
+            <View style={{ height: verticalScale(6), width: `${pct}%`, backgroundColor: color, borderRadius: 3 }} />
         </View>
     );
 }
@@ -75,11 +75,11 @@ function CategoryCard({ cat, maxCount, onPress }: {
     );
 }
 const CCS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, borderLeftWidth: 4, elevation: 2, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
-    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-    name: { fontSize: 12, fontWeight: '700', color: '#0f172a', flex: 1, marginRight: 8 },
-    count: { fontSize: 22, fontWeight: '800' },
-    pct: { fontSize: 10, color: '#64748b', marginBottom: 4 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), borderLeftWidth: 4, elevation: 2, marginBottom: verticalScale(10), shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: verticalScale(4) },
+    name: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#0f172a', flex: 1, marginRight: moderateScale(8) },
+    count: { fontSize: responsiveFontSize(22), fontWeight: '800' },
+    pct: { fontSize: responsiveFontSize(10), color: '#64748b', marginBottom: verticalScale(4) },
 });
 
 // ─── KPI Card ─────────────────────────────────────────────────
@@ -92,9 +92,9 @@ function KpiCard({ label, value, color }: { label: string; value: string; color:
     );
 }
 const KCS = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, flex: 1, borderTopWidth: 4, elevation: 3, alignItems: 'center', marginHorizontal: 4 },
-    val: { fontSize: 20, fontWeight: '800', marginBottom: 2 },
-    lab: { fontSize: 9, color: '#64748b', fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), flex: 1, borderTopWidth: 4, elevation: 3, alignItems: 'center', marginHorizontal: moderateScale(4) },
+    val: { fontSize: responsiveFontSize(20), fontWeight: '800', marginBottom: verticalScale(2) },
+    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
 });
 
 // ─── Section wrapper ──────────────────────────────────────────
@@ -112,9 +112,9 @@ function Section({ title, icon, iconColor, children }: {
     );
 }
 const SEC = StyleSheet.create({
-    wrap: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
-    header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-    title: { fontSize: 13, fontWeight: '800', color: '#1e293b', textTransform: 'uppercase', letterSpacing: 0.5 },
+    wrap: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(14) },
+    title: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#1e293b', textTransform: 'uppercase', letterSpacing: 0.5 },
 });
 
 // ─── Date quick buttons ───────────────────────────────────────
@@ -137,7 +137,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
                         <Text style={FD.title}>Filters</Text>
                         <TouchableOpacity onPress={onClose}><AppIcon name="x" size={22} color="#1e293b" /></TouchableOpacity>
                     </View>
-                    <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+                    <ScrollView contentContainerStyle={{ paddingBottom: verticalScale(20) }}>
                         {/* Date From */}
                         <Text style={FD.label}>DATE FROM</Text>
                         <TouchableOpacity style={FD.input} onPress={() => setShowFrom(true)}>
@@ -176,7 +176,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 
                         {/* Quick presets */}
                         <Text style={FD.label}>QUICK SELECT</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: verticalScale(16) }}>
                             {DATE_PRESETS.map(p => (
                                 <TouchableOpacity key={p.label}
                                     style={[FD.preset, filters.date_from === p.from && filters.date_to === p.to && FD.presetActive]}
@@ -191,7 +191,7 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 
                         {/* Energy type */}
                         <Text style={FD.label}>ENERGY TYPE</Text>
-                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: verticalScale(16) }}>
                             {['', 'eb', 'battery', 'dg'].map(t => (
                                 <TouchableOpacity key={t}
                                     style={[FD.preset, filters.energy_type === t && FD.presetActive]}
@@ -220,19 +220,19 @@ function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
 }
 const FD = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '80%' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    title: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
-    label: { fontSize: 9, fontWeight: '800', color: '#01497c', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 12, color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: 4 },
-    preset: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
+    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: moderateScale(20), maxHeight: '80%' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(20) },
+    title: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#0f172a' },
+    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#01497c', marginBottom: verticalScale(5), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(8) },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(4) },
+    preset: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     presetActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    presetTxt: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+    presetTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     presetTxtActive: { color: '#fff' },
-    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#01497c', borderRadius: 12, paddingVertical: 14, marginBottom: 10 },
-    applyTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
-    resetBtn: { alignItems: 'center', paddingVertical: 10 },
-    resetTxt: { color: '#01497c', fontWeight: '700', fontSize: 13 },
+    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#01497c', borderRadius: 12, paddingVertical: verticalScale(14), marginBottom: verticalScale(10) },
+    applyTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    resetBtn: { alignItems: 'center', paddingVertical: verticalScale(10) },
+    resetTxt: { color: '#01497c', fontWeight: '700', fontSize: responsiveFontSize(13) },
 });
 
 // ─── MAIN ─────────────────────────────────────────────────────
@@ -445,7 +445,7 @@ export default function EnergyRunHoursScreen({ navigation }: any) {
             >
                     {/* Summary KPI row */}
                     {(activeSection === 'all') && (
-                        <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', marginBottom: verticalScale(16) }}>
                             <KpiCard label="Avg EB" value={`${summary.avg_eb || 0}h`} color="#01497c" />
                             <KpiCard label="Avg DG" value={`${summary.avg_dg || 0}h`} color="#2a6f97" />
                             <KpiCard label="Avg Battery" value={`${summary.avg_bb || 0}h`} color="#468faf" />
@@ -504,7 +504,7 @@ export default function EnergyRunHoursScreen({ navigation }: any) {
                     {/* Cost Estimation */}
                     {activeSection === 'all' && (
                         <View style={styles.costCard}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(16) }}>
                                 <Text style={styles.costTitle}>Monthly Cost Estimation</Text>
                             </View>
                             <View style={styles.costRow}>
@@ -517,7 +517,7 @@ export default function EnergyRunHoursScreen({ navigation }: any) {
                                     <Text style={styles.costLab}>Estimated Diesel Cost</Text>
                                 </View>
                                 <View style={styles.costItem}>
-                                    <Text style={[styles.costVal, { fontSize: 16 }]}>{fmtINR(totalCost)}</Text>
+                                    <Text style={[styles.costVal, { fontSize: responsiveFontSize(16) }]}>{fmtINR(totalCost)}</Text>
                                     <Text style={styles.costLab}>Total Estimated Cost</Text>
                                 </View>
                             </View>
@@ -577,27 +577,27 @@ const styles = StyleSheet.create({
         paddingBottom: verticalScale(30),
     },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: 12, color: '#01497c', fontWeight: '600', fontSize: 13 },
+    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '600', fontSize: responsiveFontSize(13) },
     tabBar: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-    tabBtn: { flex: 1, alignItems: 'center', paddingVertical: 11 },
+    tabBtn: { flex: 1, alignItems: 'center', paddingVertical: verticalScale(11) },
     tabBtnActive: { borderBottomWidth: 3, borderBottomColor: '#01497c' },
     tabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: '#01497c' },
-    searchContainer: { padding: moderateScale(16), paddingBottom: 0 },
-    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 12, height: verticalScale(45), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-    searchIcon: { marginRight: 8 },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', paddingVertical: 0 },
-    costCard: { backgroundColor: '#01497c', borderRadius: 16, padding: moderateScale(16), marginBottom: 14 },
+    searchContainer: { padding: moderateScale(16), paddingBottom: verticalScale(0) },
+    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: moderateScale(12), height: verticalScale(45), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: verticalScale(2) }, shadowOpacity: 0.1, shadowRadius: 4 },
+    searchIcon: { marginRight: moderateScale(8) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', paddingVertical: verticalScale(0) },
+    costCard: { backgroundColor: '#01497c', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14) },
     costTitle: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#fff', flex: 1 },
     costRow: { flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap', gap: 10 },
     costItem: { alignItems: 'center', minWidth: (SW - 60) / 3 },
-    costVal: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#fff', marginBottom: 4 },
+    costVal: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#fff', marginBottom: verticalScale(4) },
     costLab: { fontSize: responsiveFontSize(9), color: 'rgba(255,255,255,0.8)', fontWeight: '600', textAlign: 'center' },
-    costNote: { fontSize: responsiveFontSize(9), color: 'rgba(255,255,255,0.6)', marginTop: 10, textAlign: 'center' },
-    downloadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-    downloadTxt: { color: '#fff', fontSize: 10, fontWeight: '800' },
-    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
-    emptyTxt: { color: '#94a3b8', fontSize: 14, marginTop: 12, fontWeight: '500' },
-    retryBtn: { marginTop: 16, backgroundColor: '#01497c', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10 },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: 13 },
+    costNote: { fontSize: responsiveFontSize(9), color: 'rgba(255,255,255,0.6)', marginTop: verticalScale(10), textAlign: 'center' },
+    downloadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5) },
+    downloadTxt: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '800' },
+    emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: verticalScale(60) },
+    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(14), marginTop: verticalScale(12), fontWeight: '500' },
+    retryBtn: { marginTop: verticalScale(16), backgroundColor: '#01497c', borderRadius: 10, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10) },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
 });
