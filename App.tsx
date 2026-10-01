@@ -11,6 +11,7 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpScreen from './src/screens/auth/OtpScreen';
 
 // Main App screens
+import OverviewScreen from './src/screens/Overview/OverviewScreen';
 import HomeScreen from './src/screens/Home/HomeScreen';
 import SiteStatusScreen from './src/screens/Home/SiteStatusScreen';
 import SiteDetailsScreen from './src/screens/Home/SiteDetailsScreen';
@@ -56,6 +57,8 @@ import MasterReportScreen from './src/screens/MasterReport/MasterReportScreen';
 import GridBillingScreen from './src/screens/GridBilling/GridBillingScreen';
 import OptimizationReportsScreen from './src/screens/Optimization/OptimizationReportsScreen';
 import SiteVariationScreen from './src/screens/SiteVariation/SiteVariationScreen';
+import SolarAnalyticsScreen from './src/screens/Solar/SolarAnalyticsScreen';
+import PMAnalyticsScreen from './src/screens/PMAnalytics/PMAnalyticsScreen';
 
 // Resource Mapping
 import ResourceMappingScreen from './src/screens/Mapping/ResourceMappingScreen';
@@ -67,6 +70,7 @@ import SupportRequiredScreen from './src/screens/Support/SupportRequiredScreen';
 import RoboticCallStatusScreen from './src/screens/Robotic/RoboticCallStatusScreen';
 import MqttWriteDataScreen from './src/screens/Mqtt/MqttWriteDataScreen';
 import SnmpToolScreen from './src/screens/Snmp/SnmpToolScreen';
+import UserManagementScreen from './src/screens/UserManagement/UserManagementScreen';
 
 
 
@@ -91,6 +95,7 @@ export default function App() {
           <Stack.Screen name="Otp" component={OtpScreen} />
 
           {/* ── Home ───────────────────────────────── */}
+          <Stack.Screen name="Overview" component={OverviewScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="SiteStatus" component={SiteStatusScreen} />
           <Stack.Screen name="SiteDetails" component={SiteDetailsScreen} />
@@ -128,12 +133,15 @@ export default function App() {
           <Stack.Screen name="OptimizationReports" component={OptimizationReportsScreen} />
           <Stack.Screen name="ResourceMapping" component={ResourceMappingScreen} />
           <Stack.Screen name="SiteVariation" component={SiteVariationScreen} />
+          <Stack.Screen name="SolarAnalytics" component={SolarAnalyticsScreen} />
+          <Stack.Screen name="PMAnalytics" component={PMAnalyticsScreen} />
           <Stack.Screen name="SiteLogs" component={SiteLogsScreen} />
           <Stack.Screen name="HistoricalAlarms" component={HistoricalAlarmsScreen} />
           <Stack.Screen name="SupportRequired" component={SupportRequiredScreen} />
           <Stack.Screen name="RoboticCallStatus" component={RoboticCallStatusScreen} />
           <Stack.Screen name="MqttWriteData" component={MqttWriteDataScreen} />
           <Stack.Screen name="SnmpTool" component={SnmpToolScreen} />
+          <Stack.Screen name="UserManagement" component={UserManagementScreen} />
 
         </Stack.Navigator>
       </NavigationContainer>

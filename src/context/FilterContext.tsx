@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface GlobalFilters {
   state_id?: string;
@@ -34,14 +35,35 @@ interface FilterContextType {
   hasActiveFilters: boolean;
   activeFilterCount: number;
   getFilterLabel: () => string;
+  isReady: boolean;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
+const STORAGE_KEY = '@rms_global_filters';
+
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [globalFilters, setGlobalFiltersState] = useState<GlobalFilters>({});
+  const [isReady, setIsReady] = useState(false);
 
-  const setGlobalFilters = (filters: GlobalFilters) => {
+  useEffect(() => {
+    // Load persisted filters on mount
+    const loadFilters = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setGlobalFiltersState(JSON.parse(stored));
+        }
+      } catch (error) {
+        console.error('Failed to load global filters:', error);
+      } finally {
+        setIsReady(true);
+      }
+    };
+    loadFilters();
+  }, []);
+
+  const setGlobalFilters = async (filters: GlobalFilters) => {
     const cleaned: GlobalFilters = {};
     Object.entries(filters).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') {
@@ -49,9 +71,21 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
       }
     });
     setGlobalFiltersState(cleaned);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    } catch (error) {
+      console.error('Failed to save global filters:', error);
+    }
   };
 
-  const clearGlobalFilters = () => setGlobalFiltersState({});
+  const clearGlobalFilters = async () => {
+    setGlobalFiltersState({});
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear global filters:', error);
+    }
+  };
 
   const labelKeys = ['state_name', 'district_name', 'cluster_name'];
   const activeFilterCount = Object.keys(globalFilters).filter(
@@ -79,6 +113,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
       hasActiveFilters,
       activeFilterCount,
       getFilterLabel,
+      isReady
     }}>
       {children}
     </FilterContext.Provider>

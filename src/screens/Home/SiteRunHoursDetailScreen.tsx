@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Alert, Platform,
@@ -413,71 +413,71 @@ const styles = StyleSheet.create({
 
   // Filter
   filterCard: { margin: moderateScale(12), backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2 },
-  filterRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(10) },
+  filterRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: verticalScale(10) },
   filterField: { flex: 1 },
-  filterLabel: { fontSize: responsiveFontSize(11), color: '#01497C', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
+  filterLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#01497C', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
   dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderColor: '#01497C', borderRadius: 8, padding: moderateScale(10), backgroundColor: '#F0F7FF' },
-  dateBtnTxt: { fontSize: responsiveFontSize(13), color: '#01497C', fontWeight: '700', flex: 1 },
-  filterBtnRow: { flexDirection: 'row', gap: 10 },
+  dateBtnTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#01497C', fontWeight: '700', flex: 1 },
+  filterBtnRow: { flexDirection: 'row', gap: moderateScale(10) },
   applyBtn: { flex: 1, backgroundColor: '#01497C', borderRadius: 8, paddingVertical: verticalScale(10), alignItems: 'center' },
-  applyBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14) },
+  applyBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14), flexShrink: 1, },
   resetBtn: { flex: 1, backgroundColor: '#95a5a6', borderRadius: 8, paddingVertical: verticalScale(10), alignItems: 'center' },
-  resetBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14) },
+  resetBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(14), flexShrink: 1, },
 
   // Site Info
-  siteInfoCard: { marginHorizontal: moderateScale(12), marginBottom: verticalScale(10), backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  siteInfoCard: { marginHorizontal: moderateScale(12), marginBottom: verticalScale(10), backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2, flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(12) },
   infoItem: { minWidth: '45%', flex: 1 },
-  infoLbl: { fontSize: responsiveFontSize(10), color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  infoVal: { fontSize: responsiveFontSize(13), color: '#1C2F3E', fontWeight: '600' },
+  infoLbl: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoVal: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1C2F3E', fontWeight: '600' },
 
   // Stats
   statsGrid: { marginHorizontal: moderateScale(12), marginBottom: verticalScale(10), flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   statCard: { backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(8), alignItems: 'center', borderTopWidth: 3, elevation: 2, width: '31.5%', marginBottom: verticalScale(8) },
-  statVal: { fontSize: responsiveFontSize(13), fontWeight: '800', marginBottom: verticalScale(4) },
-  statLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', textAlign: 'center' },
+  statVal: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
+  statLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '700', textTransform: 'uppercase', textAlign: 'center' },
 
   // Section
   section: { marginHorizontal: moderateScale(12) },
-  sectionTitle: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(10) },
+  sectionTitle: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#01497C', marginBottom: verticalScale(10) },
 
   // Record card
   recordCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2 },
   recordCardAlt: { backgroundColor: '#FAFCFF' },
   recordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(12) },
-  recordDate: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C' },
+  recordDate: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#01497C' },
   srcBadge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
-  srcBadgeTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', textTransform: 'uppercase' },
+  srcBadgeTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', textTransform: 'uppercase' },
 
   // Duration grid
   durationGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: verticalScale(10) },
   durCell: { backgroundColor: '#F0F7FF', borderRadius: 8, padding: moderateScale(8), width: '23.5%', marginBottom: verticalScale(8) },
   durCellHighlight: { backgroundColor: '#EBF5FB' },
-  durLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
-  durVal: { fontSize: responsiveFontSize(12), fontWeight: '800', fontVariant: ['tabular-nums'] },
+  durLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  durVal: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', fontVariant: ['tabular-nums'] },
 
   // Session toggle
   sessionToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: verticalScale(4), paddingVertical: verticalScale(6), paddingHorizontal: moderateScale(10), backgroundColor: '#F0F7FF', borderRadius: 8, alignSelf: 'flex-start' },
-  sessionToggleTxt: { fontSize: responsiveFontSize(12), color: '#01497C', fontWeight: '600' },
+  sessionToggleTxt: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#01497C', fontWeight: '600' },
 
   // Session details
   sessionBox: { marginTop: verticalScale(10), backgroundColor: '#F8FAFC', borderRadius: 8, padding: moderateScale(12), borderWidth: 1, borderColor: '#E2EBF4' },
-  sessionBoxTitle: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(8), textTransform: 'uppercase' },
+  sessionBoxTitle: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#01497C', marginBottom: verticalScale(8), textTransform: 'uppercase' },
   sessionItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: moderateScale(8), borderRadius: 6, borderLeftWidth: 3, marginBottom: verticalScale(6) },
-  sessionSrc: { fontSize: responsiveFontSize(12), fontWeight: '700', marginBottom: verticalScale(2) },
-  sessionTime: { fontSize: responsiveFontSize(11), color: '#64748b' },
+  sessionSrc: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', marginBottom: verticalScale(2) },
+  sessionTime: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b' },
   sessionDurBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 10 },
-  sessionDurTxt: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '700' },
+  sessionDurTxt: { color: '#fff', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' },
 
   // Empty
   emptyBox: { alignItems: 'center', paddingVertical: verticalScale(40) },
-  emptyTxt: { color: '#94A3B8', marginTop: verticalScale(10), fontSize: responsiveFontSize(13), fontStyle: 'italic' },
+  emptyTxt: { color: '#94A3B8', marginTop: verticalScale(10), fontSize: responsiveFontSize(13), flexShrink: 1, fontStyle: 'italic' },
 
   // Sticky footer
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopWidth: 3, borderTopColor: '#01497C', flexDirection: 'row', paddingVertical: verticalScale(10), paddingHorizontal: moderateScale(4), elevation: 10 },
   footerItem: { flex: 1, alignItems: 'center' },
   footerDivider: { width: 1, backgroundColor: '#E2EBF4' },
-  footerLabel: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  footerVal: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#1C2F3E' },
+  footerLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  footerVal: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', color: '#1C2F3E' },
   footerValHighlight: { color: '#2980b9' },
 });
 

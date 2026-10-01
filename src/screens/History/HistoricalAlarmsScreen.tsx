@@ -21,7 +21,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -37,8 +37,12 @@ import RNFS from 'react-native-fs';
 import RNShare from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
+import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SW = _d.width; } catch(_) {}
 
 // ─── Helpers ─────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().split('T')[0]; }
@@ -87,42 +91,18 @@ function isNight(ts: string) {
 }
 
 function getSeverity(alarm: any): 'Fire' | 'NightDoor' | 'Major' | 'Minor' {
-    const type = (alarm.alarm_type || '').toLowerCase();
-    const ts = alarm.start_time || alarm.created_dt;
-
-    if (type === 'tpms' || type === 'rms') {
-        const name = alarm.alarm_name || alarm.alarm_details || '';
-        const nl = name.toLowerCase();
-        if (nl.includes('fire') || nl.includes('smoke') || nl.includes('fsmk')) return 'Fire';
-        if (['door-open', 'door open', 'dopn'].some(p => nl.includes(p)) && isNight(ts)) return 'NightDoor';
-        return (rmsMap[name] as any) || 'Minor';
-    }
-    // SMPS
-    const all = [...(alarm.active_alarms || []), ...(alarm.closed_alarms || [])];
-    if (!all.length) {
-        const f = alarm.alarm_details || alarm.alarm_name || '';
-        if (f === 'FIRE_and_SMOKE') return 'Fire';
-        return (smpsMap[f] as any) || 'Minor';
-    }
-    for (const a of all) if (a.field === 'FIRE_and_SMOKE') return 'Fire';
-    for (const a of all) if (a.field === 'DOOR_ALARM' && isNight(ts)) return 'NightDoor';
-    for (const a of all) if (smpsMap[a.field] === 'Major') return 'Major';
-    return 'Minor';
+    const nl = getAlarmName(alarm).toLowerCase();
+    if (nl.includes('fire') || nl.includes('smoke')) return 'Fire';
+    if (nl.includes('door') && isNight(alarm.start_time)) return 'NightDoor';
+    return (smpsMap[alarm.alarm_name] as any) || (rmsMap[alarm.alarm_name] as any) || 'Major';
 }
 
 function getAlarmName(alarm: any): string {
-    if (alarm.alarm_details) return alarm.alarm_details;
-    const closed = alarm.closed_alarms || [];
-    if (closed.length) return closed.map((a: any) => a.name || a.field).join(', ');
-    const active = alarm.active_alarms || [];
-    if (active.length) return active.map((a: any) => a.name || a.field).join(', ');
-    return alarm.alarm_name || '—';
+    return alarm.alarm_name || alarm.column_name || '—';
 }
 
 function getStatus(alarm: any): 'ACTIVE' | 'CLOSED' {
-    if (alarm.end_time || alarm.end_time_display) return 'CLOSED';
-    if (alarm.closed_alarms?.length) return 'CLOSED';
-    return alarm.alarm_status === 'Open' ? 'ACTIVE' : 'CLOSED';
+    return alarm.status === 'OPEN' || alarm.status === 'ACTIVE' ? 'ACTIVE' : 'CLOSED';
 }
 
 // ─── Severity colors ─────────────────────────────────────────
@@ -147,64 +127,48 @@ const SITE_STATUS_COLOR: Record<string, string> = {
 // ─── Alarm Card ───────────────────────────────────────────────
 function AlarmCard({ item }: { item: any }) {
     const [open, setOpen] = useState(false);
-    const sev = getSeverity(item);
     const status = getStatus(item);
     const name = getAlarmName(item);
-    const sevCol = SEV_COLOR[sev];
-    const sevBg = SEV_BG[sev];
     const stInfo = STATUS_INFO[status];
-    const ss = item.site_running_status || '';
-    const ssCol = SITE_STATUS_COLOR[ss] || '#64748b';
 
     return (
         <TouchableOpacity style={AC.card} onPress={() => setOpen(o => !o)} activeOpacity={0.85}>
-            {/* Top row */}
             <View style={AC.top}>
                 <View style={{ flex: 1 }}>
                     <Text style={AC.site} numberOfLines={1}>{item.site_name || '—'}</Text>
-                    <Text style={AC.siteId}>Global ID: {item.global_id || item.site_id || '—'}</Text>
+                    <Text style={AC.siteId}>Site ID: {item.site_id || '—'}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                    <View style={[AC.badge, { backgroundColor: sevBg, borderColor: sevCol }]}>
-                        <Text style={[AC.badgeTxt, { color: sevCol }]}>{SEV_LABEL[sev]}</Text>
-                    </View>
                     <View style={[AC.badge, { backgroundColor: stInfo.bg, borderColor: stInfo.color }]}>
                         <Text style={[AC.badgeTxt, { color: stInfo.color }]}>{status}</Text>
                     </View>
-                    <AppIcon name={open ? 'chevron-up' : 'chevron-down'} size={12} color="#94a3b8" />
+                    <AppIcon name={open ? 'chevron-up' : 'chevron-down'} size={14} color="#94a3b8" />
                 </View>
             </View>
 
-            {/* Alarm name */}
-            <Text style={AC.alarmName} numberOfLines={open ? undefined : 1}>{name}</Text>
+            <Text style={AC.alarmName} numberOfLines={open ? undefined : 2}>{name}</Text>
 
-            {/* Quick info row */}
             <View style={AC.quickRow}>
                 {[
-                    { l: 'Duration', v: item.active_time_formatted || '—' },
-                    { l: 'Type', v: (item.alarm_type?.toLowerCase() === 'tpms' || item.alarm_type?.toLowerCase() === 'rms') ? 'RMS' : (item.alarm_type || '—') },
-                    { l: 'Site Status', v: ss || '—', color: ssCol },
+                    { l: 'Duration', v: item.duration || '—' },
                     { l: 'Start Volt', v: item.start_volt ? `${parseFloat(item.start_volt).toFixed(2)}V` : '—' },
+                    { l: 'End Volt', v: item.end_volt ? `${parseFloat(item.end_volt).toFixed(2)}V` : '—' },
                 ].map(x => (
                     <View key={x.l} style={AC.quickItem}>
-                        <Text style={[AC.quickVal, x.color ? { color: x.color, fontWeight: '800' } : {}]}>{x.v}</Text>
+                        <Text style={AC.quickVal} numberOfLines={1}>{x.v}</Text>
                         <Text style={AC.quickLab}>{x.l}</Text>
                     </View>
                 ))}
             </View>
 
-            {/* Expanded detail */}
             {open && (
                 <View style={AC.detail}>
                     <View style={AC.divider} />
                     {[
-                        { l: 'Start Time', v: fmtTs(item.start_time_display || item.start_time || item.created_dt) },
-                        { l: 'End Time', v: fmtTs(item.end_time_display || item.end_time) },
-                        { l: 'Duration', v: item.active_time_formatted || '—' },
-                        { l: 'Start Volt', v: item.start_volt ? `${parseFloat(item.start_volt).toFixed(2)}V` : '—' },
-                        { l: 'End Volt', v: item.end_volt ? `${parseFloat(item.end_volt).toFixed(2)}V` : '—' },
-                        { l: 'Alarm Type', v: (item.alarm_type?.toLowerCase() === 'tpms' || item.alarm_type?.toLowerCase() === 'rms') ? 'RMS' : (item.alarm_type || '—') },
-                        { l: 'Site Status', v: item.site_running_status || '—' },
+                        { l: 'Column Name', v: item.column_name || '—' },
+                        { l: 'Start Time', v: fmtTs(item.start_time) },
+                        { l: 'End Time', v: fmtTs(item.end_time) },
+                        { l: 'Table Name', v: item.table_name || '—' },
                     ].map(r => (
                         <View key={r.l} style={AC.detailRow}>
                             <Text style={AC.detailLab}>{r.l}</Text>
@@ -216,178 +180,24 @@ function AlarmCard({ item }: { item: any }) {
         </TouchableOpacity>
     );
 }
+
 const AC = StyleSheet.create({
-    card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3 },
-    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8), gap: 8 },
-    site: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    siteId: { fontSize: responsiveFontSize(9), color: '#64748b' },
-    badge: { paddingHorizontal: moderateScale(7), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: responsiveFontSize(8), fontWeight: '800', letterSpacing: 0.3 },
-    alarmName: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e40af', marginBottom: verticalScale(8) },
-    quickRow: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 10, padding: moderateScale(8) },
+    card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(10), gap: 8 },
+    site: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(4) },
+    siteId: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '600' },
+    badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8, borderWidth: 1 },
+    badgeTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', letterSpacing: 0.5 },
+    alarmName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#3b82f6', marginBottom: verticalScale(12) },
+    quickRow: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 12, padding: moderateScale(12) },
     quickItem: { flex: 1, alignItems: 'center' },
-    quickVal: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#0f172a' },
-    quickLab: { fontSize: responsiveFontSize(7), color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
-    detail: { marginTop: verticalScale(10) },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
-    detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    detailLab: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    detailVal: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
-});
-
-// ─── Filter Drawer ────────────────────────────────────────────
-function FilterDrawer({ visible, onClose, filters, setFilters, onApply }: any) {
-    const [showFrom, setShowFrom] = useState(false);
-    const [showTo, setShowTo] = useState(false);
-    return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={FD.overlay}>
-                <View style={FD.drawer}>
-                    <View style={FD.header}>
-                        <Text style={FD.title}>Filters</Text>
-                        <TouchableOpacity onPress={onClose}><AppIcon name="x" size={22} color="#1e293b" /></TouchableOpacity>
-                    </View>
-                    <ScrollView contentContainerStyle={{ paddingBottom: verticalScale(24) }}>
-                        {[
-                            { key: 'date_from', label: 'DATE FROM', placeholder: 'YYYY-MM-DD', isDate: true },
-                            { key: 'date_to', label: 'DATE TO', placeholder: 'YYYY-MM-DD', isDate: true },
-                            { key: 'site_id', label: 'SITE ID', placeholder: 'e.g. 706307' },
-                            { key: 'site_name', label: 'SITE NAME', placeholder: 'Search...' },
-                            { key: 'global_id', label: 'GLOBAL ID', placeholder: 'Global ID' },
-                            { key: 'imei', label: 'IMEI', placeholder: 'Enter IMEI' },
-                        ].map(f => (
-                            <View key={f.key}>
-                                <Text style={FD.label}>{f.label}</Text>
-                                {f.isDate ? (
-                                    <TouchableOpacity style={FD.input} onPress={() => f.key === 'date_from' ? setShowFrom(true) : setShowTo(true)}>
-                                        <Text style={{ color: filters[f.key] ? '#1e293b' : '#94a3b8' }}>{filters[f.key] || f.placeholder}</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TextInput style={FD.input} value={filters[f.key] || ''}
-                                        onChangeText={v => setFilters((p: any) => ({ ...p, [f.key]: v }))}
-                                        placeholder={f.placeholder} placeholderTextColor="#94a3b8" />
-                                )}
-                            </View>
-                        ))}
-
-                        {showFrom && (
-                            <DateTimePicker
-                                value={filters.date_from ? new Date(filters.date_from) : new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={(e, d) => {
-                                    setShowFrom(false);
-                                    if (d) setFilters((p: any) => ({ ...p, date_from: d.toISOString().split('T')[0] }));
-                                }}
-                            />
-                        )}
-
-                        {showTo && (
-                            <DateTimePicker
-                                value={filters.date_to ? new Date(filters.date_to) : new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={(e, d) => {
-                                    setShowTo(false);
-                                    if (d) setFilters((p: any) => ({ ...p, date_to: d.toISOString().split('T')[0] }));
-                                }}
-                            />
-                        )}
-
-                        {/* Quick dates */}
-                        <Text style={FD.label}>QUICK DATE</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: verticalScale(14) }}>
-                            {[
-                                { l: 'Today', s: todayStr(), e: todayStr() },
-                                { l: 'Yesterday', s: daysAgoStr(1), e: daysAgoStr(1) },
-                                { l: '7 Days', s: daysAgoStr(7), e: todayStr() },
-                                { l: '30 Days', s: daysAgoStr(30), e: todayStr() },
-                            ].map(p => (
-                                <TouchableOpacity key={p.l}
-                                    style={[FD.chip, filters.date_from === p.s && FD.chipActive]}
-                                    onPress={() => setFilters((prev: any) => ({ ...prev, date_from: p.s, date_to: p.e }))}
-                                >
-                                    <Text style={[FD.chipTxt, filters.date_from === p.s && FD.chipTxtActive]}>{p.l}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        {/* Alarm type */}
-                        <Text style={FD.label}>ALARM TYPE</Text>
-                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: verticalScale(16) }}>
-                            {[
-                                { v: 'both', l: 'Both' },
-                                { v: 'smps', l: 'SMPS' },
-                                { v: 'tpms', l: 'RMS' },
-                            ].map(t => (
-                                <TouchableOpacity key={t.v}
-                                    style={[FD.chip, filters.alarm_type === t.v && FD.chipActive]}
-                                    onPress={() => setFilters((p: any) => ({ ...p, alarm_type: t.v }))}
-                                >
-                                    <Text style={[FD.chipTxt, filters.alarm_type === t.v && FD.chipTxtActive]}>{t.l}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        <TouchableOpacity style={FD.applyBtn} onPress={() => { onApply(); onClose(); }}>
-                            <AppIcon name="filter" size={14} color="#fff" />
-                            <Text style={FD.applyTxt}>Apply Filters</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={FD.resetBtn}
-                            onPress={() => setFilters({ date_from: daysAgoStr(7), date_to: todayStr(), alarm_type: 'both' })}>
-                            <Text style={FD.resetTxt}>Reset</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-            </View>
-        </Modal>
-    );
-}
-const FD = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: moderateScale(20), maxHeight: '85%' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(16) },
-    title: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#0f172a' },
-    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5B9BD5', marginBottom: verticalScale(4), marginTop: verticalScale(10), textTransform: 'uppercase', letterSpacing: 0.5 },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(2) },
-    chip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
-    chipActive: { backgroundColor: '#5B9BD5', borderColor: '#5B9BD5' },
-    chipTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
-    chipTxtActive: { color: '#fff' },
-    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingVertical: verticalScale(14), marginBottom: verticalScale(10), marginTop: verticalScale(8) },
-    applyTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
-    resetBtn: { alignItems: 'center', paddingVertical: verticalScale(8) },
-    resetTxt: { color: '#5B9BD5', fontWeight: '700', fontSize: responsiveFontSize(13) },
-});
-
-// ─── Export type modal ────────────────────────────────────────
-function ExportModal({ visible, onClose, onExport }: { visible: boolean; onClose: () => void; onExport: (t: string) => void }) {
-    return (
-        <Modal visible={visible} transparent animationType="fade">
-            <TouchableOpacity style={EM.overlay} onPress={onClose} activeOpacity={1}>
-                <View style={EM.box}>
-                    <Text style={EM.title}>Export Alarms</Text>
-                    {[
-                        { v: 'all', l: 'Export All Alarms (SMPS + RMS)', icon: 'download' },
-                        { v: 'smps', l: 'Export SMPS Alarms Only', icon: 'cpu' },
-                        { v: 'tpms', l: 'Export RMS Alarms Only', icon: 'radio' },
-                    ].map(o => (
-                        <TouchableOpacity key={o.v} style={EM.option} onPress={() => { onExport(o.v); onClose(); }}>
-                            <AppIcon name={o.icon} size={16} color="#5B9BD5" />
-                            <Text style={EM.optTxt}>{o.l}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </TouchableOpacity>
-        </Modal>
-    );
-}
-const EM = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(30) },
-    box: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(20) },
-    title: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
-    option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optTxt: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
+    quickVal: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', color: '#0f172a' },
+    quickLab: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '700', marginTop: verticalScale(3) },
+    detail: { marginTop: verticalScale(12) },
+    divider: { height: 1, backgroundColor: '#e2e8f0', marginBottom: verticalScale(10) },
+    detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+    detailLab: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '600' },
+    detailVal: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', fontWeight: '800', maxWidth: '60%', textAlign: 'right' },
 });
 
 // ─── MAIN ─────────────────────────────────────────────────────
@@ -407,11 +217,7 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
     const [fullname, setFullname] = useState('Administrator');
     const [error, setError] = useState('');
 
-    const [filters, setFilters] = useState({
-        date_from: daysAgoStr(7),
-        date_to: todayStr(),
-        alarm_type: 'both',
-    });
+    const { globalFilters, setGlobalFilters } = useGlobalFilter();
 
     React.useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
@@ -421,15 +227,17 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
         if (!isRefresh) setLoading(true);
         setError('');
         try {
-            const params = { ...filters, page, page_size: 50 };
+            const params = { ...globalFilters, page, limit: 50 };
+            if (params.from_date) { params.date_from = params.from_date; delete params.from_date; }
+            if (params.to_date) { params.date_to = params.to_date; delete params.to_date; }
             const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== '' && v != null));
             const res = await (api as any).getHistoricalAlarms(clean);
 
-            if (res?.status === 'success') {
-                setData(res.data || []);
-                setCurrentPage(res.pagination?.current_page || 1);
-                setTotalPages(res.pagination?.total_pages || 1);
-                setTotalCount(res.total_alarms_count || res.pagination?.total_count || 0);
+            if (res?.success === true) {
+                setData(res.alarms || []);
+                setCurrentPage(page);
+                setTotalPages(res.total_pages || Math.ceil((res.total_alarms || 0) / 50) || 1);
+                setTotalCount(res.total_alarms || 0);
                 setHasLoaded(true);
             } else {
                 setError(res?.message || 'No data found');
@@ -441,7 +249,11 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [filters]);
+    }, [globalFilters]);
+
+    React.useEffect(() => {
+        fetchData(1);
+    }, [globalFilters, fetchData]);
 
     const onRefresh = () => { setRefreshing(true); fetchData(currentPage, true); };
     const onApply = () => { setData([]); fetchData(1); };
@@ -454,8 +266,8 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 ? data.filter(a => (a.alarm_type || '').toLowerCase() === 'tpms' || (a.alarm_type || '').toLowerCase() === 'rms')
                 : data;
 
-        const title = `"HISTORICAL ALARMS REPORT (${filters.date_from} to ${filters.date_to})"`;
-        const header = 'Global ID,Site ID,Site Name,Alarm Details,Severity,Status,Site Status,Duration,Start Time,End Time,Type,Start Volt,End Volt';
+        const title = `"HISTORICAL ALARMS REPORT (${globalFilters.date_from} to ${globalFilters.date_to})"`;
+        const header = 'Site ID,Site Name,Alarm Name,Column Name,Status,Duration,Start Time,End Time,Table Name,Start Volt,End Volt';
         
         const rows = filtered.map((a, i) => [
             `"${a.global_id || ''}"`,
@@ -475,7 +287,7 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
 
         const csvContent = [title, '', header, ...rows].join('\n');
         
-        const path = `${RNFS.TemporaryDirectoryPath}/historical_alarms_${filters.date_from}_to_${filters.date_to}_${Date.now()}.csv`;
+        const path = `${RNFS.TemporaryDirectoryPath}/historical_alarms_${globalFilters.date_from}_to_${globalFilters.date_to}_${Date.now()}.csv`;
         
         try {
             await RNFS.writeFile(path, csvContent, 'utf8');
@@ -502,9 +314,9 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
         getAlarmName(row).toLowerCase().includes(search.toLowerCase())
     );
 
-    const dateLabel = filters.date_from === filters.date_to
-        ? filters.date_from
-        : `${filters.date_from} - ${filters.date_to}`;
+    const dateLabel = globalFilters.date_from === globalFilters.date_to
+        ? globalFilters.date_from
+        : `${globalFilters.date_from} - ${globalFilters.date_to}`;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -515,21 +327,12 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 leftAction="menu"
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
-                    { icon: exporting ? 'loader' : 'download', onPress: () => setExportVisible(true) },
+                    { icon: exporting ? 'loader' : 'download', onPress: handleExport },
                     { icon: 'filter', onPress: () => setFilterVisible(true) },
                 ]}
             />
 
-            {!hasLoaded ? (
-                <View style={styles.emptyBox}>
-                    <AppIcon name="bell" size={40} color="#cbd5e1" />
-                    <Text style={styles.emptyTxt}>Apply filters to load historical alarms</Text>
-                    <TouchableOpacity style={styles.filterPromptBtn} onPress={() => setFilterVisible(true)} activeOpacity={0.8}>
-                        <AppIcon name="sliders" size={14} color="#fff" />
-                        <Text style={styles.filterPromptTxt}>Open Filters</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : loading ? (
+            {loading ? (
                 <View style={styles.loaderBox}>
                     <ActivityIndicator size="large" color="#5B9BD5" />
                     <Text style={styles.loaderTxt}>Loading alarms...</Text>
@@ -598,10 +401,18 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 />
             )}
 
-            <FilterDrawer visible={filterVisible} onClose={() => setFilterVisible(false)}
-                filters={filters} setFilters={setFilters} onApply={onApply} />
+            <FilterModal
+                visible={filterVisible}
+                onClose={() => setFilterVisible(false)}
+                initialFilters={globalFilters}
+                onApply={(f) => {
+                    setGlobalFilters(f);
+                    setFilterVisible(false);
+                    onApply();
+                }}
+            />
 
-            <ExportModal visible={exportVisible} onClose={() => setExportVisible(false)} onExport={handleExport} />
+            
 
             <Sidebar
                 isVisible={isSidebarVisible}
@@ -622,22 +433,22 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: verticalScale(12), color: '#5B9BD5', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    loaderTxt: { marginTop: verticalScale(12), color: '#5B9BD5', fontWeight: '600', fontSize: responsiveFontSize(13), flexShrink: 1, },
     searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(8), elevation: 1, gap: 8 },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(12), flexShrink: 1, color: '#0f172a', fontWeight: '500' },
     statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) },
-    statsCount: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    statsCount: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6) },
-    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(11) },
+    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(11), flexShrink: 1, },
     pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: verticalScale(16) },
     pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1 },
     pageBtnDisabled: { opacity: 0.4 },
-    pageBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#5B9BD5' },
-    pageInfo: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' },
+    pageBtnTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#5B9BD5' },
+    pageInfo: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
     emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: verticalScale(60) },
-    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500', textAlign: 'center', paddingHorizontal: moderateScale(30) },
+    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, marginTop: verticalScale(12), fontWeight: '500', textAlign: 'center', paddingHorizontal: moderateScale(30) },
     filterPromptBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#5B9BD5', borderRadius: 12, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(12), marginTop: verticalScale(16) },
-    filterPromptTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
+    filterPromptTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13), flexShrink: 1, },
     errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(10) },
-    errorTxt: { flex: 1, fontSize: responsiveFontSize(12), color: '#ef4444', fontWeight: '600' },
+    errorTxt: { flex: 1, fontSize: responsiveFontSize(12), flexShrink: 1, color: '#ef4444', fontWeight: '600' },
 });

@@ -4,7 +4,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../utils/responsive';
+import { responsiveFontSize, moderateScale, scale, verticalScale } from '../utils/responsive';
 
 /** Fixed brand color used across all headers */
 export const HEADER_BG = '#1e3c72';
@@ -100,14 +100,12 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: responsiveFontSize(17),
-    fontWeight: '700',
+    fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '700',
     letterSpacing: 0.3,
   },
   subtitle: {
     color: 'rgba(255,255,255,0.75)',
-    fontSize: responsiveFontSize(10),
-    fontWeight: '600',
+    fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '600',
     marginTop: verticalScale(2),
   },
   rightWrap: {

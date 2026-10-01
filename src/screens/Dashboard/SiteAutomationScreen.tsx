@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, Alert, TextInput
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     statusFilterContainer: { flexDirection: 'row', backgroundColor: '#fff', padding: moderateScale(10), gap: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
     statusFilterBtn: { flex: 1, paddingVertical: verticalScale(8), alignItems: 'center', borderRadius: 20, backgroundColor: '#f0f4f8' },
     statusFilterBtnActive: { backgroundColor: '#1e3c72' },
-    statusFilterText: { fontSize: responsiveFontSize(12), color: '#1e3c72', fontWeight: '600' },
+    statusFilterText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#1e3c72', fontWeight: '600' },
     statusFilterTextActive: { color: '#fff' },
 
     searchContainer: { 
@@ -329,39 +329,39 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     searchIcon: { marginRight: moderateScale(10) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 
     emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-    emptyTextMain: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-    emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+    emptyTextMain: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+    emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(16), marginBottom: verticalScale(12), elevation: 3 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72' },
-    subText: { fontSize: responsiveFontSize(12), color: '#475569', marginTop: verticalScale(2) },
+    siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+    subText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', marginTop: verticalScale(2) },
     locRow: { marginTop: verticalScale(4) },
-    locText: { fontSize: responsiveFontSize(12), color: '#64748b' },
+    locText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
     tag: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6 },
     tagAuto: { backgroundColor: 'rgba(76, 175, 80, 0.1)' },
     tagNotAuto: { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
-    tagText: { fontSize: responsiveFontSize(12), fontWeight: 'bold' },
+    tagText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: 'bold' },
     divider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(12) },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     infoCol: { flex: 1 },
-    label: { fontSize: responsiveFontSize(12), color: '#64748b', textTransform: 'uppercase' },
-    val: { fontSize: responsiveFontSize(12), fontWeight: '700', marginTop: verticalScale(1) },
+    label: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', textTransform: 'uppercase' },
+    val: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', marginTop: verticalScale(1) },
     expandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: moderateScale(5) },
-    expandText: { fontSize: responsiveFontSize(12), color: '#2196f3', fontWeight: '600' },
+    expandText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#2196f3', fontWeight: '600' },
     detailsContainer: { marginTop: verticalScale(15), padding: moderateScale(12), backgroundColor: '#f8fafc', borderRadius: 8, borderTopWidth: 1, borderTopColor: '#eee' },
-    analysisTitle: { fontSize: responsiveFontSize(12), fontWeight: 'bold', color: '#475569', marginBottom: verticalScale(5) },
-    feedbackText: { fontSize: responsiveFontSize(12), color: '#334155', lineHeight: 18 },
+    analysisTitle: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: 'bold', color: '#475569', marginBottom: verticalScale(5) },
+    feedbackText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', lineHeight: 18 },
     seqBox: { backgroundColor: '#fff', padding: moderateScale(10), borderRadius: 6, marginBottom: verticalScale(8), borderLeftWidth: 3, elevation: 1 },
     seqHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(5) },
-    seqStatus: { fontSize: responsiveFontSize(12), fontWeight: 'bold' },
-    seqTime: { fontSize: responsiveFontSize(12), color: '#64748b' },
-    seqText: { fontSize: responsiveFontSize(12), color: '#444' },
+    seqStatus: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: 'bold' },
+    seqTime: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
+    seqText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#444' },
     bold: { fontWeight: 'bold' },
-    note: { fontSize: responsiveFontSize(12), color: '#475569', fontStyle: 'italic', marginTop: verticalScale(4) },
-    issue: { fontSize: responsiveFontSize(12), color: '#dc2626', marginTop: verticalScale(4), fontWeight: '500' },
-    emptyText: { fontSize: responsiveFontSize(12), color: '#64748b', fontStyle: 'italic', textAlign: 'center' }
+    note: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontStyle: 'italic', marginTop: verticalScale(4) },
+    issue: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#dc2626', marginTop: verticalScale(4), fontWeight: '500' },
+    emptyText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontStyle: 'italic', textAlign: 'center' }
 });

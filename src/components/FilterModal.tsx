@@ -6,7 +6,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
 import { api } from '../api';
-import { moderateScale, responsiveFontSize, verticalScale } from '../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../utils/responsive';
 
 interface FilterModalProps {
   visible: boolean;
@@ -88,7 +88,7 @@ const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
 
 const ddStyles = StyleSheet.create({
   container: { marginBottom: verticalScale(14) },
-  label: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#475569', marginBottom: verticalScale(6), textTransform: 'uppercase' },
+  label: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: verticalScale(6), textTransform: 'uppercase' },
   trigger: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10),
@@ -96,7 +96,7 @@ const ddStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   triggerDisabled: { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' },
-  triggerText: { fontSize: responsiveFontSize(14), color: '#1e293b', fontWeight: '500', flex: 1 },
+  triggerText: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', fontWeight: '500', flex: 1 },
   placeholder: { color: '#94a3b8' },
   listContainer: {
     marginTop: verticalScale(4),
@@ -109,9 +109,9 @@ const ddStyles = StyleSheet.create({
   },
   option: { paddingVertical: verticalScale(12), paddingHorizontal: moderateScale(16), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   optionActive: { backgroundColor: '#eff6ff' },
-  optionText: { fontSize: responsiveFontSize(13), color: '#334155' },
+  optionText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155' },
   optionTextActive: { color: '#1e3c72', fontWeight: '700' },
-  emptyText: { fontSize: responsiveFontSize(13), color: '#94a3b8', fontStyle: 'italic' },
+  emptyText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#94a3b8', fontStyle: 'italic' },
 });
 
 const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterModalProps) => {
@@ -175,7 +175,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
       console.log('[FilterModal] states loaded:', mapped.length);
       setStates(mapped);
     } else {
-      setErrorMsg('States load nahi hue. Login/session check karo.');
+      setErrorMsg('Failed to load filters. Please verify your session.');
     }
 
     if (clientRes?.data) {
@@ -439,29 +439,29 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: '#fff', borderTopLeftRadius: moderateScale(22), borderTopRightRadius: moderateScale(22), maxHeight: '85%', paddingBottom: verticalScale(10) },
   header: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(8), padding: moderateScale(16), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  headerTitle: { flex: 1, fontSize: responsiveFontSize(17), fontWeight: '700', color: '#1e3c72' },
+  headerTitle: { flex: 1, fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
   closeBtn: { padding: moderateScale(6), backgroundColor: '#f1f5f9', borderRadius: 20 },
   body: { paddingHorizontal: moderateScale(16), paddingTop: verticalScale(16) },
   loadRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(14) },
-  loadText: { fontSize: responsiveFontSize(13), color: '#64748b' },
+  loadText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b' },
   errorBox: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca', borderRadius: moderateScale(8), padding: moderateScale(10), marginBottom: verticalScale(12) },
-  errorText: { fontSize: responsiveFontSize(12), color: '#b91c1c' },
-  sectionLabel: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(8) },
+  errorText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#b91c1c' },
+  sectionLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(8) },
   searchTypeRow: { flexDirection: 'row', gap: moderateScale(8), marginBottom: verticalScale(12) },
   searchChip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: moderateScale(8), backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0', marginRight: moderateScale(8) },
   searchChipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  searchChipText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '600' },
+  searchChipText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '600' },
   searchChipTextActive: { color: '#fff' },
-  searchInput: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10), paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(11), fontSize: responsiveFontSize(14), color: '#1e293b', backgroundColor: '#f8fafc', marginBottom: verticalScale(16) },
+  searchInput: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10), paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(11), fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', backgroundColor: '#f8fafc', marginBottom: verticalScale(16) },
   dateRow: { flexDirection: 'row', gap: moderateScale(16), marginBottom: verticalScale(16) },
   dateGroup: { flex: 1 },
   dateBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: moderateScale(10), paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(11), backgroundColor: '#f8fafc' },
-  dateBtnText: { fontSize: responsiveFontSize(14), color: '#1e293b' },
+  dateBtnText: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b' },
   footer: { flexDirection: 'row', gap: moderateScale(12), paddingHorizontal: moderateScale(16), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   resetBtn: { flex: 1, paddingVertical: verticalScale(14), borderRadius: moderateScale(12), backgroundColor: '#f1f5f9', alignItems: 'center' },
-  resetText: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#64748b' },
+  resetText: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#64748b' },
   applyBtn: { flex: 1, paddingVertical: verticalScale(14), borderRadius: moderateScale(12), backgroundColor: '#1e3c72', alignItems: 'center' },
-  applyText: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#fff' },
+  applyText: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#fff' },
 });
 
 export default FilterModal;

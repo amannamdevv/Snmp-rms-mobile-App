@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, ScrollView, Alert, TextInput
@@ -450,8 +450,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8fafc',
         minWidth: 60,
     },
-    kpiCount: { fontSize: responsiveFontSize(20), fontWeight: '800' },
-    kpiLabel: { fontSize: responsiveFontSize(10), color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) },
+    kpiCount: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800' },
+    kpiLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) },
 
     // Filter
     filterWrapper: {
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
         borderColor: '#e2e8f0',
     },
     filterBtnActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-    filterBtnText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#475569' },
+    filterBtnText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#475569' },
 
     // Search
     searchContainer: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
         height: verticalScale(48),
     },
     searchIcon: { marginRight: moderateScale(10) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', height: '100%', padding: moderateScale(0) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', height: '100%', padding: moderateScale(0) },
 
     // Card
     card: {
@@ -504,19 +504,19 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8) },
-    siteName: { fontSize: responsiveFontSize(13), fontWeight: '600', color: '#64748b' },
-    siteId: { fontSize: responsiveFontSize(16), color: '#1e293b', marginTop: verticalScale(2), fontWeight: '800' },
+    siteName: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', color: '#64748b' },
+    siteId: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#1e293b', marginTop: verticalScale(2), fontWeight: '800' },
     badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8 },
-    badgeText: { fontSize: responsiveFontSize(11), fontWeight: '800', letterSpacing: 0.3 },
+    badgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', letterSpacing: 0.3 },
 
-    alarmDesc: { fontSize: responsiveFontSize(14), fontWeight: '500', color: '#475569', lineHeight: 20, marginBottom: verticalScale(12) },
+    alarmDesc: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '500', color: '#475569', lineHeight: 20, marginBottom: verticalScale(12) },
 
     // Meta grid
     metadataContainer: {
         backgroundColor: '#f8fafc',
         borderRadius: 10,
         padding: moderateScale(12),
-        gap: 10,
+        gap: moderateScale(10),
         borderWidth: 1,
         borderColor: '#e2e8f0',
     },
@@ -527,8 +527,8 @@ const styles = StyleSheet.create({
         paddingBottom: verticalScale(10),
     },
     metaCol: { flex: 1, gap: 4 },
-    metaLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
-    metaValue: { fontSize: responsiveFontSize(12), color: '#334155', fontWeight: '700' },
+    metaLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
+    metaValue: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', fontWeight: '700' },
 
     siteStatusBadge: {
         paddingHorizontal: moderateScale(8),
@@ -537,15 +537,15 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         marginTop: verticalScale(2),
     },
-    siteStatusText: { fontSize: responsiveFontSize(12), fontWeight: '800' },
+    siteStatusText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800' },
 
     // Utils
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: verticalScale(80) },
-    loadingText: { marginTop: verticalScale(12), fontSize: responsiveFontSize(15), color: '#64748b' },
+    loadingText: { marginTop: verticalScale(12), fontSize: responsiveFontSize(15), flexShrink: 1, color: '#64748b' },
 
     emptyContainer: { alignItems: 'center', marginTop: verticalScale(80) },
-    emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-    emptySubtitle: { fontSize: responsiveFontSize(13), color: '#94a3b8', marginTop: verticalScale(4) },
+    emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+    emptySubtitle: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 });
 
 

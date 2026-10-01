@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, Alert, ScrollView, TextInput
@@ -395,7 +395,7 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
             </View>
 
             <View style={{ paddingHorizontal: moderateScale(16), paddingTop: verticalScale(10) }}>
-                <Text style={{ fontSize: responsiveFontSize(11), fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>
+                <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>
                     {totalSites} Sites showing in {rangeLabel}
                 </Text>
             </View>
@@ -427,14 +427,14 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     backBtn: { paddingRight: moderateScale(15) },
-    headerSub: { color: '#A9D6E5', fontSize: responsiveFontSize(12) },
+    headerSub: { color: '#A9D6E5', fontSize: responsiveFontSize(12), flexShrink: 1, },
     iconBtn: { padding: moderateScale(8), position: 'relative' },
     activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
     filterBar: { backgroundColor: '#fff', paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
     filterPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: 20, backgroundColor: '#f1f5f9', marginHorizontal: moderateScale(5), borderWidth: 1, borderColor: '#e2e8f0' },
     filterPillActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-    filterText: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
+    filterText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     filterTextActive: { color: '#fff' },
 
     searchContainer: {
@@ -455,14 +455,13 @@ const styles = StyleSheet.create({
     searchIcon: { marginRight: moderateScale(8) },
     searchInput: {
         flex: 1,
-        fontSize: responsiveFontSize(14),
-        color: '#1e293b',
+        fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
         height: '100%',
         padding: moderateScale(0),
     },
     emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-    emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-    emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+    emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+    emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
     card: {
         backgroundColor: '#fff',
@@ -477,24 +476,24 @@ const styles = StyleSheet.create({
     },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
 
-    siteName: { fontSize: responsiveFontSize(17), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(4) },
+    siteName: { fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(4) },
     idRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
-    globalIdBadge: { fontSize: responsiveFontSize(15), fontWeight: '900', color: '#1e3c72' },
-    imeiText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '500' },
+    globalIdBadge: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '900', color: '#1e3c72' },
+    imeiText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '500' },
 
     voltageBox: {
         padding: moderateScale(12), borderRadius: moderateScale(10),
         alignItems: 'center', minWidth: moderateScale(78),
         borderWidth: 1,
     },
-    voltageText: { fontSize: responsiveFontSize(20), fontWeight: '900' },
-    miniLabel: { fontSize: responsiveFontSize(11), color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginTop: verticalScale(2) },
+    voltageText: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '900' },
+    miniLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', fontWeight: '700', marginTop: verticalScale(2) },
 
     divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(10) },
 
     fieldRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(5) },
-    fieldLabel: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '600' },
-    fieldValue: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '500', flex: 1 },
+    fieldLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '600' },
+    fieldValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', fontWeight: '500', flex: 1 },
 
     globalIdRow: {
         flexDirection: 'row', alignItems: 'center',
@@ -502,19 +501,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(5),
         marginBottom: verticalScale(8),
     },
-    globalIdValue: { fontSize: responsiveFontSize(16), fontWeight: '900', color: '#1e3c72', letterSpacing: 0.5 },
+    globalIdValue: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '900', color: '#1e3c72', letterSpacing: 0.5 },
 
     twoColRow: {
         flexDirection: 'row', borderWidth: 1, borderColor: '#e2e8f0',
         borderRadius: moderateScale(8), overflow: 'hidden', marginBottom: verticalScale(8),
     },
     twoColItem: { flex: 1, padding: moderateScale(10), gap: verticalScale(2) },
-    metaLabel: { fontSize: responsiveFontSize(11), color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
-    metaValue: { fontSize: responsiveFontSize(14), fontWeight: '700' },
+    metaLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
+    metaValue: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700' },
 
     socSection: { marginBottom: verticalScale(8) },
     socHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4) },
-    socPercent: { fontSize: responsiveFontSize(15), fontWeight: '900', marginLeft: 'auto' },
+    socPercent: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '900', marginLeft: 'auto' },
     socBarBg: { height: verticalScale(10), backgroundColor: '#e2e8f0', borderRadius: moderateScale(5), overflow: 'hidden' },
     socBarFill: { height: '100%', borderRadius: moderateScale(5) },
 
@@ -524,13 +523,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(5),
         marginBottom: verticalScale(6),
     },
-    predText: { fontSize: responsiveFontSize(13), fontWeight: '600' },
+    predText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600' },
 
     // Legacy
-    subText: { fontSize: responsiveFontSize(11), color: '#666' },
+    subText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#666' },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between' },
     infoCol: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(5), flex: 1 },
-    infoValue: { fontSize: responsiveFontSize(11), color: '#444', fontWeight: '500' },
+    infoValue: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#444', fontWeight: '500' },
 });
 
 

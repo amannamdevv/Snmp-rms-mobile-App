@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -169,13 +169,13 @@ const styles = StyleSheet.create({
   activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
   
   content: { padding: moderateScale(16) },
-  totalText: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e3c72', marginBottom: verticalScale(20), textAlign: 'center' },
+  totalText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#1e3c72', marginBottom: verticalScale(20), textAlign: 'center' },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(16), marginBottom: verticalScale(16), elevation: 3 },
-  cardTitle: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#64748b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
-  row: { flexDirection: 'row', gap: 12 },
+  cardTitle: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
+  row: { flexDirection: 'row', gap: moderateScale(12) },
   box: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(16), borderRadius: 10, alignItems: 'center', borderTopWidth: 4, elevation: 1 },
-  boxVal: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
-  boxLabel: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b', textTransform: 'uppercase' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  boxVal: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
+  boxLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#64748b', textTransform: 'uppercase' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10) },
   gridBox: { width: '48.5%', backgroundColor: '#f8fafc', borderRadius: 12, padding: moderateScale(16), alignItems: 'center', borderTopWidth: 4, elevation: 1 },
 });

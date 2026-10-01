@@ -15,9 +15,10 @@ import AppIcon from '../../components/AppIcon';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import { Share as NativeShare } from 'react-native'; // for fallback
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
-const { width: SCREEN_W } = Dimensions.get('window');
+let SCREEN_W = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SCREEN_W = _d.width; } catch(_) {}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface VoltagePoint {
@@ -30,6 +31,8 @@ interface VoltagePoint {
   mains_voltages: { r: number; y: number; b: number };
   dg_voltages: { r: number; y: number; b: number };
   source_status: string;
+  voltage_change?: number;
+  detection_method?: string;
 }
 
 interface AlarmDetail {
@@ -94,7 +97,7 @@ function smartSample(data: VoltagePoint[], max: number): VoltagePoint[] {
 
 function KpiCard({ icon, label, value, color }: { icon: string; label: string; value: string; color: string }) {
   return (
-    <View style={[styles.kpiCard, { borderBottomColor: color, borderBottomWidth: 3 }]}>
+    <View style={[styles.kpiCard, { borderBottomColor: color, borderBottomWidth: 3, flex: undefined, width: moderateScale(140) }]}>
       <AppIcon name={icon} size={20} color={color} style={{ marginBottom: verticalScale(6) }} />
       <Text style={[styles.kpiVal, { color }]}>{value}</Text>
       <Text style={styles.kpiLab}>{label}</Text>
@@ -280,73 +283,96 @@ export default function SiteVariationScreen({ navigation }: any) {
                      sl.includes('sobt') || sl.includes('battery') ? 'Site On Battery (SOBT)' :
                      sl.includes('sodg') || sl.includes('dg') ? 'Site On DG (SODG)' :
                      rawStatus;
-
+                     
+    const color = statusColor(pt.running_status);
     const isExpanded = expandedLogIdx === id;
 
     return (
-    <TouchableOpacity 
-        activeOpacity={0.7}
-        onPress={() => setExpandedLogIdx(isExpanded ? null : id)}
-        style={[styles.ptRowContainer, isExpanded && styles.ptRowExpanded]}
-    >
-        <View style={[styles.ptRow, { paddingHorizontal: moderateScale(16), borderBottomWidth: isExpanded ? 0 : 1 }]}>
-            <View style={[styles.ptDot, { backgroundColor: statusColor(pt.running_status) }]} />
-            <View style={{ flex: 1.5 }}>
-                <Text style={styles.ptTime}>{pt.time_display}</Text>
-                <Text style={styles.ptStatus}>{fullStatus}</Text>
-            </View>
-            <View style={{ flex: 1.2 }}>
-                <Text style={[styles.ptVolt, { color: statusColor(pt.running_status), textAlign: 'left' }]}>
-                    {pt.battery_voltage.toFixed(2)}V
-                </Text>
-            </View>
-            <View style={{ flex: 1.5, alignItems: 'center' }}>
-                <AppIcon 
-                    name={isExpanded ? "chevron-up" : "chevron-down"} 
-                    size={16} 
-                    color="#64748b" 
-                />
-            </View>
-        </View>
-
-        {isExpanded && (
-            <View style={styles.expandedDetail}>
-                <View style={styles.detailGrid}>
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Mains Voltages (R-Y-B)</Text>
-                        <Text style={styles.detailValue}>{pt.mains_voltages.r}V / {pt.mains_voltages.y}V / {pt.mains_voltages.b}V</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>DG Voltages (R-Y-B)</Text>
-                        <Text style={styles.detailValue}>{pt.dg_voltages.r}V / {pt.dg_voltages.y}V / {pt.dg_voltages.b}V</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Source Status</Text>
-                        <View style={[styles.badge, { backgroundColor: '#f1f5f9', alignSelf: 'flex-start' }]}>
-                            <Text style={{ color: '#475569', fontSize: responsiveFontSize(10), fontWeight: '700' }}>{pt.source_status || 'N/A'}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Running Mode</Text>
-                        <Text style={[styles.detailValue, { color: statusColor(pt.running_status), fontWeight: '700' }]}>{fullStatus}</Text>
+        <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={() => setExpandedLogIdx(isExpanded ? null : id)}
+            style={{ 
+                backgroundColor: '#fff', 
+                borderRadius: 12, 
+                padding: moderateScale(12), 
+                paddingHorizontal: moderateScale(14),
+                marginBottom: moderateScale(10),
+                borderLeftWidth: 4,
+                borderLeftColor: color,
+                borderWidth: 1,
+                borderColor: '#f1f5f9',
+                elevation: 1,
+            }}
+        >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(6) }}>
+                {/* Left side: Dot, Time, Status */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+                    <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '600' }}>{pt.time_display}</Text>
+                    <View style={{ backgroundColor: color, paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 10 }}>
+                        <Text style={{ color: '#fff', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' }}>{fullStatus}</Text>
                     </View>
                 </View>
+                {/* Right side: Alert icon and Chevron */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    {!isExpanded && pt.active_alarms && pt.active_alarms.length > 0 && (
+                         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 8 }}>
+                             <AppIcon name="alert-circle" size={12} color="#ef4444" />
+                             <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, color: '#ef4444', fontWeight: '700', marginLeft: 4 }}>{pt.active_alarms.length}</Text>
+                         </View>
+                    )}
+                    <AppIcon name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" />
+                </View>
+            </View>
 
-                {pt.active_alarms && pt.active_alarms.length > 0 && (
-                    <View style={{ marginTop: verticalScale(12) }}>
-                        <Text style={styles.detailLabel}>Active Alarms</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: verticalScale(4) }}>
-                            {pt.active_alarms.map((name, idx) => (
-                                <View key={idx} style={[styles.tooltipBadge, { backgroundColor: '#fee2e2', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 6 }]}>
-                                    <Text style={[styles.tooltipBadgeText, { fontSize: responsiveFontSize(10), color: '#ef4444' }]}>{name}</Text>
-                                </View>
-                            ))}
-                        </View>
+            {/* Voltage & Change Indicator */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: moderateScale(14) }}>
+                <Text style={{ fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: color }}>{pt.battery_voltage.toFixed(2)}V</Text>
+                {pt.voltage_change !== undefined && (
+                    <View style={{ marginLeft: moderateScale(8), backgroundColor: pt.voltage_change > 0 ? '#dcfce7' : pt.voltage_change < 0 ? '#fee2e2' : '#f1f5f9', paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(3), borderRadius: 6 }}>
+                        <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: pt.voltage_change > 0 ? '#16a34a' : pt.voltage_change < 0 ? '#ef4444' : '#64748b' }}>
+                            {pt.voltage_change > 0 ? '↑' : pt.voltage_change < 0 ? '↓' : '~'} {Math.abs(pt.voltage_change).toFixed(2)}V
+                        </Text>
                     </View>
                 )}
             </View>
-        )}
-    </TouchableOpacity>
+
+            {/* Expandable Section */}
+            {isExpanded && (
+                <View style={{ marginTop: verticalScale(12), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#f1f5f9' }}>
+                    {/* Mains and DG */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(6) }}>
+                        <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' }}>Mains:</Text>
+                        <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontWeight: '600' }}>R:{pt.mains_voltages.r}V Y:{pt.mains_voltages.y}V B:{pt.mains_voltages.b}V</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12) }}>
+                        <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' }}>DG:</Text>
+                        <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontWeight: '600' }}>R:{pt.dg_voltages.r}V Y:{pt.dg_voltages.y}V B:{pt.dg_voltages.b}V</Text>
+                    </View>
+
+                    {/* Active Alarms */}
+                    {pt.active_alarms && pt.active_alarms.length > 0 && (
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: verticalScale(12) }}>
+                            {pt.active_alarms.map((name, idx) => (
+                                <View key={idx} style={{ backgroundColor: '#fee2e2', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6 }}>
+                                    <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#ef4444', fontWeight: '700' }}>{name}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
+                    {/* Detection / Energy Log Source */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ backgroundColor: '#0ea5e9', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <AppIcon name="database" size={12} color="#fff" />
+                            <Text style={{ color: '#fff', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' }}>
+                                {pt.detection_method || pt.source_status || 'energy_log_source'}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+            )}
+        </TouchableOpacity>
     );
   }, [expandedLogIdx]);
 
@@ -485,34 +511,32 @@ export default function SiteVariationScreen({ navigation }: any) {
         {siteData && (
           <>
             {/* Site info — unchanged */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Site Information</Text>
-              <View style={styles.infoGrid}>
-                <InfoRow label="Global ID" value={siteData.site_info.global_id} />
-                <InfoRow label="Site Name" value={siteData.site_info.site_name} />
-                <InfoRow label="Site ID" value={siteData.site_info.site_id} />
-                <InfoRow label="IMEI" value={siteData.site_info.imei} />
-                <InfoRow label="Date Range" value={`${siteData.date_range.start_date_display} - ${siteData.date_range.end_date_display}`} />
-                <InfoRow label="Data Since" value={siteData.data_availability.oldest_data_display} />
+            {/* Site info */}
+            <View style={[styles.card, { paddingHorizontal: 0, paddingBottom: 0 }]}>
+              <View style={{ paddingHorizontal: moderateScale(16), marginBottom: moderateScale(12) }}>
+                  <Text style={[styles.cardTitle, { marginBottom: 0 }]}>
+                     <AppIcon name="info" size={15} color="#1e293b" /> Site Information
+                  </Text>
               </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: moderateScale(16), paddingBottom: moderateScale(16), gap: moderateScale(12) }}>
+                  <InfoBox icon="map-pin" label="Site ID" value={siteData.site_info.site_id} />
+                  <InfoBox icon="home" label="Site Name" value={siteData.site_info.site_name} />
+                  <InfoBox icon="globe" label="Global ID" value={siteData.site_info.global_id} />
+                  <InfoBox icon="cpu" label="IMEI" value={siteData.site_info.imei} />
+              </ScrollView>
             </View>
 
-            {/* KPIs — unchanged */}
-            <View style={styles.kpiRow}>
-              <KpiCard icon="calendar" label="Days Available" value={`${siteData.data_availability.total_days_available}`} color="#6366f1" />
-              <KpiCard icon="zap-off" label="Mains Fail" value={`${siteData.alarm_summary.mains_fail_count}`} color="#ef4444" />
-              <KpiCard icon="battery" label="Battery Mode" value={`${siteData.alarm_summary.battery_events_count}`} color="#f59e0b" />
-            </View>
-            <View style={styles.kpiRow}>
-              <KpiCard icon="activity" label="DG Events" value={`${siteData.alarm_summary.dg_events_count}`} color="#3b82f6" />
-              <KpiCard icon="trending-up" label="Max Voltage" value={`${siteData.voltage_statistics.max_voltage.toFixed(2)}V`} color="#22c55e" />
-              <KpiCard icon="trending-down" label="Min Voltage" value={`${siteData.voltage_statistics.min_voltage.toFixed(2)}V`} color="#e11d48" />
-            </View>
-            <View style={[styles.kpiRow, { marginBottom: verticalScale(0) }]}>
-              <KpiCard icon="activity" label="Avg Voltage" value={`${siteData.voltage_statistics.avg_voltage.toFixed(2)}V`} color="#0ea5e9" />
-              <KpiCard icon="database" label="Total Records" value={`${siteData.data_availability.total_records}`} color="#8b5cf6" />
-              <KpiCard icon="bell" label="Total Alarms" value={`${siteData.alarm_summary.total_events}`} color="#f97316" />
-            </View>
+            {/* KPIs */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: moderateScale(12), paddingBottom: moderateScale(12) }}>
+                <KpiCard icon="calendar" label="Days of Data Available" value={`${siteData.data_availability.total_days_available}`} color="#6366f1" />
+                <KpiCard icon="database" label="Data Available Since" value={`${siteData.data_availability.oldest_data_display}`} color="#8b5cf6" />
+                <KpiCard icon="zap-off" label="Mains Fail Events" value={`${siteData.alarm_summary.mains_fail_count}`} color="#ef4444" />
+                <KpiCard icon="battery" label="Battery Mode Events" value={`${siteData.alarm_summary.battery_events_count}`} color="#f59e0b" />
+                <KpiCard icon="activity" label="DG Run Events" value={`${siteData.alarm_summary.dg_events_count}`} color="#3b82f6" />
+                <KpiCard icon="battery-charging" label="Average Battery Voltage" value={`${siteData.voltage_statistics.avg_voltage.toFixed(2)}V`} color="#0ea5e9" />
+                <KpiCard icon="arrow-up" label="Maximum Voltage" value={`${siteData.voltage_statistics.max_voltage.toFixed(2)}V`} color="#22c55e" />
+                <KpiCard icon="arrow-down" label="Minimum Voltage" value={`${siteData.voltage_statistics.min_voltage.toFixed(2)}V`} color="#e11d48" />
+            </ScrollView>
 
             {/* Legend — unchanged */}
             <View style={[styles.card, { marginTop: verticalScale(12) }]}>
@@ -606,33 +630,53 @@ export default function SiteVariationScreen({ navigation }: any) {
                       />
                     </ScrollView>
 
-                    {/* Tooltip Card — unchanged */}
+                    {/* Tooltip Card */}
                     {selectedIdx !== null && chartData.raw[selectedIdx] && (
-                      <View style={styles.tooltipCard}>
-                        <View style={styles.tooltipHeader}>
-                          <Text style={styles.tooltipTime}>{chartData.raw[selectedIdx].time_display}</Text>
+                      <View style={[styles.tooltipCard, { backgroundColor: '#262626', borderColor: '#404040' }]}>
+                        <View style={[styles.tooltipHeader, { borderBottomColor: '#404040' }]}>
+                          <Text style={[styles.tooltipTime, { color: '#f8fafc' }]}>{chartData.raw[selectedIdx].time_display}</Text>
                           <TouchableOpacity onPress={() => setSelectedIdx(null)} style={{ padding: moderateScale(4) }}>
-                            <AppIcon name="x" size={16} color="#475569" />
+                            <AppIcon name="x" size={16} color="#a3a3a3" />
                           </TouchableOpacity>
                         </View>
+                        
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4) }}>
-                          <View style={[styles.ptDot, { backgroundColor: statusColor(chartData.raw[selectedIdx].running_status), marginRight: moderateScale(6) }]} />
-                          <Text style={styles.tooltipVolt}>{chartData.raw[selectedIdx].battery_voltage.toFixed(2)}V</Text>
+                          <View style={[styles.ptDot, { borderRadius: 2, backgroundColor: statusColor(chartData.raw[selectedIdx].running_status), marginRight: moderateScale(6) }]} />
+                          <Text style={[styles.tooltipVolt, { color: '#f8fafc', fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700' }]}>Voltage: {chartData.raw[selectedIdx].battery_voltage.toFixed(2)}V</Text>
                         </View>
-                        <Text style={styles.tooltipText}><Text style={{ fontWeight: '700' }}>Status:</Text> {chartData.raw[selectedIdx].running_status}</Text>
-                        <Text style={styles.tooltipText}><Text style={{ fontWeight: '700' }}>Source:</Text> {chartData.raw[selectedIdx].source_status}</Text>
 
-                         <Text style={styles.tooltipText}><Text style={{ fontWeight: '700' }}>Mains (R Y B):</Text> {chartData.raw[selectedIdx].mains_voltages.r}V, {chartData.raw[selectedIdx].mains_voltages.y}V, {chartData.raw[selectedIdx].mains_voltages.b}V</Text>
-                         {chartData.raw[selectedIdx].dg_voltages && (
-                            <Text style={styles.tooltipText}><Text style={{ fontWeight: '700' }}>DG (R Y B):</Text> {chartData.raw[selectedIdx].dg_voltages.r}V, {chartData.raw[selectedIdx].dg_voltages.y}V, {chartData.raw[selectedIdx].dg_voltages.b}V</Text>
-                         )}
+                        <Text style={[styles.tooltipText, { color: '#d4d4d8' }]}><Text style={{ color: '#a3a3a3' }}>Status:</Text> {chartData.raw[selectedIdx].running_status}</Text>
+                        
+                        {chartData.raw[selectedIdx].voltage_change !== undefined && (
+                            <Text style={[styles.tooltipText, { color: '#d4d4d8' }]}><Text style={{ color: '#a3a3a3' }}>Change:</Text> {chartData.raw[selectedIdx].voltage_change > 0 ? '↑' : chartData.raw[selectedIdx].voltage_change < 0 ? '↓' : ''} {Math.abs(chartData.raw[selectedIdx].voltage_change).toFixed(2)}V</Text>
+                        )}
+                        
+                        <Text style={[styles.tooltipText, { color: '#d4d4d8' }]}><Text style={{ color: '#a3a3a3' }}>Detection:</Text> {chartData.raw[selectedIdx].detection_method || chartData.raw[selectedIdx].source_status}</Text>
+                        
+                        <Text style={[styles.tooltipText, { color: '#d4d4d8' }]}><Text style={{ color: '#a3a3a3' }}>Mains:</Text> R:{chartData.raw[selectedIdx].mains_voltages.r}V Y:{chartData.raw[selectedIdx].mains_voltages.y}V B:{chartData.raw[selectedIdx].mains_voltages.b}V</Text>
 
-                        {chartData.raw[selectedIdx].active_alarms.length > 0 && (
-                          <View style={styles.tooltipAlarms}>
-                            {chartData.raw[selectedIdx].active_alarms.map(al => (
-                              <View key={al} style={styles.tooltipBadge}><Text style={styles.tooltipBadgeText}>{al}</Text></View>
-                            ))}
-                          </View>
+                        {/* Alarm Flags Map */}
+                        {chartData.raw[selectedIdx].alarm_flags && (
+                            <View style={{ marginTop: verticalScale(8) }}>
+                                {[
+                                    { key: 'MAINS_FAIL', label: 'MAINS FAIL', color: '#ef4444' },
+                                    { key: 'SITE_ON_BATTERY', label: 'SITE ON BATTERY', color: '#f59e0b' },
+                                    { key: 'LOW_BATTERY_VOLTAGE', label: 'LOW BATTERY VOLTAGE', color: '#f97316' },
+                                    { key: 'DG_ON', label: 'DG ON', color: '#0ea5e9' },
+                                    { key: 'LVD_CUT', label: 'LVD CUT', color: '#a855f7' },
+                                    { key: 'BLVD_CUT', label: 'BLVD CUT', color: '#f43f5e' }
+                                ].map(flag => {
+                                    const rawFlags = chartData.raw[selectedIdx].alarm_flags;
+                                    const val = rawFlags[flag.key] || rawFlags[flag.key.toLowerCase()] || rawFlags[flag.label] || "0";
+                                    const state = val === "1" ? "High" : "Low";
+                                    return (
+                                        <View key={flag.key} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(2) }}>
+                                            <View style={{ width: moderateScale(10), height: moderateScale(10), backgroundColor: flag.color, marginRight: moderateScale(6), borderRadius: 2 }} />
+                                            <Text style={{ color: '#f8fafc', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' }}>{flag.label}: <Text style={{ fontWeight: '500', color: '#d4d4d8' }}>{state}</Text></Text>
+                                        </View>
+                                    );
+                                })}
+                            </View>
                         )}
                       </View>
                     )}
@@ -640,7 +684,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                 )}
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: verticalScale(24), marginBottom: verticalScale(12) }}>
-                    <Text style={[styles.cardTitle, { marginBottom: verticalScale(0), fontSize: responsiveFontSize(13) }]}>Recent Readings (Unfiltered)</Text>
+                    <Text style={[styles.cardTitle, { marginBottom: verticalScale(0), fontSize: responsiveFontSize(13), flexShrink: 1, }]}>Recent Readings (Unfiltered)</Text>
                     <View style={styles.filterBadge}>
                         <Text style={styles.filterBadgeText}>{filteredCorrelation.length} Recs</Text>
                     </View>
@@ -664,14 +708,14 @@ export default function SiteVariationScreen({ navigation }: any) {
                     ))}
                 </ScrollView>
 
-                <View style={{ backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                <View style={{ backgroundColor: 'transparent' }}>
                     {filteredCorrelation.slice(0, 5).map((item, index) => (
                         <View key={`voltage_mini_${index}`}>
                             {renderVoltageRow({ item, id: `mini_${index}` })}
                         </View>
                     ))}
                     <TouchableOpacity 
-                        style={S.loadMoreBtn} 
+                        style={[S.loadMoreBtn, { borderRadius: 12 }]} 
                         onPress={() => setActiveTab('readings')}
                     >
                         <Text style={S.loadMoreText}>VIEW ALL {filteredCorrelation.length} READINGS</Text>
@@ -708,7 +752,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                     ))}
                  </ScrollView>
 
-                 <View style={{ backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                 <View style={{ backgroundColor: 'transparent' }}>
                     {filteredCorrelation.slice(0, listLimit).map((item, index) => (
                         <View key={`voltage_full_${index}`}>
                             {renderVoltageRow({ item, id: `full_${index}` })}
@@ -716,7 +760,7 @@ export default function SiteVariationScreen({ navigation }: any) {
                     ))}
                     {filteredCorrelation.length > listLimit ? (
                         <TouchableOpacity 
-                           style={S.loadMoreBtn} 
+                           style={[S.loadMoreBtn, { borderRadius: 12 }]} 
                            onPress={() => setListLimit(prev => prev + 100)}
                         >
                             <Text style={S.loadMoreText}>LOAD MORE ({filteredCorrelation.length - listLimit} REMAINING)</Text>
@@ -776,13 +820,16 @@ export default function SiteVariationScreen({ navigation }: any) {
 }
 
 // ─── Sub-components (100% original) ──────────────────────────────────────────
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
-    </View>
-  );
+function InfoBox({ icon, label, value }: { icon: string; label: string; value: string }) {
+    return (
+        <View style={{ backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 10, width: moderateScale(140), borderWidth: 1, borderColor: '#f1f5f9' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: verticalScale(6) }}>
+                <AppIcon name={icon} size={14} color="#64748b" />
+                <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>{label}</Text>
+            </View>
+            <Text style={{ fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '800' }}>{value}</Text>
+        </View>
+    )
 }
 
 function AlarmRow({ alarm }: { alarm: AlarmDetail }) {
@@ -801,7 +848,7 @@ function AlarmRow({ alarm }: { alarm: AlarmDetail }) {
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <View style={[styles.badge, { backgroundColor: isOpen ? '#fee2e2' : '#dcfce7' }]}>
-          <Text style={{ color: isOpen ? '#ef4444' : '#16a34a', fontSize: responsiveFontSize(10), fontWeight: '700' }}>
+          <Text style={{ color: isOpen ? '#ef4444' : '#16a34a', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' }}>
             {alarm.status}
           </Text>
         </View>
@@ -809,7 +856,7 @@ function AlarmRow({ alarm }: { alarm: AlarmDetail }) {
           {alarm.battery_voltage_at_alarm != null ? `${alarm.battery_voltage_at_alarm.toFixed(2)}V` : '—'}
         </Text>
         <View style={[styles.badge, { backgroundColor: isSmps ? '#dbeafe' : '#f0fdf4' }]}>
-          <Text style={{ color: isSmps ? '#1d4ed8' : '#15803d', fontSize: responsiveFontSize(9), fontWeight: '600' }}>
+          <Text style={{ color: isSmps ? '#1d4ed8' : '#15803d', fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '600' }}>
             {isSmps ? 'SMPS' : 'RMS'}
           </Text>
         </View>
@@ -830,7 +877,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { color: '#fff', fontSize: responsiveFontSize(17), fontWeight: '700', flex: 1, textAlign: 'center' },
+  headerTitle: { color: '#fff', fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '700', flex: 1, textAlign: 'center' },
   headerBtn: { padding: moderateScale(8), borderRadius: 8 },
 
   scroll: { padding: moderateScale(16) },
@@ -841,34 +888,34 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08, shadowRadius: 4,
   },
-  cardTitle: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#1e293b', marginBottom: moderateScale(12) },
+  cardTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#1e293b', marginBottom: moderateScale(12) },
 
   row2: { flexDirection: 'row', gap: moderateScale(10), marginBottom: moderateScale(10) },
   halfInput: { flex: 1 },
-  label: { fontSize: responsiveFontSize(11), fontWeight: '600', color: '#64748b', marginBottom: moderateScale(4), textTransform: 'uppercase' },
+  label: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', color: '#64748b', marginBottom: moderateScale(4), textTransform: 'uppercase' },
   input: {
     backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0',
     borderRadius: moderateScale(8), paddingHorizontal: moderateScale(12), paddingVertical: moderateScale(10),
-    fontSize: responsiveFontSize(13), color: '#1e293b',
+    fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b',
   },
   searchBtn: {
     backgroundColor: '#1e3c72', flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center',
     padding: moderateScale(13), borderRadius: moderateScale(10), marginTop: moderateScale(4),
   },
-  searchBtnText: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '700' },
+  searchBtnText: { color: '#fff', fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700' },
 
   emptyCard: {
     alignItems: 'center', padding: moderateScale(40),
     backgroundColor: '#fff', borderRadius: moderateScale(16), marginBottom: moderateScale(12),
   },
-  emptyTitle: { fontSize: responsiveFontSize(17), fontWeight: '700', color: '#334155', marginTop: moderateScale(14), marginBottom: moderateScale(6) },
-  emptyText: { fontSize: responsiveFontSize(13), color: '#94a3b8', textAlign: 'center', lineHeight: moderateScale(20) },
+  emptyTitle: { fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: moderateScale(14), marginBottom: moderateScale(6) },
+  emptyText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#94a3b8', textAlign: 'center', lineHeight: moderateScale(20) },
 
   infoGrid: { gap: moderateScale(8) },
   infoRow: { flexDirection: 'row', alignItems: 'center' },
-  infoLabel: { width: moderateScale(90), fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: '600' },
-  infoValue: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b' },
+  infoLabel: { width: moderateScale(90), fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '600' },
+  infoValue: { flex: 1, fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b' },
 
   kpiRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: moderateScale(10) },
   kpiCard: {
@@ -876,12 +923,12 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.07, shadowRadius: 3,
   },
-  kpiVal: { fontSize: responsiveFontSize(20), fontWeight: '800', marginBottom: moderateScale(2) },
-  kpiLab: { fontSize: responsiveFontSize(11), color: '#64748b', textTransform: 'uppercase', textAlign: 'center' },
+  kpiVal: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', marginBottom: moderateScale(2) },
+  kpiLab: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', textAlign: 'center' },
 
   legendRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   legendDot: { width: moderateScale(10), height: verticalScale(10), borderRadius: 5, marginRight: moderateScale(4) },
-  legText: { fontSize: responsiveFontSize(12), color: '#475569', marginRight: moderateScale(8) },
+  legText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', marginRight: moderateScale(8) },
 
   tabBar: {
     flexDirection: 'row', gap: 8, marginBottom: verticalScale(12),
@@ -889,59 +936,59 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: verticalScale(8), borderRadius: 8 },
   tabActive: { backgroundColor: '#fff' },
-  tabText: { fontSize: responsiveFontSize(13), fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  tabText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
   tabTextActive: { color: '#1e3c72' },
 
-  chartSub: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginBottom: verticalScale(10) },
+  chartSub: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', marginBottom: verticalScale(10) },
   chip: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 16, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
   chipActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  chipText: { fontSize: responsiveFontSize(12), color: '#475569', fontWeight: '500' },
+  chipText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontWeight: '500' },
   chipTextActive: { color: '#fff' },
-  filterLabel: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(8) },
+  filterLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(8) },
 
   tooltipCard: { backgroundColor: '#fff', padding: moderateScale(14), borderRadius: 12, marginTop: verticalScale(16), borderWidth: 1, borderColor: '#e2e8f0', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: verticalScale(2) } },
   tooltipHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(8), paddingBottom: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  tooltipTime: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b' },
-  tooltipVolt: { fontSize: responsiveFontSize(17), fontWeight: '800', color: '#1e3c72' },
-  tooltipText: { fontSize: responsiveFontSize(12), color: '#475569', marginBottom: verticalScale(3) },
+  tooltipTime: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
+  tooltipVolt: { fontSize: responsiveFontSize(17), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
+  tooltipText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', marginBottom: verticalScale(3) },
   tooltipAlarms: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: verticalScale(8) },
   tooltipBadge: { backgroundColor: '#fee2e2', paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 4 },
-  tooltipBadgeText: { fontSize: responsiveFontSize(10), color: '#ef4444', fontWeight: '700' },
+  tooltipBadgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#ef4444', fontWeight: '700' },
 
   ptRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: verticalScale(7), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', gap: 8 },
   ptDot: { width: moderateScale(10), height: verticalScale(10), borderRadius: 5 },
-  ptTime: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#1e293b' },
-  ptStatus: { fontSize: responsiveFontSize(11), color: '#64748b' },
-  ptVolt: { fontSize: responsiveFontSize(13), fontWeight: '800', flex: 1, textAlign: 'right' },
-  ptVoltSmall: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '500' },
+  ptTime: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '600', color: '#1e293b' },
+  ptStatus: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b' },
+  ptVolt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', flex: 1, textAlign: 'right' },
+  ptVoltSmall: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '500' },
   loadMoreBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: moderateScale(15), backgroundColor: '#f1f5f9', gap: 8 },
-  loadMoreText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e3c72' },
+  loadMoreText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
 
   chipSmall: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
   chipSmallActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  chipSmallText: { fontSize: responsiveFontSize(11), color: '#475569', fontWeight: '600' },
+  chipSmallText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#475569', fontWeight: '600' },
   chipSmallTextActive: { color: '#fff' },
 
   filterBadge: { backgroundColor: '#e0f2fe', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 6 },
-  filterBadgeText: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#0369a1' },
+  filterBadgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#0369a1' },
 
   alarmRow: {
     flexDirection: 'row', padding: moderateScale(12),
     backgroundColor: '#f8fafc', borderRadius: 10, marginBottom: verticalScale(8),
     borderLeftWidth: 3, borderLeftColor: '#1e3c72',
   },
-  alarmName: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(2) },
-  alarmTime: { fontSize: responsiveFontSize(11), color: '#64748b' },
-  alarmDur: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginTop: verticalScale(2) },
-  alarmVolt: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e3c72' },
-  alarmDetails: { fontSize: responsiveFontSize(11), color: '#3b82f6', marginBottom: verticalScale(2), fontWeight: '500' },
+  alarmName: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1e293b', marginBottom: verticalScale(2) },
+  alarmTime: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b' },
+  alarmDur: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(2) },
+  alarmVolt: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+  alarmDetails: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#3b82f6', marginBottom: verticalScale(2), fontWeight: '500' },
   durRow: { flexDirection: 'row', alignItems: 'center', marginTop: verticalScale(2) },
   badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 20 },
   ptRowContainer: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   ptRowExpanded: { backgroundColor: '#f8fafc' },
   expandedDetail: { padding: moderateScale(16), backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(16) },
   detailItem: { width: '45%' },
-  detailLabel: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: verticalScale(4) },
-  detailValue: { fontSize: responsiveFontSize(12), color: '#1e293b', fontWeight: '500' },
+  detailLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  detailValue: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#1e293b', fontWeight: '500' },
 });

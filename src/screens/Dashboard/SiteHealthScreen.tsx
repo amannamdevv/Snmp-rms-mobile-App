@@ -9,7 +9,7 @@ import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SiteHealth'>;
 
@@ -236,7 +236,7 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
               >
                 <AppIcon name={t.icon as any} size={13} color={isActive ? '#fff' : t.color} style={{ marginRight: moderateScale(6) }} />
                 <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
-                  {t.label} <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700' }}>({t.count})</Text>
+                  {t.label} <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' }}>({t.count})</Text>
                 </Text>
               </TouchableOpacity>
             );
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0' 
   },
   filterPillActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  filterText: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
+  filterText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b' },
   filterTextActive: { color: '#fff' },
 
   searchContainer: {
@@ -329,14 +329,13 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
     height: '100%',
     padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+  emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   card: { 
     backgroundColor: '#fff', 
@@ -352,26 +351,25 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start', 
     marginBottom: verticalScale(12) 
   },
-  siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72' },
-  subText: { fontSize: responsiveFontSize(11), color: '#666', marginTop: verticalScale(2) },
+  siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+  subText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#666', marginTop: verticalScale(2) },
   badge: { 
     paddingHorizontal: moderateScale(10), 
     paddingVertical: verticalScale(4), 
     borderRadius: moderateScale(12), 
     borderWidth: 1 
   },
-  badgeText: { fontSize: responsiveFontSize(10), fontWeight: '800' },
+  badgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800' },
   infoRow: { flexDirection: 'row', marginBottom: verticalScale(8) },
   infoCol: { flex: 1 },
   infoLabel: { 
-    fontSize: responsiveFontSize(10), 
-    color: '#888', 
+    fontSize: responsiveFontSize(10), flexShrink: 1, color: '#888', 
     textTransform: 'uppercase', 
     marginBottom: verticalScale(2) 
   },
-  infoValue: { fontSize: responsiveFontSize(13), color: '#333', fontWeight: '600' },
+  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '600' },
   dividerSmall: { height: 1, backgroundColor: '#f0f4f8', marginVertical: verticalScale(10) },
   cardFooter: { gap: verticalScale(4) },
-  footerLabel: { fontSize: responsiveFontSize(11), color: '#888', fontWeight: '600' },
+  footerLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', fontWeight: '600' },
   footerValue: { color: '#4b5563', fontWeight: '600' }
 });

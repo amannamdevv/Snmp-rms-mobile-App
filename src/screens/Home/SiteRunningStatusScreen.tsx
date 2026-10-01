@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
   kpiContainer: { paddingTop: verticalScale(12) },
-  kpiScrollContainer: { paddingHorizontal: moderateScale(16), gap: 12, paddingBottom: verticalScale(6) },
+  kpiScrollContainer: { paddingHorizontal: moderateScale(16), gap: moderateScale(12), paddingBottom: verticalScale(6) },
   kpiBox: { 
     backgroundColor: '#fff', 
     paddingVertical: verticalScale(12), 
@@ -390,8 +390,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minWidth: 90
   },
-  kpiVal: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#1e3c72' },
-  kpiTitle: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
+  kpiVal: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
+  kpiTitle: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '700', marginBottom: verticalScale(4), textTransform: 'uppercase' },
 
   // Updated Today's Event Card (matching Run Hours Button style)
   smallCard: { 
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', 
     alignItems: 'center',
   },
-  smallCardTitle: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#fff' },
+  smallCardTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#fff' },
 
   searchContainer: {
     backgroundColor: '#fff',
@@ -425,51 +425,50 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
     height: '100%',
     padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+  emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   tabsContainer: { flexDirection: 'row', paddingHorizontal: moderateScale(16), marginBottom: verticalScale(10), flexWrap: 'wrap', gap: 8 },
   tab: { paddingVertical: verticalScale(6), paddingHorizontal: moderateScale(14), borderRadius: 20, backgroundColor: '#e2e8f0' },
   tabActive: { backgroundColor: '#1e3c72' },
-  tabText: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#475569' },
+  tabText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '600', color: '#475569' },
   tabTextActive: { color: '#fff' },
 
   card: { backgroundColor: '#fff', padding: moderateScale(10), borderRadius: 10, marginBottom: verticalScale(8), elevation: 2, borderLeftWidth: 4 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: verticalScale(6) },
-  siteName: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#1e3c72' },
-  imei: { fontSize: responsiveFontSize(12), color: '#666', marginTop: verticalScale(2) },
+  siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+  imei: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#666', marginTop: verticalScale(2) },
   badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
-  badgeText: { color: '#fff', fontSize: responsiveFontSize(11), fontWeight: '700' },
+  badgeText: { color: '#fff', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
 
   row: { flexDirection: 'row', marginTop: verticalScale(5) },
   col: { flex: 1 },
-  label: { fontSize: responsiveFontSize(11), color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  val: { fontSize: responsiveFontSize(13), color: '#333', fontWeight: '600' },
+  label: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  val: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '600' },
 
   // Voltage rows (full-width label : value)
   voltDivider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(6) },
   voltRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(3) },
-  voltLabel: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
-  voltVal: { fontSize: responsiveFontSize(13), color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
+  voltLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
+  voltVal: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
 
   // Alarm description
   alarmBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff7ed', borderRadius: 8, padding: moderateScale(8), marginTop: verticalScale(10), gap: 6, borderLeftWidth: 3, borderLeftColor: '#f97316' },
-  alarmIcon: { fontSize: responsiveFontSize(14), color: '#f97316', lineHeight: 18 },
-  alarmText: { fontSize: responsiveFontSize(12), color: '#9a3412', flex: 1, fontWeight: '600' },
+  alarmIcon: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#f97316', lineHeight: 18 },
+  alarmText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#9a3412', flex: 1, fontWeight: '600' },
 
   // Last Updated
   lastUpdatedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: verticalScale(10), paddingTop: verticalScale(8), borderTopWidth: 1, borderTopColor: '#f0f0f0' },
-  lastUpdatedVal: { fontSize: responsiveFontSize(12), color: '#475569', fontWeight: '500' },
+  lastUpdatedVal: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontWeight: '500' },
 
   // Run Hours button
   runHoursBtn: { marginTop: verticalScale(10), backgroundColor: '#01497C', borderRadius: 8, paddingVertical: verticalScale(9), alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  runHoursBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(13) },
+  runHoursBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(13), flexShrink: 1, },
 });
 
 

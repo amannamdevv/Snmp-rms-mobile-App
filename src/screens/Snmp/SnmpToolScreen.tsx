@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
   FlatList,
+  SectionList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,7 +25,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [fullname, setFullname] = useState('User');
 
-  const [sites, setSites] = useState<any[]>([]);
+  const [sites, setSites] = useState<any[]>([]); // Will hold sections
   const [selectedSite, setSelectedSite] = useState<any>(null);
   
   const [paramsList, setParamsList] = useState<any[]>([]);
@@ -33,7 +34,6 @@ const SnmpToolScreen = ({ navigation }: any) => {
   const [currentValues, setCurrentValues] = useState<any[]>([]);
   const [readValue, setReadValue] = useState<any>(null);
   
-  const [newValue, setNewValue] = useState('');
   
   const [loadingSites, setLoadingSites] = useState(false);
   const [loadingParams, setLoadingParams] = useState(false);
@@ -57,8 +57,22 @@ const SnmpToolScreen = ({ navigation }: any) => {
     setLoadingSites(true);
     try {
       const response = await api.getSnmpSites();
-      if (response.success && response.data) {
-        setSites(response.data);
+      if (response.success && response.sites) {
+        // Group by make
+        const grouped = response.sites.reduce((acc: any, site: any) => {
+          const make = site.make ? site.make.toUpperCase() : 'UNKNOWN';
+          if (!acc[make]) acc[make] = [];
+          acc[make].push(site);
+          return acc;
+        }, {});
+        
+        const sections = Object.keys(grouped).map(make => ({
+          title: make,
+          data: grouped[make]
+        }));
+        setSites(sections);
+      } else {
+        setSites([]);
       }
     } catch (error) {
       console.error('Error loading sites:', error);
@@ -117,56 +131,31 @@ const SnmpToolScreen = ({ navigation }: any) => {
     setSelectedParam(param);
     setShowParamPicker(false);
     setReadValue(null);
+    if (param) {
+      handleGet(param);
+    }
   };
 
-  const handleGet = async () => {
-    if (!selectedSite || !selectedParam) {
-      Alert.alert('Error', 'Please select site and parameter');
+  const handleGet = async (targetParam = selectedParam) => {
+    if (!selectedSite || !targetParam) {
       return;
     }
     setLoadingAction(true);
     try {
       const formData = new FormData();
       formData.append('imei', selectedSite.imei);
-      formData.append('oid', selectedParam.oid);
-      formData.append('type', selectedParam.type);
+      formData.append('oid', targetParam.oid);
+      formData.append('type', targetParam.type || 'string'); // ensure type fallback
 
       const response = await api.sendSnmpGet(formData);
       if (response.success) {
         setReadValue(response.value);
-        Alert.alert('Success', `Read value: ${response.value}`);
       } else {
         Alert.alert('Read Error', response.error || 'Failed to read value');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to perform GET operation');
-    } finally {
-      setLoadingAction(false);
-    }
-  };
-
-  const handleSet = async () => {
-    if (!selectedSite || !selectedParam || !newValue) {
-      Alert.alert('Error', 'Please select site, parameter, and enter a new value');
-      return;
-    }
-    setLoadingAction(true);
-    try {
-      const formData = new FormData();
-      formData.append('imei', selectedSite.imei);
-      formData.append('oid', selectedParam.oid);
-      formData.append('type', selectedParam.type);
-      formData.append('value', newValue);
-
-      const response = await api.sendSnmpSet(formData);
-      if (response.success) {
-        Alert.alert('Success', `Write verified: ${response.verified_value}`);
-        loadCurrentValues(selectedSite);
-      } else {
-        Alert.alert('Write Error', response.error || 'Failed to write value');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to perform SET operation');
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to perform GET operation: ' + (error.message || 'Network error'));
     } finally {
       setLoadingAction(false);
     }
@@ -174,16 +163,18 @@ const SnmpToolScreen = ({ navigation }: any) => {
 
   const renderCurrentValues = () => {
     if (loadingValues) return <ActivityIndicator color="#6366f1" style={{ marginTop: verticalScale(20) }} />;
-    if (!currentValues || currentValues.length === 0) return null;
+    if (!currentValues || currentValues.length === 0) return (
+        <Text style={{ textAlign: 'center', color: '#94a3b8', marginTop: moderateScale(20) }}>No values stored or loaded</Text>
+    );
 
     return (
-      <View style={{ marginTop: verticalScale(20) }}>
+      <View style={{ marginTop: verticalScale(10) }}>
         {currentValues.map((section: any, index: number) => (
           <View key={index} style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>{section.table}</Text>
             <View style={styles.gridContainer}>
               {Object.entries(section.values).map(([key, val]: any, idx) => {
-                if (key.toLowerCase().includes('id') && key !== 'site_id') return null; // skip internal cols
+                if (key.toLowerCase().includes('id') && key !== 'site_id') return null;
                 return (
                   <View key={idx} style={styles.gridItem}>
                     <Text style={styles.gridKey}>{key.replace(/^st/, '').replace(/_/g, ' ')}</Text>
@@ -205,10 +196,10 @@ const SnmpToolScreen = ({ navigation }: any) => {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         
         <AppHeader
-          title="SNMP Tool"
-          onMenuPress={() => setSidebarVisible(true)}
-          onNotificationPress={() => navigation.navigate('LiveAlarms')}
-          rightIcon="bell"
+          title="SNMP RMS"
+          leftAction="menu" onLeftPress={() => setSidebarVisible(true)}
+          
+          
         />
 
         <Sidebar
@@ -225,7 +216,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.card}>
-            <Text style={styles.cardHeader}>SNMP Configuration</Text>
+            <Text style={styles.cardHeader}>Select Parameter</Text>
             
             {/* Site Selector */}
             <View style={styles.fieldContainer}>
@@ -236,7 +227,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
                 ) : (
                   <>
                     <Text style={[styles.pickerTriggerText, !selectedSite && { color: '#94a3b8' }]}>
-                      {selectedSite ? `${selectedSite.imei} - ${selectedSite.name}` : '-- Select Site --'}
+                      {selectedSite ? `${selectedSite.site_name} (${selectedSite.global_id})` : '-- Select Site --'}
                     </Text>
                     <Icon name="chevron-down" size={20} color="#64748b" />
                   </>
@@ -246,7 +237,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
 
             {/* Parameter Selector */}
             <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Select Parameter <Text style={styles.required}>*</Text></Text>
+              <Text style={styles.label}>Choose a Parameter <Text style={styles.required}>*</Text></Text>
               <TouchableOpacity style={styles.pickerTrigger} onPress={() => {
                 if (selectedSite) setShowParamPicker(true);
                 else Alert.alert('Notice', 'Please select a site first.');
@@ -256,7 +247,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
                 ) : (
                   <>
                     <Text style={[styles.pickerTriggerText, !selectedParam && { color: '#94a3b8' }]}>
-                      {selectedParam ? selectedParam.name : '-- Select Parameter --'}
+                      {selectedParam ? selectedParam.name : '-- Choose a Parameter --'}
                     </Text>
                     <Icon name="chevron-down" size={20} color="#64748b" />
                   </>
@@ -264,43 +255,72 @@ const SnmpToolScreen = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(16) }}>
-               {/* Read Action */}
-              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#10b981' }]} onPress={handleGet} disabled={loadingAction}>
-                <Icon name="download" size={18} color="#fff" style={{ marginRight: moderateScale(8) }} />
-                <Text style={styles.actionBtnText}>Read Value</Text>
-              </TouchableOpacity>
-            </View>
+            {selectedParam && (
+              <View style={{ marginTop: verticalScale(16) }}>
+                {/* READ CARD */}
+                <View style={styles.actionCard}>
+                  <Text style={styles.actionCardTitle}>Read Current Value</Text>
+                  
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Parameter</Text>
+                    <Text style={styles.detailValue}>{selectedParam.name}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Category</Text>
+                    <Text style={styles.detailValue}>{selectedParam.category || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Device</Text>
+                    <Text style={styles.detailValue}>{selectedSite.make ? selectedSite.make.toUpperCase() : 'N/A'}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>IP</Text>
+                    <Text style={styles.detailValue}>{selectedSite.ip || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>OID</Text>
+                    <Text style={styles.detailValue}>{selectedParam.oid}</Text>
+                  </View>
 
-            {readValue !== null && (
-              <View style={styles.resultContainer}>
-                <Text style={styles.resultLabel}>Read Result:</Text>
-                <Text style={styles.resultText}>{readValue}</Text>
-              </View>
+                  {loadingAction && !readValue && (
+                    <View style={{ marginTop: 16, alignItems: 'center' }}>
+                       <ActivityIndicator color="#10b981" size="small" />
+                       <Text style={{ color: '#64748b', marginTop: 4, fontSize: 12 }}>Fetching value...</Text>
+                    </View>
+                  )}
+
+                  {readValue !== null && (
+                    <View style={styles.resultBox}>
+                      <View style={styles.statusHeader}>
+                        <Icon name="check-circle" size={18} color="#10b981" />
+                        <Text style={[styles.statusText, {color: '#10b981'}]}>Read Success</Text>
+                      </View>
+                      
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Value</Text>
+                        <Text style={[styles.detailValue, {color: '#1e3a8a', fontWeight: 'bold'}]}>{readValue}</Text>
+                      </View>
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Type</Text>
+                        <Text style={styles.detailValue}>{selectedParam.type || 'OctetString'}</Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+
+                              </View>
             )}
-
-            {/* Write Section */}
-            <View style={[styles.fieldContainer, { marginTop: verticalScale(16) }]}>
-              <Text style={styles.label}>New Value (Write) <Text style={styles.required}>*</Text></Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter value to write"
-                placeholderTextColor="#94a3b8"
-                value={newValue}
-                onChangeText={setNewValue}
-              />
-            </View>
-            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#ef4444' }]} onPress={handleSet} disabled={loadingAction}>
-              <Icon name="upload" size={18} color="#fff" style={{ marginRight: moderateScale(8) }} />
-              <Text style={styles.actionBtnText}>Write Value</Text>
-            </TouchableOpacity>
-
           </View>
 
           {/* Current Values Card */}
           {selectedSite && (
             <View style={styles.card}>
-              <Text style={styles.cardHeader}>Current Stored Values</Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: moderateScale(10)}}>
+                <Text style={styles.cardHeader}>Current Stored Values</Text>
+                <TouchableOpacity onPress={() => loadCurrentValues(selectedSite)} style={{padding: 4}}>
+                    <Icon name="refresh" size={20} color="#6366f1" />
+                </TouchableOpacity>
+              </View>
               {renderCurrentValues()}
             </View>
           )}
@@ -308,7 +328,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
         </ScrollView>
 
         {/* Site Picker Modal */}
-        <Modal visible={showSitePicker} transparent animationType="slide">
+        <Modal visible={showSitePicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
@@ -317,15 +337,29 @@ const SnmpToolScreen = ({ navigation }: any) => {
                   <Icon name="close" size={24} color="#64748b" />
                 </TouchableOpacity>
               </View>
-              <FlatList
-                data={sites}
+              <SectionList
+                sections={sites}
                 keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={() => (
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => handleSiteSelect(null)}
+                  >
+                    <Text style={[styles.modalItemText, { color: '#94a3b8', fontStyle: 'italic' }]}>-- Select Site (Clear) --</Text>
+                  </TouchableOpacity>
+                )}
+                renderSectionHeader={({ section: { title } }) => (
+                  <View style={{ backgroundColor: '#f1f5f9', padding: moderateScale(10), paddingHorizontal: moderateScale(20) }}>
+                    <Text style={{ fontWeight: 'bold', color: '#1e3a8a', fontSize: responsiveFontSize(14), flexShrink: 1, }}>- {title} -</Text>
+                  </View>
+                )}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => handleSiteSelect(item)}
                   >
-                    <Text style={styles.modalItemText}>{item.imei} - {item.name}</Text>
+                    <Text style={styles.modalItemText}>{item.site_name}</Text>
+                    <Text style={styles.modalItemSubText}>{item.global_id}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -334,7 +368,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
         </Modal>
 
         {/* Param Picker Modal */}
-        <Modal visible={showParamPicker} transparent animationType="slide">
+        <Modal visible={showParamPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
@@ -346,13 +380,21 @@ const SnmpToolScreen = ({ navigation }: any) => {
               <FlatList
                 data={paramsList}
                 keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={() => (
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => handleParamSelect(null)}
+                  >
+                    <Text style={[styles.modalItemText, { color: '#94a3b8', fontStyle: 'italic' }]}>-- Choose Parameter (Clear) --</Text>
+                  </TouchableOpacity>
+                )}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => handleParamSelect(item)}
                   >
                     <Text style={styles.modalItemText}>{item.name}</Text>
-                    <Text style={{fontSize: responsiveFontSize(12), color:'#94a3b8'}}>{item.oid}</Text>
+                    <Text style={styles.modalItemSubText}>{item.oid}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -381,13 +423,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardHeader: {
-    fontSize: responsiveFontSize(18),
-    fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: moderateScale(16),
+    fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800',
+    color: '#1e3a8a',
   },
   fieldContainer: { marginBottom: moderateScale(16) },
-  label: { color: '#475569', fontSize: responsiveFontSize(14), fontWeight: '600', marginBottom: verticalScale(6) },
+  label: { color: '#64748b', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', marginBottom: verticalScale(6) },
   required: { color: '#ef4444' },
   pickerTrigger: {
     flexDirection: 'row',
@@ -399,15 +439,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: moderateScale(12),
   },
-  pickerTriggerText: { fontSize: responsiveFontSize(14), color: '#1e293b' },
+  pickerTriggerText: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#0f172a', fontWeight: '600' },
   input: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 8,
     padding: moderateScale(12),
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#0f172a',
+    fontWeight: '600'
   },
   actionBtn: {
     flexDirection: 'row',
@@ -418,7 +458,73 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  actionBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14) },
+  actionBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14), flexShrink: 1, },
+
+  actionCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  actionCardTitle: {
+    fontSize: responsiveFontSize(14),
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: moderateScale(12),
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: moderateScale(6),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  detailLabel: {
+    fontSize: responsiveFontSize(13),
+    color: '#64748b',
+    fontWeight: '500',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: responsiveFontSize(13),
+    color: '#334155',
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  actionBtnRead: {
+    backgroundColor: '#10b981',
+    paddingVertical: moderateScale(12),
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: moderateScale(16),
+  },
+  actionBtnWrite: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: moderateScale(12),
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: moderateScale(16),
+  },
+  resultBox: {
+    marginTop: moderateScale(16),
+    padding: moderateScale(12),
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#10b981',
+    borderRadius: 8,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: moderateScale(10),
+  },
+  statusText: {
+    fontSize: responsiveFontSize(14),
+    fontWeight: 'bold',
+    marginLeft: moderateScale(6),
+  },
   resultContainer: {
     marginTop: verticalScale(10),
     padding: moderateScale(12),
@@ -427,18 +533,18 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#10b981',
   },
-  resultLabel: { fontSize: responsiveFontSize(12), color: '#047857' },
-  resultText: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#065f46' },
+  resultLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#047857', fontWeight: '600' },
+  resultText: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold', color: '#065f46', marginTop: 4 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '75%',
+    maxHeight: '80%',
     paddingBottom: verticalScale(20),
   },
   modalHeader: {
@@ -449,21 +555,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalTitle: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e293b' },
+  modalTitle: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#1e293b' },
   modalItem: {
-    padding: moderateScale(20),
+    padding: moderateScale(16),
+    paddingHorizontal: moderateScale(20),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalItemText: { fontSize: responsiveFontSize(16), color: '#475569', fontWeight: '500' },
+  modalItemText: { fontSize: responsiveFontSize(15), flexShrink: 1, color: '#334155', fontWeight: '600' },
+  modalItemSubText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#94a3b8', marginTop: 2 },
   
   // Current values grid
-  sectionContainer: { marginTop: verticalScale(16) },
-  sectionTitle: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#334155', marginBottom: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: verticalScale(4) },
+  sectionContainer: { marginTop: verticalScale(10), marginBottom: verticalScale(10) },
+  sectionTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#8b5cf6', marginBottom: verticalScale(10), textTransform: 'uppercase' },
   gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  gridItem: { width: '48%', backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 8, marginBottom: verticalScale(8), borderWidth: 1, borderColor: '#e2e8f0' },
-  gridKey: { fontSize: responsiveFontSize(11), color: '#64748b', textTransform: 'capitalize' },
-  gridValue: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#0f172a', marginTop: verticalScale(4) },
+  gridItem: { width: '48%', backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 8, marginBottom: verticalScale(10), borderWidth: 1, borderColor: '#e2e8f0' },
+  gridKey: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', fontWeight: '700' },
+  gridValue: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginTop: verticalScale(6) },
 });
 
 export default SnmpToolScreen;

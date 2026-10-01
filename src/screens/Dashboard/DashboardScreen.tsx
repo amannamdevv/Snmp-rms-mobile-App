@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
@@ -267,15 +267,15 @@ export default function DashboardScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#c5d4eeff' },
   scrollContent: { padding: moderateScale(16), maxWidth: 650, alignSelf: 'center', width: '100%', paddingBottom: verticalScale(30) },
-  sectionTitle: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#1e3c72', marginBottom: verticalScale(16), textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitle: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72', marginBottom: verticalScale(16), textTransform: 'uppercase', letterSpacing: 0.5 },
   mainCard: { backgroundColor: '#fff', borderRadius: moderateScale(12), padding: moderateScale(16), marginBottom: verticalScale(16), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#f1f5f9', paddingBottom: verticalScale(8), marginBottom: verticalScale(12) },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  cardTitle: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#1e3c72' },
+  cardTitle: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   miniKpi: { alignItems: 'center', flex: 1 },
-  miniLabel: { fontSize: responsiveFontSize(11), color: '#888', fontWeight: 'bold', marginBottom: verticalScale(4), textTransform: 'uppercase', textAlign: 'center' },
-  miniValue: { fontSize: responsiveFontSize(18), fontWeight: '800' },
+  miniLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', fontWeight: 'bold', marginBottom: verticalScale(4), textTransform: 'uppercase', textAlign: 'center' },
+  miniValue: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800' },
 
   distGrid: { width: '100%' },
   distRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(20) }

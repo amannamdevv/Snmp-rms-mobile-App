@@ -7,7 +7,7 @@ import Sidebar from '../../components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 // ✅ Import shared utils — same logic as LiveAlarmsScreen
 import { normaliseAndMerge, calcAlarmKpi } from '../../utils/alarmUtils';
@@ -298,20 +298,18 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(12),
   },
   cardHeader: {
-    fontSize: responsiveFontSize(16),
-    fontWeight: '700',
+    fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700',
     color: '#1e3c72',
   },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   miniKpi: { alignItems: 'center', flex: 1 },
   miniLabel: {
-    fontSize: responsiveFontSize(11),
-    color: '#888',
+    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888',
     fontWeight: 'bold',
     marginBottom: verticalScale(4),
     textTransform: 'uppercase',
   },
-  miniValue: { fontSize: responsiveFontSize(18), fontWeight: '800' },
+  miniValue: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800' },
 });
 
 

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -17,12 +17,16 @@ import { api } from '../../api';
 import AppHeader from '../../components/AppHeader';
 import Sidebar from '../../components/Sidebar';
 import AppIcon from '../../components/AppIcon';
+import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LineChart, BarChart } from 'react-native-chart-kit';
+import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import RNFS from 'react-native-fs';
 import RNShare from 'react-native-share';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SW = _d.width; } catch(_) {}
 
 // ─── Helpers ─────────────────────────────────────────────────
 const fmt = (v: any, d = 1) => (parseFloat(v) || 0).toFixed(d);
@@ -50,6 +54,8 @@ function TrendBar({ values, labels, colors }: { values: number[]; labels: string
             height={200}
             yAxisLabel=""
             yAxisSuffix=""
+            showValuesOnTopOfBars={true}
+            fromZero={true}
             chartConfig={{
                 backgroundColor: '#ffffff',
                 backgroundGradientFrom: '#ffffff',
@@ -67,29 +73,62 @@ function TrendBar({ values, labels, colors }: { values: number[]; labels: string
 
 // ─── Mini line chart (SVG-like with View) ────────────────────
 function TrendLine({ values, labels, color }: { values: number[]; labels: string[]; color: string }) {
+    const [tooltipPos, setTooltipPos] = useState<{x: number, y: number, value: any, label: string} | null>(null);
     if (!values.length) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>;
     
     return (
-        <LineChart
-            data={{
-                labels: labels,
-                datasets: [{ data: values }]
-            }}
-            width={SW - 60}
-            height={180}
-            chartConfig={{
-                backgroundColor: '#ffffff',
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 1,
-                color: (opacity = 1) => `rgba(93, 163, 250, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
-                style: { borderRadius: 16 },
-                propsForDots: { r: "5", strokeWidth: "2", stroke: color }
-            }}
-            bezier
-            style={{ marginVertical: verticalScale(8), borderRadius: 16 }}
-        />
+        <View style={{ position: 'relative' }}>
+            <LineChart
+                data={{
+                    labels: labels,
+                    datasets: [{ data: values }]
+                }}
+                width={SW - 60}
+                height={180}
+                onDataPointClick={({ value, index, x, y }) => {
+                    let posX = x;
+                    if (posX < 40) posX = 40;
+                    if (posX > SW - 100) posX = SW - 100;
+                    setTooltipPos({ x: posX, y, value, label: labels[index] });
+                    setTimeout(() => setTooltipPos(curr => curr?.x === posX ? null : curr), 3000);
+                }}
+                chartConfig={{
+                    backgroundColor: '#ffffff',
+                    backgroundGradientFrom: '#ffffff',
+                    backgroundGradientTo: '#ffffff',
+                    decimalPlaces: 1,
+                    color: (opacity = 1) => `rgba(93, 163, 250, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
+                    style: { borderRadius: 16 },
+                    propsForDots: { r: "5", strokeWidth: "2", stroke: color }
+                }}
+                bezier
+                style={{ marginVertical: verticalScale(8), borderRadius: 16 }}
+            />
+            {tooltipPos && (
+                <View style={{
+                    position: 'absolute',
+                    left: tooltipPos.x - 30,
+                    top: tooltipPos.y - 45,
+                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    alignItems: 'center',
+                    pointerEvents: 'none',
+                    elevation: 5
+                }}>
+                    <Text style={{ color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800' }}>{tooltipPos.value}</Text>
+                    <Text style={{ color: '#cbd5e1', fontSize: responsiveFontSize(10), flexShrink: 1, }}>{tooltipPos.label}</Text>
+                    <View style={{
+                        position: 'absolute', bottom: -4, width: 0, height: 0,
+                        borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 5,
+                        borderLeftColor: 'transparent', borderRightColor: 'transparent',
+                        borderTopColor: 'rgba(15, 23, 42, 0.85)'
+                    }} />
+                </View>
+            )}
+        </View>
     );
 }
 
@@ -108,8 +147,8 @@ function KpiCard({ label, value, icon, color }: { label: string; value: string; 
 const KS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: moderateScale(4) },
     iconBox: { width: moderateScale(36), height: verticalScale(36), borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: verticalScale(8) },
-    val: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
-    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    val: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
+    lab: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // ─── Section Card wrapper ─────────────────────────────────────
@@ -123,7 +162,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
 }
 const SCS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
-    title: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
+    title: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(12), textTransform: 'uppercase', letterSpacing: 0.5 },
 });
 
 // ─── Alert badge ──────────────────────────────────────────────
@@ -161,21 +200,196 @@ function AbnCard({ item, type }: { item: any; type: 'spike' | 'offhours' | 'week
     );
 }
 const ACS = StyleSheet.create({
-    card: { borderLeftWidth: 4, borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: 10 },
-    name: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    id: { fontSize: responsiveFontSize(9), color: '#64748b', marginBottom: verticalScale(3) },
-    stats: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    card: { borderLeftWidth: 4, borderRadius: 10, padding: moderateScale(12), marginBottom: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: moderateScale(10) },
+    name: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    id: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginBottom: verticalScale(3) },
+    stats: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
     badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 8 },
-    badgeTxt: { fontSize: responsiveFontSize(9), color: '#fff', fontWeight: '800' },
+    badgeTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#fff', fontWeight: '800' },
 });
 
 // ─── Phase badge ──────────────────────────────────────────────
 function PhaseBadge({ count, phase }: { count: number; phase: 'R' | 'Y' | 'B' }) {
-    const colors = { R: '#e63946', Y: '#f4a261', B: '#457b9d' };
-    if (!count) return <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(11) }}>0</Text>;
+    const colors = { R: '#ef4444', Y: '#facc15', B: '#3b82f6' };
+    if (!count) return <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, }}>0</Text>;
     return (
         <View style={{ backgroundColor: colors[phase], borderRadius: 10, paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2) }}>
-            <Text style={{ color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '800' }}>{count}</Text>
+            <Text style={{ color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800' }}>{count}</Text>
+        </View>
+    );
+}
+
+// ─── Phase Missing Grouped Bar Chart ──────────────────────────
+function PhaseMissingBarChart({ siteData }: { siteData: any[] }) {
+    const [tooltip, setTooltip] = useState<any>(null);
+    if (!siteData || siteData.length === 0) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>;
+    
+    // Sort by most missing to least, take top 10 to avoid crowding
+    const sortedData = [...siteData].sort((a, b) => 
+        ((b.r_phase_missing || 0) + (b.y_phase_missing || 0) + (b.b_phase_missing || 0)) - 
+        ((a.r_phase_missing || 0) + (a.y_phase_missing || 0) + (a.b_phase_missing || 0))
+    ).slice(0, 10);
+
+    const maxVal = Math.max(...sortedData.flatMap(s => [s.r_phase_missing || 0, s.y_phase_missing || 0, s.b_phase_missing || 0]));
+    const chartHeight = 150;
+    
+    const availableWidth = SW - 60;
+    const isScrollable = sortedData.length > 4;
+    const groupWidth = isScrollable ? 80 : availableWidth / (sortedData.length || 1);
+    const barWidth = isScrollable ? 14 : (groupWidth - 20) / 3;
+
+    return (
+        <View>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: moderateScale(15), marginBottom: moderateScale(10) }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}><View style={{ width: 12, height: 12, backgroundColor: '#ef4444', borderRadius: 2, marginRight: 4 }} /><Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold' }}>R Phase</Text></View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}><View style={{ width: 12, height: 12, backgroundColor: '#facc15', borderRadius: 2, marginRight: 4 }} /><Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold' }}>Y Phase</Text></View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}><View style={{ width: 12, height: 12, backgroundColor: '#3b82f6', borderRadius: 2, marginRight: 4 }} /><Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold' }}>B Phase</Text></View>
+            </View>
+            <ScrollView horizontal={isScrollable} showsHorizontalScrollIndicator={false} style={{ marginVertical: moderateScale(10) }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingBottom: moderateScale(10), paddingTop: moderateScale(50), paddingHorizontal: isScrollable ? 10 : 0, width: isScrollable ? 'auto' : availableWidth }}>
+                    {sortedData.map((s, idx) => {
+                        const r = s.r_phase_missing || 0;
+                        const y = s.y_phase_missing || 0;
+                        const b = s.b_phase_missing || 0;
+                        const rHeight = maxVal > 0 ? (r / maxVal) * chartHeight : 0;
+                        const yHeight = maxVal > 0 ? (y / maxVal) * chartHeight : 0;
+                        const bHeight = maxVal > 0 ? (b / maxVal) * chartHeight : 0;
+                        const label = s.global_id || s.site_id || `Site ${idx+1}`;
+
+                        return (
+                            <View key={idx} style={{ alignItems: 'center', width: groupWidth, position: 'relative' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: chartHeight, justifyContent: 'center' }}>
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7}
+                                        onPress={() => { setTooltip({ idx, label, phase: 'R', val: r }); setTimeout(() => setTooltip(null), 3000); }}
+                                        style={{ width: barWidth, height: rHeight, backgroundColor: '#ef4444', marginRight: 2, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} 
+                                    />
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7}
+                                        onPress={() => { setTooltip({ idx, label, phase: 'Y', val: y }); setTimeout(() => setTooltip(null), 3000); }}
+                                        style={{ width: barWidth, height: yHeight, backgroundColor: '#facc15', marginRight: 2, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} 
+                                    />
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7}
+                                        onPress={() => { setTooltip({ idx, label, phase: 'B', val: b }); setTimeout(() => setTooltip(null), 3000); }}
+                                        style={{ width: barWidth, height: bHeight, backgroundColor: '#3b82f6', borderTopLeftRadius: 3, borderTopRightRadius: 3 }} 
+                                    />
+                                </View>
+                                <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: 8, textAlign: 'center', fontWeight: '600' }} numberOfLines={1}>{label.substring(0, 10)}</Text>
+                                
+                                {tooltip && tooltip.idx === idx && (
+                                    <View style={{
+                                        position: 'absolute',
+                                        bottom: chartHeight + 25,
+                                        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                                        padding: 8,
+                                        borderRadius: 6,
+                                        alignItems: 'center',
+                                        zIndex: 50,
+                                        width: 80,
+                                        elevation: 5
+                                    }}>
+                                        <Text style={{ color: '#fff', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800', marginBottom: 4 }} numberOfLines={1}>{tooltip.label}</Text>
+                                        <Text style={{ 
+                                            color: tooltip.phase === 'R' ? '#ef4444' : tooltip.phase === 'Y' ? '#facc15' : '#3b82f6', 
+                                            fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' 
+                                        }}>
+                                            {tooltip.phase} Phase: {tooltip.val}
+                                        </Text>
+                                        <View style={{
+                                            position: 'absolute', bottom: -5, width: 0, height: 0,
+                                            borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 5,
+                                            borderLeftColor: 'transparent', borderRightColor: 'transparent',
+                                            borderTopColor: 'rgba(15, 23, 42, 0.85)'
+                                        }} />
+                                    </View>
+                                )}
+                            </View>
+                        );
+                    })}
+                </View>
+            </ScrollView>
+        </View>
+    );
+}
+
+// ─── Weekly Deviation Bar Chart ───────────────────────────────
+function WeeklyDeviationBarChart({ weeklyData }: { weeklyData: any[] }) {
+    const [tooltip, setTooltip] = useState<any>(null);
+    if (!weeklyData || weeklyData.length === 0) return <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>;
+    
+    const sortedData = [...weeklyData].slice(0, 10);
+    const maxVal = Math.max(...sortedData.flatMap(s => [parseFloat(s.this_week_avg) || 0, parseFloat(s.last_week_avg) || 0]));
+    const chartHeight = 150;
+    
+    const availableWidth = SW - 60;
+    const isScrollable = sortedData.length > 4;
+    const groupWidth = isScrollable ? 80 : availableWidth / (sortedData.length || 1);
+    const barWidth = isScrollable ? 22 : (groupWidth - 10) / 2;
+
+    return (
+        <View>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: moderateScale(15), marginBottom: moderateScale(10) }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}><View style={{ width: 12, height: 12, backgroundColor: '#38bdf8', borderRadius: 2, marginRight: 4 }} /><Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold' }}>This Week avg</Text></View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}><View style={{ width: 12, height: 12, backgroundColor: '#64748b', borderRadius: 2, marginRight: 4 }} /><Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold' }}>Last Week avg</Text></View>
+            </View>
+            <ScrollView horizontal={isScrollable} showsHorizontalScrollIndicator={false} style={{ marginVertical: moderateScale(10) }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingBottom: moderateScale(10), paddingTop: moderateScale(50), paddingHorizontal: isScrollable ? 10 : 0, width: isScrollable ? 'auto' : availableWidth }}>
+                    {sortedData.map((s, idx) => {
+                        const tw = parseFloat(s.this_week_avg) || 0;
+                        const lw = parseFloat(s.last_week_avg) || 0;
+                        const twHeight = maxVal > 0 ? (tw / maxVal) * chartHeight : 0;
+                        const lwHeight = maxVal > 0 ? (lw / maxVal) * chartHeight : 0;
+                        const label = s.global_id || s.site_id || `Site ${idx+1}`;
+
+                        return (
+                            <View key={idx} style={{ alignItems: 'center', width: groupWidth, position: 'relative' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: chartHeight, justifyContent: 'center' }}>
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7}
+                                        onPress={() => { setTooltip({ idx, label, type: 'This Week', val: tw }); setTimeout(() => setTooltip(null), 3000); }}
+                                        style={{ width: barWidth, height: twHeight, backgroundColor: '#38bdf8', marginRight: 2, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} 
+                                    />
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7}
+                                        onPress={() => { setTooltip({ idx, label, type: 'Last Week', val: lw }); setTimeout(() => setTooltip(null), 3000); }}
+                                        style={{ width: barWidth, height: lwHeight, backgroundColor: '#64748b', marginRight: 2, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} 
+                                    />
+                                </View>
+                                <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: 8, textAlign: 'center', fontWeight: '600' }} numberOfLines={1}>{label.substring(0, 10)}</Text>
+                                
+                                {tooltip && tooltip.idx === idx && (
+                                    <View style={{
+                                        position: 'absolute',
+                                        bottom: chartHeight + 25,
+                                        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                                        padding: 8,
+                                        borderRadius: 6,
+                                        alignItems: 'center',
+                                        zIndex: 50,
+                                        width: 80,
+                                        elevation: 5
+                                    }}>
+                                        <Text style={{ color: '#fff', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800', marginBottom: 4 }} numberOfLines={1}>{tooltip.label}</Text>
+                                        <Text style={{ 
+                                            color: tooltip.type === 'This Week' ? '#38bdf8' : '#e2e8f0', 
+                                            fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' 
+                                        }}>
+                                            {tooltip.type}: {tooltip.val}
+                                        </Text>
+                                        <View style={{
+                                            position: 'absolute', bottom: -5, width: 0, height: 0,
+                                            borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 5,
+                                            borderLeftColor: 'transparent', borderRightColor: 'transparent',
+                                            borderTopColor: 'rgba(15, 23, 42, 0.85)'
+                                        }} />
+                                    </View>
+                                )}
+                            </View>
+                        );
+                    })}
+                </View>
+            </ScrollView>
         </View>
     );
 }
@@ -222,14 +436,14 @@ function DropPicker({ label, value, options, onChange, placeholder }: {
 }
 const DP = StyleSheet.create({
     wrap: { flex: 1 },
-    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5da3fa', marginBottom: verticalScale(4), textTransform: 'uppercase', letterSpacing: 0.5 },
+    label: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#5da3fa', marginBottom: verticalScale(4), textTransform: 'uppercase', letterSpacing: 0.5 },
     trigger: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), borderWidth: 1.5, borderColor: '#d0e4f7', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    triggerTxt: { fontSize: responsiveFontSize(11), color: '#1c3d5a', fontWeight: '600', flex: 1, marginRight: moderateScale(4) },
+    triggerTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1c3d5a', fontWeight: '600', flex: 1, marginRight: moderateScale(4) },
     backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(24) },
     modal: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), maxHeight: 400 },
-    modalTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(12) },
+    modalTitle: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(12) },
     option: { paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optTxt: { fontSize: responsiveFontSize(13), color: '#334155' },
+    optTxt: { fontSize: responsiveFontSize(15), flexShrink: 1, color: '#334155' },
 });
 
 // ─── OVERVIEW TAB ─────────────────────────────────────────────
@@ -264,26 +478,18 @@ function OverviewTab({ data, refreshing, onRefresh }: { data: any, refreshing: b
                 <TrendBar
                     values={tod.values}
                     labels={tod.labels}
-                    colors={['#5da3fa', '#1c3d5a', '#4dc9f6', '#f4a261']}
+                    colors={['#5da3fa', '#1c3d5a', '#4dc9f6', '#facc15']}
                 />
             </SectionCard>
 
-            {/* Technology Distribution */}
-            {tech.labels.length > 0 && (
-                <SectionCard title="Technology Distribution">
-                    <TrendBar
-                        values={tech.values}
-                        labels={tech.labels}
-                        colors={['#5da3fa', '#1c3d5a', '#4dc9f6', '#f4a261', '#a9d6e5']}
-                    />
-                </SectionCard>
-            )}
+
         </ScrollView>
     );
 }
 
 // ─── QUALITY TAB ──────────────────────────────────────────────
 function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searchQuery: string, refreshing: boolean, onRefresh: () => void }) {
+    const [phaseFilter, setPhaseFilter] = useState<'R' | 'Y' | 'B'>('R');
     if (!data) return null;
     const q = data.quality_of_supply || {};
     const originalSiteData = q.site_data || [];
@@ -318,21 +524,42 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
             contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5da3fa']} />}
         >
+            {/* Phase Missing Count per Site Chart */}
+            <SectionCard title="Phase Missing Count per Site (R/Y/B)">
+                <PhaseMissingBarChart siteData={originalSiteData} />
+            </SectionCard>
 
             {/* R-Y-B Voltage Trend */}
             <SectionCard title="R-Y-B Phase Voltage Trend">
                 {ryb.labels.length > 0 ? (
                     <View>
-                        {['R Phase', 'Y Phase', 'B Phase'].map((label, idx) => {
-                            const vals = [ryb.r_phase, ryb.y_phase, ryb.b_phase][idx];
-                            const colors = ['#e63946', '#f4a261', '#457b9d'];
-                            return (
-                                <View key={label} style={{ marginBottom: verticalScale(10) }}>
-                                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: colors[idx], marginBottom: verticalScale(4) }}>{label}</Text>
-                                    <TrendLine values={vals || []} labels={ryb.labels} color={colors[idx]} />
-                                </View>
-                            );
-                        })}
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: moderateScale(16) }}>
+                            {(['R', 'Y', 'B'] as const).map(p => {
+                                const isActive = phaseFilter === p;
+                                const color = p === 'R' ? '#ef4444' : p === 'Y' ? '#facc15' : '#3b82f6';
+                                return (
+                                    <TouchableOpacity 
+                                        key={p} 
+                                        activeOpacity={0.7}
+                                        onPress={() => setPhaseFilter(p)}
+                                        style={{
+                                            paddingHorizontal: moderateScale(16), paddingVertical: 6, borderRadius: 20, 
+                                            backgroundColor: isActive ? color : '#f8fafc',
+                                            marginHorizontal: 6,
+                                            borderWidth: 1, borderColor: isActive ? color : '#cbd5e1'
+                                        }}
+                                    >
+                                        <Text style={{ 
+                                            color: isActive ? '#fff' : '#64748b', 
+                                            fontWeight: '800', fontSize: responsiveFontSize(12), flexShrink: 1, }}>{p} Phase</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                        
+                        {phaseFilter === 'R' && <TrendLine values={ryb.r_phase || []} labels={ryb.labels} color="#ef4444" />}
+                        {phaseFilter === 'Y' && <TrendLine values={ryb.y_phase || []} labels={ryb.labels} color="#facc15" />}
+                        {phaseFilter === 'B' && <TrendLine values={ryb.b_phase || []} labels={ryb.labels} color="#3b82f6" />}
                     </View>
                 ) : (
                     <Text style={{ color: '#94a3b8', textAlign: 'center', padding: moderateScale(20) }}>No voltage data</Text>
@@ -379,9 +606,9 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
                             <AppIcon name="alert-circle" size={14} color="#ef4444" />
                             <View style={{ flex: 1 }}>
                                 <Text style={QTS.alertSite}>{a.global_id || a.site_id} — {a.site_name}</Text>
-                                <Text style={{ fontSize: responsiveFontSize(10), color: '#ef4444', fontWeight: '600' }}>{a.alert_type}</Text>
+                                <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#ef4444', fontWeight: '600' }}>{a.alert_type}</Text>
                                 {a.timestamp && (
-                                    <Text style={{ fontSize: responsiveFontSize(9), color: '#94a3b8' }}>{new Date(a.timestamp).toLocaleString()}</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8' }}>{new Date(a.timestamp).toLocaleString()}</Text>
                                 )}
                             </View>
                         </View>
@@ -393,44 +620,31 @@ function QualityTab({ data, searchQuery, refreshing, onRefresh }: { data: any, s
 }
 const QTS = StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'center', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    siteName: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#0f172a' },
-    siteId: { fontSize: responsiveFontSize(9), color: '#64748b', marginTop: verticalScale(2) },
-    uptime: { fontSize: responsiveFontSize(11), fontWeight: '800', minWidth: 45, textAlign: 'right' },
+    siteName: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#0f172a' },
+    siteId: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: verticalScale(2) },
+    uptime: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', minWidth: 45, textAlign: 'right' },
     alertRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    alertSite: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#0f172a' },
+    alertSite: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#0f172a' },
 });
 
 // ─── TOD TAB ──────────────────────────────────────────────────
 function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searchQuery: string, refreshing: boolean, onRefresh: () => void }) {
-    const [abnTab, setAbnTab] = useState<'spike' | 'offhours' | 'weekly'>('spike');
     if (!data) return null;
 
+    const ov = data.overview || {};
+    const vt = ov.voltage_trend || { labels: [], values: [] };
+    const tech = data.technology_distribution || { labels: [], values: [] };
     const tod = data.tod_monitoring || {};
     const abn = tod.abnormal_alerts || {};
-    const slots = tod.time_slots || [];
-    const bySite = tod.consumption_by_site || {};
-    
-    const filteredBySiteKeys = useMemo(() => {
-        const keys = Object.keys(bySite);
-        if (!searchQuery) return keys.slice(0, 5);
-        const query = searchQuery.toLowerCase();
-        return keys.filter(k => k.toLowerCase().includes(query)).slice(0, 10);
-    }, [bySite, searchQuery]);
+    const weeklyAlerts = abn.weekly_alerts || [];
 
-    const filterAbn = (alerts: any[]) => {
-        if (!searchQuery) return alerts || [];
-        const query = searchQuery.toLowerCase();
-        return (alerts || []).filter(a => 
-            (a.global_id || '').toLowerCase().includes(query) ||
-            (a.site_id || '').toLowerCase().includes(query) ||
-            (a.site_name || '').toLowerCase().includes(query) ||
-            (a.imei || '').toLowerCase().includes(query)
-        );
-    };
-
-    const spikedFiltered = filterAbn(abn.spike_alerts);
-    const offhoursFiltered = filterAbn(abn.offhours_alerts);
-    const weeklyFiltered = filterAbn(abn.weekly_alerts);
+    const pieData = tech.labels.map((lbl: string, i: number) => ({
+        name: lbl,
+        population: tech.values[i],
+        color: ['#38bdf8', '#64748b', '#4dc9f6', '#facc15'][i % 4],
+        legendFontColor: '#64748b',
+        legendFontSize: responsiveFontSize(13)
+    }));
 
     return (
         <ScrollView 
@@ -438,210 +652,52 @@ function TODTab({ data, searchQuery, refreshing, onRefresh }: { data: any, searc
             contentContainerStyle={{ padding: moderateScale(14), paddingBottom: verticalScale(30) }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5da3fa']} />}
         >
+            {/* Voltage Fluctuation by TOD */}
+            <SectionCard title="Voltage Fluctuation by TOD">
+                <TrendLine values={vt.values} labels={vt.labels} color="#38bdf8" />
+            </SectionCard>
 
-            {/* TOD by site */}
-            {filteredBySiteKeys.length > 0 && (
-                <SectionCard title="TOD Consumption by Site (kWh)">
-                    {filteredBySiteKeys.map((name, idx) => {
-                        const vals = slots.map((sl: string) => bySite[name]?.[sl] || 0);
-                        const colors = ['#5da3fa', '#1c3d5a', '#4dc9f6', '#f4a261', '#a9d6e5'];
-                        return (
-                            <View key={name} style={{ marginBottom: verticalScale(12) }}>
-                                <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: colors[idx % colors.length], marginBottom: verticalScale(4) }}>{name}</Text>
-                                <TrendBar values={vals} labels={slots} colors={[colors[idx % colors.length]]} />
-                            </View>
-                        );
-                    })}
-                </SectionCard>
-            )}
-
-            {/* Abnormal Alerts */}
-            <View style={TODS.abnWrap}>
-                <Text style={TODS.abnTitle}>Abnormal Consumption Alerts</Text>
-                <Text style={TODS.abnSub}>3 independent detection methods</Text>
-
-                {/* Tab buttons */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: verticalScale(12) }}>
-                    {[
-                        { key: 'spike', label: 'Period Spike/Drop' },
-                        { key: 'offhours', label: 'Off-Hours (00-06 & 18-24)' },
-                        { key: 'weekly', label: 'Weekly Deviation' },
-                    ].map(t => (
-                        <TouchableOpacity
-                            key={t.key}
-                            style={[TODS.tab, abnTab === t.key && TODS.tabActive]}
-                            onPress={() => setAbnTab(t.key as any)}
-                        >
-                            <Text style={[TODS.tabTxt, abnTab === t.key && TODS.tabTxtActive]}>{t.label}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-
-                {/* Spike/Drop */}
-                {abnTab === 'spike' && (
-                    spikedFiltered.length ? spikedFiltered.map((a: any, i: number) => (
-                        <AbnCard key={i} item={a} type="spike" />
-                    )) : <Text style={TODS.noData}>No results found</Text>
+            {/* Technology-wise Load Distribution */}
+            <SectionCard title="Technology-wise Load Distribution">
+                {tech.labels.length > 0 ? (
+                    <View style={{ alignItems: 'center' }}>
+                        <PieChart
+                            data={pieData}
+                            width={SW - 60}
+                            height={200}
+                            chartConfig={{
+                                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                            }}
+                            accessor={"population"}
+                            backgroundColor={"transparent"}
+                            paddingLeft={"15"}
+                            center={[10, 0]}
+                            absolute
+                        />
+                    </View>
+                ) : (
+                    <Text style={{ textAlign: 'center', color: '#94a3b8', margin: moderateScale(20) }}>No Data</Text>
                 )}
+            </SectionCard>
 
-                {/* Off-hours */}
-                {abnTab === 'offhours' && (
-                    offhoursFiltered.length ? offhoursFiltered.map((a: any, i: number) => (
-                        <AbnCard key={i} item={a} type="offhours" />
-                    )) : <Text style={TODS.noData}>No results found</Text>
-                )}
-
-                {/* Weekly */}
-                {abnTab === 'weekly' && (
-                    weeklyFiltered.length ? weeklyFiltered.map((a: any, i: number) => (
-                        <AbnCard key={i} item={a} type="weekly" />
-                    )) : <Text style={TODS.noData}>No results found</Text>
-                )}
-            </View>
+            {/* This Week vs Last Week */}
+            <SectionCard title="This Week vs Last Week">
+                <WeeklyDeviationBarChart weeklyData={weeklyAlerts} />
+            </SectionCard>
         </ScrollView>
     );
 }
 const TODS = StyleSheet.create({
     abnWrap: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
-    abnTitle: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(4) },
-    abnSub: { fontSize: responsiveFontSize(10), color: '#94a3b8', marginBottom: verticalScale(12) },
+    abnTitle: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(4) },
+    abnSub: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#94a3b8', marginBottom: verticalScale(12) },
     tab: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', marginRight: moderateScale(8), borderWidth: 2, borderColor: '#5da3fa' },
     tabActive: { backgroundColor: '#5da3fa' },
-    tabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#5da3fa' },
+    tabTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#5da3fa' },
     tabTxtActive: { color: '#fff' },
-    noData: { fontSize: responsiveFontSize(12), color: '#94a3b8', fontWeight: '600', padding: moderateScale(16), textAlign: 'center' },
+    noData: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', fontWeight: '600', padding: moderateScale(16), textAlign: 'center' },
 });
 
-// ─── FILTER DRAWER ────────────────────────────────────────────
-function FilterDrawer({ visible, onClose, onApply, states, districts, sites, filters, setFilters, onStateChange }: any) {
-    const [showFrom, setShowFrom] = useState(false);
-    const [showTo, setShowTo] = useState(false);
-    const techOptions = [
-        { label: '4G / LTE', value: '4G' },
-        { label: '5G', value: '5G' },
-        { label: '3G', value: '3G' },
-        { label: '2G', value: '2G' },
-    ];
-
-    return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={FDS.overlay}>
-                <View style={FDS.drawer}>
-                    <View style={FDS.header}>
-                        <Text style={FDS.headerTitle}>Filters</Text>
-                        <TouchableOpacity onPress={onClose}>
-                            <AppIcon name="x" size={22} color="#1e293b" />
-                        </TouchableOpacity>
-                    </View>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: verticalScale(20) }}>
-                        {/* Date From */}
-                        <Text style={FDS.label}>DATE FROM</Text>
-                        <TouchableOpacity style={FDS.input} onPress={() => setShowFrom(true)}>
-                            <Text style={{ color: filters.date_from ? '#1e293b' : '#94a3b8' }}>{filters.date_from || 'YYYY-MM-DD'}</Text>
-                        </TouchableOpacity>
-
-                        {/* Date To */}
-                        <Text style={FDS.label}>DATE TO</Text>
-                        <TouchableOpacity style={FDS.input} onPress={() => setShowTo(true)}>
-                            <Text style={{ color: filters.date_to ? '#1e293b' : '#94a3b8' }}>{filters.date_to || 'YYYY-MM-DD'}</Text>
-                        </TouchableOpacity>
-
-                        {showFrom && (
-                            <DateTimePicker
-                                value={filters.date_from ? new Date(filters.date_from) : new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={(e, d) => {
-                                    setShowFrom(false);
-                                    if (d) setFilters((f: any) => ({ ...f, date_from: d.toISOString().split('T')[0] }));
-                                }}
-                            />
-                        )}
-
-                        {showTo && (
-                            <DateTimePicker
-                                value={filters.date_to ? new Date(filters.date_to) : new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={(e, d) => {
-                                    setShowTo(false);
-                                    if (d) setFilters((f: any) => ({ ...f, date_to: d.toISOString().split('T')[0] }));
-                                }}
-                            />
-                        )}
-
-                        {/* State */}
-                        <View style={{ marginBottom: verticalScale(12) }}>
-                            <DropPicker
-                                label="STATE / CIRCLE"
-                                value={filters.state_id}
-                                options={states.map((s: any) => ({ label: s.state_name, value: String(s.state_id) }))}
-                                onChange={v => { setFilters((f: any) => ({ ...f, state_id: v, dist_id: '' })); onStateChange(v); }}
-                                placeholder="All States"
-                            />
-                        </View>
-
-                        {/* District */}
-                        <View style={{ marginBottom: verticalScale(12) }}>
-                            <DropPicker
-                                label="DISTRICT"
-                                value={filters.dist_id}
-                                options={districts.map((d: any) => ({ label: d.district_name, value: String(d.dist_id) }))}
-                                onChange={v => setFilters((f: any) => ({ ...f, dist_id: v }))}
-                                placeholder="All Districts"
-                            />
-                        </View>
-
-                        {/* Site */}
-                        <View style={{ marginBottom: verticalScale(12) }}>
-                            <DropPicker
-                                label="SITE"
-                                value={filters.site_id}
-                                options={sites.map((s: any) => ({ label: `${s.site_name} (${s.global_id || s.site_id})`, value: s.site_id }))}
-                                onChange={v => setFilters((f: any) => ({ ...f, site_id: v }))}
-                                placeholder="All Sites"
-                            />
-                        </View>
-
-                        {/* Technology */}
-                        <View style={{ marginBottom: verticalScale(16) }}>
-                            <DropPicker
-                                label="TECHNOLOGY"
-                                value={filters.technology}
-                                options={techOptions}
-                                onChange={v => setFilters((f: any) => ({ ...f, technology: v }))}
-                                placeholder="All"
-                            />
-                        </View>
-
-                        {/* Buttons */}
-                        <TouchableOpacity style={FDS.applyBtn} onPress={() => { onApply(); onClose(); }} activeOpacity={0.8}>
-                            <AppIcon name="filter" size={14} color="#fff" />
-                            <Text style={FDS.applyBtnTxt}>Apply Filters</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={FDS.resetBtn} onPress={() => {
-                            setFilters({ date_from: daysAgoStr(30), date_to: todayStr(), state_id: '', dist_id: '', site_id: '', technology: '' });
-                        }}>
-                            <Text style={FDS.resetBtnTxt}>Reset</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-            </View>
-        </Modal>
-    );
-}
-const FDS = StyleSheet.create({
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-    drawer: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: moderateScale(20), maxHeight: '85%' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(20) },
-    headerTitle: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#0f172a' },
-    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#5da3fa', marginBottom: verticalScale(4), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(10) },
-    input: { backgroundColor: '#f5faff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#1c3d5a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(4) },
-    applyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#5da3fa', borderRadius: 12, paddingVertical: verticalScale(14), marginBottom: verticalScale(10) },
-    applyBtnTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
-    resetBtn: { alignItems: 'center', paddingVertical: verticalScale(10) },
-    resetBtnTxt: { color: '#5da3fa', fontWeight: '700', fontSize: responsiveFontSize(13) },
-});
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────
 const TABS = ['Overview', 'Quality', 'TOD'] as const;
@@ -660,14 +716,7 @@ export default function GridBillingScreen({ navigation }: any) {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Filter state
-    const [filters, setFilters] = useState({
-        date_from: daysAgoStr(30),
-        date_to: daysAgoStr(1),
-        state_id: '',
-        dist_id: '',
-        site_id: '',
-        technology: '',
-    });
+    const { globalFilters, setGlobalFilters } = useGlobalFilter();
 
     // Dropdown options from API response
     const [states, setStates] = useState<any[]>([]);
@@ -682,7 +731,7 @@ export default function GridBillingScreen({ navigation }: any) {
     const fetchData = useCallback(async (isRefresh = false, customFilters?: any) => {
         if (!isRefresh) setLoading(true);
         setErrorMsg(null);
-        const params = customFilters || filters;
+        const params = customFilters || globalFilters;
         try {
             console.log('[GridBilling] Fetching with params:', params);
             const res = await (api as any).getGridAnalytics(params);
@@ -711,7 +760,7 @@ export default function GridBillingScreen({ navigation }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [filters]);
+    }, [globalFilters]);
 
     const onRefresh = () => { setRefreshing(true); fetchData(true); };
 
@@ -745,7 +794,7 @@ export default function GridBillingScreen({ navigation }: any) {
             ].join(','));
             
             const csvContent = [
-                `"GRID POWER ANALYTICS REPORT (${filters.date_from} to ${filters.date_to})"`,
+                `"GRID POWER ANALYTICS REPORT (${globalFilters.date_from} to ${globalFilters.date_to})"`,
                 '',
                 header,
                 ...siteRows
@@ -763,9 +812,9 @@ export default function GridBillingScreen({ navigation }: any) {
     };
 
     const filterSummary = [
-        filters.date_from && filters.date_to ? `${filters.date_from} - ${filters.date_to}` : null,
-        filters.technology ? `Tech: ${filters.technology}` : null,
-        filters.site_id ? `Site: ${filters.site_id}` : null,
+        globalFilters.date_from && globalFilters.date_to ? `${globalFilters.date_from} - ${globalFilters.date_to}` : null,
+        globalFilters.technology ? `Tech: ${globalFilters.technology}` : null,
+        globalFilters.site_id ? `Site: ${globalFilters.site_id}` : null,
     ].filter(Boolean).join('  ·  ');
 
     return (
@@ -850,16 +899,15 @@ export default function GridBillingScreen({ navigation }: any) {
                 </View>
             )}
 
-            <FilterDrawer
+            <FilterModal
                 visible={filterVisible}
                 onClose={() => setFilterVisible(false)}
-                onApply={onApplyFilters}
-                states={states}
-                districts={districts}
-                sites={sites}
-                filters={filters}
-                setFilters={setFilters}
-                onStateChange={onStateChange}
+                initialFilters={globalFilters}
+                onApply={(f) => {
+                    setGlobalFilters(f);
+                    setFilterVisible(false);
+                    onApplyFilters();
+                }}
             />
 
             <Sidebar
@@ -881,11 +929,11 @@ export default function GridBillingScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: verticalScale(12), color: '#5da3fa', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    loaderTxt: { marginTop: verticalScale(12), color: '#5da3fa', fontWeight: '600', fontSize: responsiveFontSize(15), flexShrink: 1, },
     tabBar: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
     tabBtn: { flex: 1, alignItems: 'center', paddingVertical: verticalScale(12) },
     tabBtnActive: { borderBottomWidth: 3, borderBottomColor: '#5da3fa' },
-    tabTxt: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: '#5da3fa' },
 
     searchContainer: { 
@@ -904,11 +952,11 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     searchIcon: { marginRight: moderateScale(10) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(15), flexShrink: 1, color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 
     emptyBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(40), backgroundColor: '#edf2fb' },
-    emptyTxtMain: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e293b', marginTop: verticalScale(12) },
-    emptyTxtSub: { fontSize: responsiveFontSize(13), color: '#64748b', textAlign: 'center', marginTop: verticalScale(8), lineHeight: 20 },
+    emptyTxtMain: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginTop: verticalScale(12) },
+    emptyTxtSub: { fontSize: responsiveFontSize(15), flexShrink: 1, color: '#64748b', textAlign: 'center', marginTop: verticalScale(8), lineHeight: 20 },
     retryBtn: { marginTop: verticalScale(20), backgroundColor: '#5da3fa', paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10), borderRadius: 10 },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(16), flexShrink: 1, },
 });

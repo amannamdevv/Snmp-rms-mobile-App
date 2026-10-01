@@ -9,12 +9,14 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, RefreshControl, FlatList, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { api } from '../../api';
 import Sidebar from '../../components/Sidebar';
@@ -89,16 +91,16 @@ function EquipCard({ item }: { item: any }) {
 const EC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
     row: { flexDirection: 'row', alignItems: 'flex-start' },
-    site: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    type: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    site: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    type: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
     badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 8, borderWidth: 1, gap: 5 },
     dot: { width: moderateScale(7), height: verticalScale(7), borderRadius: 4 },
-    badgeTxt: { fontSize: responsiveFontSize(10), fontWeight: '700' },
+    badgeTxt: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700' },
     detail: { marginTop: verticalScale(10) },
     div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     dRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    dl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    dv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700' },
+    dl: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '700' },
+    dv: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '700' },
 });
 
 // ─── DCEM / Calibration Card ──────────────────────────────────
@@ -168,8 +170,8 @@ function StatRow({ items }: { items: { label: string; value: any; color: string 
 }
 const SS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center' },
-    val: { fontSize: responsiveFontSize(20), fontWeight: '800', marginBottom: verticalScale(3) },
-    lab: { fontSize: responsiveFontSize(8), color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    val: { fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(3) },
+    lab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // --- Helper to convert JSON array to CSV string ---
@@ -195,12 +197,12 @@ function MaintenanceTopTabs({ activeKey, onTabPress }: {
     onTabPress: (screen: string, tab?: string) => void;
 }) {
     const tabs = [
-        { label: 'History Log', screen: 'TTTool', tab: 'equipment' },
-        { label: 'Infra Upgrade', screen: 'SiteMaintenanceTool', tab: 'infra' },
+        { label: 'Equipment History', screen: 'TTTool', tab: 'equipment' },
+        { label: 'Infrastructure', screen: 'SiteMaintenanceTool', tab: 'infra' },
         { label: 'SMPS', screen: 'SiteMaintenanceTool', tab: 'smps' },
         { label: 'DCEM', screen: 'SiteMaintenanceTool', tab: 'dcem' },
-        { label: 'Repairs', screen: 'TTTool', tab: 'repairs' },
-        { label: 'Closure', screen: 'TTTool', tab: 'tickets' },
+        { label: 'Major Repairs', screen: 'TTTool', tab: 'repairs' },
+        { label: 'Tickets', screen: 'TTTool', tab: 'tickets' },
     ];
     return (
         <View style={QS.bar}>
@@ -225,7 +227,7 @@ const QS = StyleSheet.create({
     scroll: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8 },
     btn: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     btnActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    txt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    txt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     txtActive: { color: '#fff' },
 });
 
@@ -240,6 +242,9 @@ export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
     const [exporting, setExporting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [search, setSearch] = useState('');
+    const [addSmpsVisible, setAddSmpsVisible] = useState(false);
+    const [scheduleDcemVisible, setScheduleDcemVisible] = useState(false);
+    const [addInfraVisible, setAddInfraVisible] = useState(false);
     const [isSidebarVisible, setSidebarVisible] = useState(false);
     const [fullname, setFullname] = useState('Administrator');
 
@@ -253,12 +258,12 @@ export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
     useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
         fetchData();
-    }, []);
+    }, [activeTab]);
 
     const fetchData = useCallback(async (isRefresh = false) => {
         if (!isRefresh) setLoading(true);
         try {
-            const res = await (api as any).getToolData();
+            const res = await (api as any).getToolData({ section: activeTab, page: 1, rep_page: 1 });
             if (res) setToolData(res);
         } catch (e) {
             console.log('SiteMaintenance fetch error:', e);
@@ -412,6 +417,52 @@ export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
                 />
             )}
 
+
+            {/* --- Modals --- */}
+            {addSmpsVisible && <Modal visible={true} transparent animationType="fade">
+                <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: moderateScale(20)}}>
+                    <View style={{backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(20)}}>
+                        <Text style={{fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: moderateScale(15)}}>Add SMPS Details</Text>
+                        
+                        <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Site ID</Text>
+                        <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} placeholder="Enter Site ID" placeholderTextColor="#64748b" />
+                        
+                        <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Current Model</Text>
+                        <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} placeholder="e.g. Model X200" placeholderTextColor="#64748b" />
+
+                        <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Capacity</Text>
+                        <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} placeholder="e.g. 200A" placeholderTextColor="#64748b" />
+
+                        <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: moderateScale(10), marginTop: moderateScale(10)}}>
+                            <TouchableOpacity onPress={() => setAddSmpsVisible(false)} style={{padding: moderateScale(10)}}><Text style={{color: '#64748b', fontWeight: '700'}}>Cancel</Text></TouchableOpacity>
+                            <TouchableOpacity onPress={() => { setAddSmpsVisible(false); Alert.alert('Success', 'SMPS details added.'); }} style={{backgroundColor: '#01497c', padding: moderateScale(10), borderRadius: 8}}><Text style={{color: '#fff', fontWeight: '700'}}>Add SMPS</Text></TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>}
+
+            <ScheduleDcemModal visible={scheduleDcemVisible} onClose={() => setScheduleDcemVisible(false)} />
+
+
+            {addInfraVisible && <Modal visible={true} transparent animationType="fade">
+                <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: moderateScale(20)}}>
+                    <View style={{backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(20)}}>
+                        <Text style={{fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: moderateScale(15)}}>Add Infrastructure Entry</Text>
+                        
+                        <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Site ID</Text>
+                        <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} placeholder="Enter Site ID" placeholderTextColor="#64748b" />
+                        
+                        <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Recommended Upgrade</Text>
+                        <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} placeholder="Details..." placeholderTextColor="#64748b" />
+
+                        <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: moderateScale(10), marginTop: moderateScale(10)}}>
+                            <TouchableOpacity onPress={() => setAddInfraVisible(false)} style={{padding: moderateScale(10)}}><Text style={{color: '#64748b', fontWeight: '700'}}>Cancel</Text></TouchableOpacity>
+                            <TouchableOpacity onPress={() => { setAddInfraVisible(false); Alert.alert('Success', 'Infrastructure entry added.'); }} style={{backgroundColor: '#01497c', padding: moderateScale(10), borderRadius: 8}}><Text style={{color: '#fff', fontWeight: '700'}}>Save Entry</Text></TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>}
+
             <Sidebar
                 isVisible={isSidebarVisible}
                 onClose={() => setSidebarVisible(false)}
@@ -429,20 +480,66 @@ export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
     );
 }
 
+
+function ScheduleDcemModal({ visible, onClose }: { visible: boolean; onClose: () => void; }) {
+    const [siteId, setSiteId] = useState('');
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    if (!visible) return null;
+
+    return (
+        <Modal visible={true} transparent animationType="fade">
+            <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: moderateScale(20)}}>
+                <View style={{backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(20)}}>
+                    <Text style={{fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: moderateScale(15)}}>Schedule Calibration</Text>
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Site ID</Text>
+                    <TextInput 
+                        style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: moderateScale(10), marginBottom: moderateScale(15), color: '#0f172a'}} 
+                        placeholder="Enter Site ID" placeholderTextColor="#94a3b8"
+                        value={siteId} onChangeText={setSiteId}
+                    />
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: 5}}>Calibration Date</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: moderateScale(10), marginBottom: moderateScale(15)}}>
+                        <Text style={{flex: 1, color: '#0f172a', fontSize: responsiveFontSize(13), flexShrink: 1, }}>{date.toLocaleDateString()}</Text>
+                        <AppIcon name="calendar" size={16} color="#64748b" />
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker 
+                            value={date} 
+                            mode="date" 
+                            display="default" 
+                            onChange={(e, d) => { setShowDatePicker(false); if(d) setDate(d); }} 
+                        />
+                    )}
+
+                    <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: moderateScale(10), marginTop: moderateScale(10)}}>
+                        <TouchableOpacity onPress={onClose} style={{padding: moderateScale(10)}}><Text style={{color: '#64748b', fontWeight: '700'}}>Cancel</Text></TouchableOpacity>
+                        <TouchableOpacity onPress={() => { onClose(); Alert.alert('Success', 'Calibration scheduled.'); }} style={{backgroundColor: '#01497c', padding: moderateScale(10), borderRadius: 8}}><Text style={{color: '#fff', fontWeight: '700'}}>Schedule</Text></TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '700', fontSize: responsiveFontSize(15), flexShrink: 1, },
     tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', maxHeight: 52 },
     tabScroll: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), gap: 8, alignItems: 'center' },
     tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: 20, borderWidth: 1.5, borderColor: '#e2e8f0', backgroundColor: '#f8fafc' },
-    tabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(10), elevation: 1, gap: 8 },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, color: '#0f172a', fontWeight: '700' },
     secRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) },
-    secTitle: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a' },
+    secTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#0f172a' },
     exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6) },
-    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(11) },
+    exportTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13), flexShrink: 1, },
     emptyBox: { alignItems: 'center', paddingTop: verticalScale(40) },
-    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500', textAlign: 'center' },
+    emptyTxt: { color: '#94a3b8', fontSize: responsiveFontSize(15), flexShrink: 1, marginTop: verticalScale(12), fontWeight: '700', textAlign: 'center' },
 });

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
@@ -10,15 +10,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../api';
 import Icon from 'react-native-vector-icons/Feather';
 import AppHeader from '../../components/AppHeader';
+import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import Sidebar from '../../components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SW = _d.width; } catch(_) {}
 
 // ─────────────────────────────────────────────────────────────
 // TAB CONFIG  (key must match resolveTabKey mapping below)
 // ─────────────────────────────────────────────────────────────
 const TABS = [
+    { key: 'overview', label: 'Overview', icon: 'pie-chart', api: 'getAssetHealthOverview' },
     { key: 'battery', label: 'Battery', icon: 'battery', api: 'getAssetHealthBattery' },
     { key: 'dg', label: 'DG', icon: 'zap', api: 'getAssetHealthDG' },
     { key: 'rectifier', label: 'Rectifier', icon: 'cpu', api: 'getAssetHealthRectifier' },
@@ -31,6 +36,7 @@ const TABS = [
 function resolveTabKey(p?: string): string {
     if (!p) return 'battery';
     const s = p.toLowerCase().trim();
+    if (s === 'overview') return 'overview';
     if (s === 'la' || s.includes('lightning')) return 'lightning';
     if (s === 'dg battery' || s === 'dg_battery') return 'dg_battery';
     if (s === 'dg') return 'dg';
@@ -65,6 +71,19 @@ function statusBg(s: string): string {
 // SHARED: SummaryCards row
 // ─────────────────────────────────────────────────────────────
 function SummaryRow({ items }: { items: { label: string; value: any; color: string }[] }) {
+    const isSmall = items.length <= 4;
+    if (isSmall) {
+        return (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(4), paddingHorizontal: moderateScale(2), gap: 8 }}>
+                {items.map(c => (
+                    <View key={c.label} style={[SRS.card, { borderTopColor: c.color, flex: 1, minWidth: 0 }]}>
+                        <Text style={[SRS.val, { color: c.color }]}>{c.value ?? 0}</Text>
+                        <Text style={SRS.lab}>{c.label}</Text>
+                    </View>
+                ))}
+            </View>
+        );
+    }
     return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 8, paddingVertical: verticalScale(4), paddingHorizontal: moderateScale(2) }}>
@@ -79,8 +98,8 @@ function SummaryRow({ items }: { items: { label: string; value: any; color: stri
 }
 const SRS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), minWidth: 84, borderTopWidth: 3, elevation: 2, alignItems: 'center' },
-    val: { fontSize: responsiveFontSize(22), fontWeight: '800' },
-    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', marginTop: verticalScale(2), textAlign: 'center' },
+    val: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800' },
+    lab: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '700', marginTop: verticalScale(2), textAlign: 'center' },
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -102,7 +121,7 @@ function SiteCard({ site, statusField, rows, note }: {
                 <View style={{ flex: 1, paddingRight: moderateScale(8) }}>
                     <Text style={SC.name} numberOfLines={1}>{site.site_name || '—'}</Text>
                     <Text style={SC.sub}>
-                        Global ID: {site.global_id || site.site_id || '—'}{site.state_name ? `  ·  ${site.state_name}` : ''}
+                        Site ID: {site.site_id || site.global_id || '—'}
                     </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
@@ -119,14 +138,16 @@ function SiteCard({ site, statusField, rows, note }: {
             {open && (
                 <View style={{ marginTop: verticalScale(10) }}>
                     <View style={SC.divider} />
-                    {rows.filter(r => r.value !== undefined && r.value !== null && r.value !== '—' && String(r.value).trim() !== '').map(r => (
-                        <View key={r.label} style={SC.row}>
-                            <Text style={SC.rowL}>{r.label}</Text>
-                            <Text style={[SC.rowV, r.highlight && { color: statusColor(String(r.value)), fontWeight: '800' }]}>
-                                {String(r.value)}
-                            </Text>
-                        </View>
-                    ))}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                        {rows.filter(r => r.value !== undefined && r.value !== null && r.value !== '—' && String(r.value).trim() !== '').map(r => (
+                            <View key={r.label} style={SC.gridItem}>
+                                <Text style={SC.gridLabel}>{r.label}</Text>
+                                <Text style={[SC.gridValue, r.highlight && { color: statusColor(String(r.value)) }]}>
+                                    {String(r.value)}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
                     {!!note && (
                         <View style={[SC.noteBox, { backgroundColor: bg }]}>
                             <Text style={[SC.noteTxt, { color: col }]}>{note}</Text>
@@ -140,23 +161,23 @@ function SiteCard({ site, statusField, rows, note }: {
 const SC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4 },
     top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    name: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    sub: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    name: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginBottom: verticalScale(3) },
+    sub: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', fontWeight: '600' },
     badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: responsiveFontSize(8), fontWeight: '800', letterSpacing: 0.4 },
-    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
-    row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rowL: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    rowV: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '58%', textAlign: 'right' },
-    noteBox: { marginTop: verticalScale(10), padding: moderateScale(10), borderRadius: 10 },
-    noteTxt: { fontSize: responsiveFontSize(11), fontWeight: '600', lineHeight: 16 },
+    badgeTxt: { fontSize: responsiveFontSize(8), flexShrink: 1, fontWeight: '800', letterSpacing: 0.4 },
+    divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
+    gridItem: { width: '48%', marginBottom: verticalScale(12) },
+    gridLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600', marginBottom: verticalScale(3) },
+    gridValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '800' },
+    noteBox: { marginTop: verticalScale(8), padding: moderateScale(10), borderRadius: 10 },
+    noteTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', lineHeight: 16 },
 });
 
 function Empty({ msg }: { msg: string }) {
     return (
         <View style={{ alignItems: 'center', paddingTop: verticalScale(60) }}>
             <Icon name="search" size={38} color="#cbd5e1" />
-            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12), fontWeight: '500' }}>{msg}</Text>
+            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, marginTop: verticalScale(12), fontWeight: '500' }}>{msg}</Text>
         </View>
     );
 }
@@ -164,6 +185,44 @@ function Empty({ msg }: { msg: string }) {
 // ─────────────────────────────────────────────────────────────
 // SCREENS
 // ─────────────────────────────────────────────────────────────
+
+function OverviewScreen({ data, refreshing, onRefresh }: ScreenProps) {
+    const o = data?.overview;
+    if (!o) return <Empty msg="No overview data available" />;
+    
+    return (
+        <ScrollView
+            contentContainerStyle={{ padding: moderateScale(14), paddingBottom: moderateScale(30) }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
+        >
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(20), marginBottom: moderateScale(14), elevation: 3, alignItems: 'center' }}>
+                <Text style={{ fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1e293b', marginBottom: moderateScale(10) }}>Overall Health Score</Text>
+                <View style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 8, borderColor: o.health_percentage > 80 ? '#10b981' : o.health_percentage > 50 ? '#f59e0b' : '#ef4444', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: responsiveFontSize(28), flexShrink: 1, fontWeight: '900', color: '#0f172a' }}>{o.health_percentage}%</Text>
+                </View>
+                <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', marginTop: moderateScale(10), fontWeight: '600' }}>{o.sites_with_issues} sites have issues</Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {[
+                    { label: 'Total Sites', value: o.total_sites, color: '#3b82f6', icon: 'globe' },
+                    { label: 'Healthy', value: o.total_healthy, color: '#10b981', icon: 'check-circle' },
+                    { label: 'Warning', value: o.total_warning, color: '#f59e0b', icon: 'alert-triangle' },
+                    { label: 'Critical', value: o.total_critical, color: '#ef4444', icon: 'alert-octagon' },
+                    { label: 'Overloaded', value: o.total_overloaded, color: '#dc2626', icon: 'zap-off' },
+                ].map(c => (
+                    <View key={c.label} style={{ width: '48%', backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: moderateScale(14), elevation: 2, borderLeftWidth: 4, borderLeftColor: c.color }}>
+                        <Icon name={c.icon} size={20} color={c.color} style={{ marginBottom: 8 }} />
+                        <Text style={{ fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', color: '#1e293b' }}>{c.value}</Text>
+                        <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '700', marginTop: 2 }}>{c.label}</Text>
+                    </View>
+                ))}
+            </View>
+        </ScrollView>
+    );
+}
+
 
 interface ScreenProps {
     data: any;
@@ -196,10 +255,7 @@ function BatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps
 
     const summItems = [
         { label: 'Total', value: sum?.total_sites, color: '#3b82f6' },
-        { label: 'Good', value: sum?.health_categories?.good, color: '#10b981' },
-        { label: 'Average', value: sum?.health_categories?.average, color: '#f59e0b' },
-        { label: 'Needs Repl.', value: sum?.health_categories?.needs_replacement, color: '#ef4444' },
-        { label: 'Critical', value: sum?.health_categories?.critical, color: '#dc2626' },
+        { label: 'Healthy', value: (sum?.health_categories?.good || 0) + (sum?.health_categories?.average || 0), color: '#10b981' },
         { label: 'Insufficient', value: sum?.health_categories?.data_insufficient, color: '#94a3b8' },
     ];
 
@@ -222,23 +278,26 @@ function BatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps
                     statusField={item.health_status || 'Unknown'}
                     note={item.backup_verification_message}
                     rows={[
-                        { label: 'Health Status', value: item.health_status },
-                        { label: 'Voltage', value: item.current_voltage != null ? `${item.current_voltage} V` : null },
-                        { label: 'Current', value: item.current_current != null ? `${item.current_current} A` : null },
-                        { label: 'Capacity', value: item.battery_ah ? `${item.battery_ah} Ah` : null },
-                        { label: 'Configuration', value: item.configuration },
-                        { label: 'Battery Type', value: item.battery_type },
-                        { label: 'Make', value: item.make },
-                        { label: 'Declared Backup', value: item.battery_backup },
-                        { label: 'Backup Verify', value: item.backup_verification_status, highlight: true },
-                        { label: 'Longest Session', value: item.longest_session_minutes != null ? `${item.longest_session_minutes} min` : null },
-                        { label: 'Avg Session', value: item.avg_session_minutes != null ? `${item.avg_session_minutes} min` : null },
-                        { label: 'Sessions (30d)', value: item.total_sessions_analyzed },
-                        { label: 'Serial No.', value: item.battery_serial_no },
-                        { label: 'Model No.', value: item.battery_model_no },
-                        { label: 'Voltage Rating', value: item.battery_voltage_v },
-                        { label: 'Parallel Config', value: item.parallel_config },
-                        { label: 'Year', value: item.battery_year },
+                        { label: 'Battery Type', value: item.battery_type || item.Battery_Type },
+                        { label: 'Make & Model', value: item.make || item.Battery_Make_and_Type || item.Make_Model_Type },
+                        { label: 'Total Capacity', value: item.battery_ah || item.Total_ah ? `${item.battery_ah || item.Total_ah} Ah` : null },
+                        { label: 'Bank 1', value: item.Battery_Bank_Capacity_in_AH ? `${item.Battery_Bank_Capacity_in_AH} Ah` : null },
+                        { label: 'Bank 2', value: item.Battery_Bank_2_Capacity_in_AH ? `${item.Battery_Bank_2_Capacity_in_AH} Ah` : null },
+                        { label: 'Bank 3', value: item.Battery_Bank_3_Capacity_in_AH ? `${item.Battery_Bank_3_Capacity_in_AH} Ah` : null },
+                        { label: 'Bank 4', value: item.Battery_Bank_4_Capacity_in_AH ? `${item.Battery_Bank_4_Capacity_in_AH} Ah` : null },
+                        { label: 'Configuration', value: item.configuration || item.Number_of_Battery_Banks },
+                        { label: 'Parallel', value: item.parallel_config || item.Parallel },
+                        { label: 'Rated Voltage', value: item.battery_voltage_v || item.Voltage_V ? `${item.battery_voltage_v || item.Voltage_V} V` : null },
+                        { label: 'Current Voltage', value: item.current_voltage != null ? `${item.current_voltage} V` : null, highlight: true },
+                        { label: 'Year', value: item.battery_year || item.year },
+                        { label: 'Declared Backup', value: item.battery_backup || item.Backup },
+                        { label: 'Backup Verification', value: item.backup_verification_status },
+                        { label: 'Serial No', value: item.battery_serial_no || item.Battery_Serial_no },
+                        { label: 'Model No', value: item.battery_model_no || item.Battery_Model_no },
+                        { label: 'Install Date', value: item.installation_date },
+                        { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -263,10 +322,9 @@ function DGScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) {
 
     const summItems = [
         { label: 'Total Sites', value: sum?.total_sites, color: '#3b82f6' },
-        { label: 'Has DG', value: sum?.total_dg_sites, color: '#3b82f6' },
         { label: 'High Risk', value: sum?.dg_categories?.dg_high_risk, color: '#ef4444' },
         { label: 'At Risk', value: sum?.dg_categories?.dg_at_risk, color: '#f59e0b' },
-        { label: '>90% Load', value: sum?.dg_categories?.dg_loading_above_90, color: '#8b5cf6' },
+        { label: 'Overloaded (>90%)', value: sum?.dg_categories?.dg_loading_above_90, color: '#8b5cf6' },
         { label: 'Healthy', value: sum?.dg_categories?.healthy, color: '#10b981' },
         { label: 'Stopped', value: sum?.dg_categories?.stopped, color: '#64748b' },
         { label: 'Not Installed', value: sum?.dg_categories?.no_dg, color: '#94a3b8' },
@@ -290,17 +348,19 @@ function DGScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) {
                     site={item}
                     statusField={item.status || 'Unknown'}
                     rows={[
-                        { label: 'Status', value: item.status },
-                        { label: 'Today DG Hours', value: item.today_dg_hours != null ? `${item.today_dg_hours} h` : null },
-                        { label: 'Loading %', value: item.loading_percent != null ? `${item.loading_percent}%` : null, highlight: true },
-                        { label: 'Make', value: item.dg_make },
-                        { label: 'Model', value: item.dg_model },
-                        { label: 'Capacity (KVA)', value: item.rated_capacity_kva },
-                        { label: 'Phase', value: item.dg_phase },
-                        { label: 'Controller', value: item.dg_controller },
-                        { label: 'Software', value: item.dg_software },
-                        { label: 'Serial No.', value: item.dg_serial_no },
-                        { label: 'AMF Units', value: item.amf_units },
+                        { label: 'DG Make & Type', value: item.dg_make || item.dg_type_make },
+                        { label: 'Model', value: item.dg_model || item.dg_model_no },
+                        { label: 'Serial No', value: item.dg_serial_no },
+                        { label: 'Capacity (KW)', value: item.rated_capacity_kva || item.dg_rating_kw },
+                        { label: 'Controller Type', value: item.dg_controller },
+                        { label: 'Software Version', value: item.dg_software },
+                        { label: 'Phase', value: item.dg_phase || item.DG_Phase_Available },
+                        { label: 'AMF Units', value: item.amf_units || item.Number_of_AMF_Units },
+                        { label: 'Install Date', value: item.installation_date },
+                        { label: 'Today\'s Hours', value: item.today_dg_hours != null ? `${item.today_dg_hours} h` : null },
+                        { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -333,10 +393,8 @@ function RectifierScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
 
     const summItems = [
         { label: 'Total', value: sum?.total_sites, color: '#3b82f6' },
-        { label: 'Healthy', value: sum?.rectifier_categories?.healthy, color: '#10b981' },
         { label: 'Not N+1', value: sum?.rectifier_categories?.not_n_plus_1, color: '#f59e0b' },
         { label: 'Has Faults', value: sum?.rectifier_categories?.has_faults, color: '#ef4444' },
-        { label: 'Insufficient', value: sum?.rectifier_categories?.insufficient_capacity, color: '#f59e0b' },
         { label: 'Not Installed', value: sum?.rectifier_categories?.no_rectifier, color: '#94a3b8' },
     ];
 
@@ -358,15 +416,17 @@ function RectifierScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
                     site={item}
                     statusField={item.status || 'Unknown'}
                     rows={[
-                        { label: 'Status', value: item.status },
-                        { label: 'N+1 Ready', value: item.is_n_plus_1 === true ? 'Yes' : item.is_n_plus_1 === false ? 'No' : null, highlight: true },
-                        { label: 'Sufficient Cap.', value: item.sufficient_capacity === true ? 'Yes' : item.sufficient_capacity === false ? 'No' : null },
+                        { label: 'Total Rect', value: item.total_rectifiers },
+                        { label: 'Working', value: item.working_rectifiers },
+                        { label: 'Faulty', value: item.faulty_rectifiers },
+                        { label: 'Capacity (A)', value: item.rectifier_capacity_amp },
+                        { label: 'N+1 Status', value: item.is_n_plus_1 === true ? 'Yes' : item.is_n_plus_1 === false ? 'No' : item.is_n_plus_1 },
                         { label: 'Current Load', value: item.current_load != null ? `${item.current_load} A` : null },
-                        { label: 'Capacity', value: item.rectifier_capacity_amp },
-                        { label: 'Total Units', value: item.total_rectifiers },
-                        { label: 'Working Units', value: item.working_rectifiers },
-                        { label: 'Faulty Units', value: item.faulty_rectifiers },
+                        { label: 'Sufficient Capacity', value: item.sufficient_capacity === true ? 'Yes' : item.sufficient_capacity === false ? 'No' : item.sufficient_capacity },
                         { label: 'Remarks', value: item.remarks },
+                        { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -398,8 +458,6 @@ function SolarScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) 
 
     const summItems = [
         { label: 'Total Sites', value: sum?.total_sites, color: '#3b82f6' },
-        { label: 'Solar Sites', value: sum?.total_solar_sites, color: '#3b82f6' },
-        { label: 'Good', value: sum?.solar_categories?.performance_good, color: '#10b981' },
         { label: 'Average', value: sum?.solar_categories?.performance_average, color: '#f59e0b' },
         { label: 'Poor', value: sum?.solar_categories?.performance_poor, color: '#ef4444' },
         { label: 'Not Installed', value: sum?.solar_categories?.not_installed, color: '#94a3b8' },
@@ -423,14 +481,17 @@ function SolarScreen({ data, refreshing, onRefresh, searchQuery }: ScreenProps) 
                     site={item}
                     statusField={item.performance_status || 'Unknown'}
                     rows={[
-                        { label: 'Performance', value: item.performance_status, highlight: true },
-                        { label: 'Actual CUF', value: item.actual_cuf != null ? `${item.actual_cuf}%` : null },
-                        { label: 'Expected CUF', value: item.expected_cuf != null ? `${item.expected_cuf}%` : null },
-                        { label: 'Capacity (kW)', value: item.solar_capacity_kw },
+                        { label: 'Capacity (KW)', value: item.solar_capacity_kw },
                         { label: 'Panel Count', value: item.panel_count },
                         { label: 'MPPT Count', value: item.mppt_count },
-                        { label: 'Faulty MPPT', value: item.faulty_mppt_count != null ? String(item.faulty_mppt_count) : null },
+                        { label: 'Faulty MPPT', value: item.faulty_mppt_count },
+                        { label: 'Expected CUF', value: item.expected_cuf },
+                        { label: 'Actual CUF', value: item.actual_cuf },
+                        { label: 'Install Date', value: item.installation_date },
+                        { label: 'Last Cleaning', value: item.last_cleaning_date || '-' },
                         { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -463,7 +524,6 @@ function DGBatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
     const summItems = [
         { label: 'Total', value: sum?.total_sites, color: '#3b82f6' },
         { label: 'Good', value: sum?.dg_battery_categories?.battery_good, color: '#10b981' },
-        { label: 'Warning', value: sum?.dg_battery_categories?.battery_warning, color: '#f59e0b' },
         { label: 'Critical', value: sum?.dg_battery_categories?.battery_critical, color: '#ef4444' },
         { label: 'Missing', value: sum?.dg_battery_categories?.battery_missing, color: '#94a3b8' },
     ];
@@ -486,12 +546,15 @@ function DGBatteryScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
                     site={item}
                     statusField={item.health_status || 'Unknown'}
                     rows={[
-                        { label: 'Health Status', value: item.health_status, highlight: true },
-                        { label: 'Voltage', value: item.battery_voltage != null ? `${item.battery_voltage} V` : null },
-                        { label: 'DG Installed', value: item.dg_installed === true ? 'Yes' : item.dg_installed === false ? 'No' : null },
-                        { label: 'Battery Present', value: item.battery_present === true ? 'Yes' : item.battery_present === false ? 'No' : null },
-                        { label: 'Make', value: item.battery_make },
-                        { label: 'Last Checked', value: item.last_checked },
+                        { label: 'DG Installed', value: item.dg_installed ? 'Yes' : 'No' },
+                        { label: 'Battery Present', value: item.battery_present ? 'Yes' : 'No' },
+                        { label: 'Voltage', value: item.battery_voltage != null ? `${item.battery_voltage} V` : '-' },
+                        { label: 'Make', value: item.battery_make || item.make },
+                        { label: 'Install Date', value: item.installation_date || item.install_date },
+                        { label: 'Active Mains Fail', value: item.active_mains_fail ? 'Yes' : 'No' },
+                        { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -520,7 +583,6 @@ function LightningScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
         { label: 'Missing', value: sum?.la_categories?.la_missing, color: '#ef4444' },
         { label: 'Blown', value: sum?.la_categories?.la_blown, color: '#ef4444' },
         { label: 'Functional', value: sum?.la_categories?.la_functional, color: '#10b981' },
-        { label: 'Overdue', value: sum?.la_categories?.inspection_overdue, color: '#8b5cf6' },
     ];
 
     return (
@@ -541,12 +603,14 @@ function LightningScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
                     site={item}
                     statusField={item.status || 'Needs Check'}
                     rows={[
-                        { label: 'Status', value: item.status },
                         { label: 'LA Present', value: item.la_present },
-                        { label: 'LA Count', value: item.la_count },
-                        { label: 'Last Inspection', value: item.last_inspection_date || 'Never' },
-                        { label: 'Days Since', value: item.days_since_inspection != null ? `${item.days_since_inspection} days` : null },
+                        { label: 'Count', value: item.la_count },
+                        { label: 'Last Inspection', value: item.last_inspection_date || '-' },
+                        { label: 'Days Since Inspection', value: item.days_since_inspection || '-' },
                         { label: 'Remarks', value: item.remarks },
+                        { label: 'State', value: item.state_name },
+                        { label: 'District', value: item.district_name },
+                        { label: 'Cluster', value: item.cluster_name }
                     ]}
                 />
             )}
@@ -558,10 +622,10 @@ function LightningScreen({ data, refreshing, onRefresh, searchQuery }: ScreenPro
 function SectionHeader({ label, total }: { label: string; total?: number }) {
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) }}>
-            <Text style={{ fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a' }}>{label}</Text>
+            <Text style={{ fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a' }}>{label}</Text>
             {total != null && (
                 <View style={{ backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(3), borderRadius: 8 }}>
-                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' }}>{total} Sites</Text>
+                    <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#64748b' }}>{total} Sites</Text>
                 </View>
             )}
         </View>
@@ -581,6 +645,8 @@ export default function AssetHealthScreen({ navigation, route }: any) {
     const [isSidebarVisible, setSidebarVisible] = useState(false);
     const [fullname, setFullname] = useState('Administrator');
     const [searchQuery, setSearchQuery] = useState('');
+    const { globalFilters, setGlobalFilters } = useGlobalFilter();
+    const [filterVisible, setFilterVisible] = useState(false);
 
     useEffect(() => {
         const newTab = resolveTabKey(route?.params?.tab);
@@ -601,7 +667,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
         try {
             const fn = (api as any)[tab.api];
             if (typeof fn === 'function') {
-                const res = await fn();
+                const res = await fn(globalFilters);
                 if (res?.status === 'success' || res?.overview || res?.categories || res?.summary) {
                     setTabData(prev => ({ ...prev, [tabKey]: res }));
                 }
@@ -635,7 +701,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: verticalScale(80) }}>
                     <ActivityIndicator size="large" color="#1e3c72" />
-                    <Text style={{ marginTop: verticalScale(12), color: '#1e3c72', fontWeight: '600', fontSize: responsiveFontSize(13) }}>
+                    <Text style={{ marginTop: verticalScale(12), color: '#1e3c72', fontWeight: '600', fontSize: responsiveFontSize(13), flexShrink: 1, }}>
                         Loading {currTab?.label}...
                     </Text>
                 </View>
@@ -644,6 +710,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
 
         const props: ScreenProps = { data: currData, refreshing, onRefresh, searchQuery };
         switch (activeTab) {
+            case 'overview': return <OverviewScreen {...props} />;
             case 'battery': return <BatteryScreen {...props} />;
             case 'dg': return <DGScreen {...props} />;
             case 'rectifier': return <RectifierScreen {...props} />;
@@ -662,7 +729,12 @@ export default function AssetHealthScreen({ navigation, route }: any) {
                     subtitle={currTab?.label}
                     leftAction="menu"
                     onLeftPress={() => setSidebarVisible(true)}
+                    rightActions={[
+                        { icon: 'sliders', onPress: () => setFilterVisible(true) },
+                    ]}
                 />
+
+                <GlobalFilterBanner />
 
                 <View style={MS.tabBar}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}
@@ -711,6 +783,16 @@ export default function AssetHealthScreen({ navigation, route }: any) {
                     {renderScreen()}
                 </View>
 
+                <FilterModal
+                    visible={filterVisible}
+                    onClose={() => setFilterVisible(false)}
+                    initialFilters={globalFilters}
+                    onApply={(f) => {
+                        setGlobalFilters(f);
+                        setFilterVisible(false);
+                        setTabData({}); // clear data to force reload
+                    }}
+                />
                 <Sidebar
                     isVisible={isSidebarVisible}
                     onClose={() => setSidebarVisible(false)}
@@ -732,7 +814,7 @@ const MS = StyleSheet.create({
     tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
     tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: moderateScale(11), paddingVertical: verticalScale(7), borderRadius: 10, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0' },
     tabBtnOn: { backgroundColor: '#e8f0fe', borderColor: '#1e3c72' },
-    tabTxt: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     tabTxtOn: { color: '#1e3c72' },
     searchContainer: { 
         backgroundColor: '#fff', 
@@ -750,5 +832,5 @@ const MS = StyleSheet.create({
         shadowRadius: 4,
     },
     searchIcon: { marginRight: moderateScale(10) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', height: verticalScale(38), padding: moderateScale(0), fontWeight: '500' },
 });

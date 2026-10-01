@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions,
@@ -18,7 +18,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
-const SW = Dimensions.get('window').width;
+let SW = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SW = _d.width; } catch(_) {}
 
 type TabKey = 'overview' | 'energy' | 'losses' | 'leakage' | 'voltage' | 'power' | 'powerfactor' | 'sanctioned' | 'events';
 
@@ -80,7 +81,7 @@ function KpiCard({ title, value, sub, trend, up }: any) {
             {!!trend && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: verticalScale(6) }}>
                     <Icon name={up ? 'trending-up' : 'trending-down'} size={11} color={up ? C.success : C.danger} />
-                    <Text style={{ fontSize: responsiveFontSize(10), fontWeight: '700', color: up ? C.success : C.danger }}>{trend}</Text>
+                    <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: up ? C.success : C.danger }}>{trend}</Text>
                 </View>
             )}
         </View>
@@ -88,9 +89,9 @@ function KpiCard({ title, value, sub, trend, up }: any) {
 }
 const KS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), flex: 1, marginHorizontal: moderateScale(3), elevation: 2, borderTopWidth: 3, borderTopColor: C.primary, minWidth: (SW - 44) / 2 },
-    title: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(5) },
-    value: { fontSize: responsiveFontSize(20), fontWeight: '800', color: C.primary, marginBottom: verticalScale(3) },
-    sub: { fontSize: responsiveFontSize(9), color: '#94a3b8' },
+    title: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(5) },
+    value: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', color: C.primary, marginBottom: verticalScale(3) },
+    sub: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8' },
 });
 
 function RevCard({ item }: { item: any }) {
@@ -142,19 +143,19 @@ function RevCard({ item }: { item: any }) {
 const RC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(8), borderLeftWidth: 4, elevation: 2 },
     top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8) },
-    sid: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    imei: { fontSize: responsiveFontSize(9), color: '#64748b' },
+    sid: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    imei: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b' },
     badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
-    btxt: { fontSize: responsiveFontSize(10), fontWeight: '800' },
+    btxt: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800' },
     stats: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 8, padding: moderateScale(8) },
     stat: { flex: 1, alignItems: 'center' },
-    sv: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a' },
-    sl: { fontSize: responsiveFontSize(8), color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
+    sv: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', color: '#0f172a' },
+    sl: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
     detail: { marginTop: verticalScale(10) },
     div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     drow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    dl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    dv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700' },
+    dl: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600' },
+    dv: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#1e293b', fontWeight: '700' },
 });
 
 function STable({ headers, rows }: { headers: string[]; rows: string[][] }) {
@@ -175,8 +176,8 @@ function STable({ headers, rows }: { headers: string[]; rows: string[][] }) {
 }
 const ST = StyleSheet.create({
     row: { flexDirection: 'row' },
-    th: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#fff', padding: moderateScale(10), minWidth: 100, textTransform: 'uppercase' },
-    td: { fontSize: responsiveFontSize(11), color: '#334155', fontWeight: '500', padding: moderateScale(10), minWidth: 100, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    th: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', color: '#fff', padding: moderateScale(10), minWidth: 100, textTransform: 'uppercase' },
+    td: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155', fontWeight: '500', padding: moderateScale(10), minWidth: 100, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
 });
 
 export default function OptimizationReportsScreen({ navigation, route }: any) {
@@ -342,8 +343,8 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                         <View style={{ flex: revData.no_leakage_percent || 0.5, backgroundColor: C.blue3 }} />
                                         <View style={{ flex: revData.null_percent > 0 ? revData.null_percent : 0.2, backgroundColor: C.blue4 }} />
                                     </View>
-                                    <Text style={{ fontSize: responsiveFontSize(32), fontWeight: '800', color: C.primary, textAlign: 'center', marginBottom: verticalScale(4) }}>{revData.total_sites}</Text>
-                                    <Text style={{ fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600', textAlign: 'center', marginBottom: verticalScale(14) }}>Site Count</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(32), flexShrink: 1, fontWeight: '800', color: C.primary, textAlign: 'center', marginBottom: verticalScale(4) }}>{revData.total_sites}</Text>
+                                    <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600', textAlign: 'center', marginBottom: verticalScale(14) }}>Site Count</Text>
                                     {[
                                         { color: C.blue1, label: 'Leakage', pct: revData.leakage_percent, cnt: revData.leakage_count },
                                         { color: C.blue3, label: 'No Leakage', pct: revData.no_leakage_percent, cnt: revData.no_leakage_count },
@@ -351,7 +352,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                     ].map(l => (
                                         <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: verticalScale(6) }}>
                                             <View style={{ width: moderateScale(14), height: verticalScale(14), borderRadius: 3, backgroundColor: l.color }} />
-                                            <Text style={{ fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' }}>{l.pct}%  ({l.cnt})  <Text style={{ color: '#64748b', fontWeight: '500' }}>{l.label}</Text></Text>
+                                            <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#1e293b' }}>{l.pct}%  ({l.cnt})  <Text style={{ color: '#64748b', fontWeight: '500' }}>{l.label}</Text></Text>
                                         </View>
                                     ))}
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: verticalScale(14), paddingTop: verticalScale(14), borderTopWidth: 1, borderTopColor: '#f1f5f9' }}>
@@ -361,8 +362,8 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                             { l: 'SO Load kW', v: revData.avg_total_declared },
                                         ].map(m => (
                                             <View key={m.l} style={{ alignItems: 'center' }}>
-                                                <Text style={{ fontSize: responsiveFontSize(20), fontWeight: '800', color: C.primary }}>{m.v ?? '—'}</Text>
-                                                <Text style={{ fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) }}>{m.l}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', color: C.primary }}>{m.v ?? '—'}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: verticalScale(2) }}>{m.l}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -376,14 +377,14 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                     ].map(b => (
                                         <View key={b.l} style={{ marginBottom: verticalScale(12) }}>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                <Text style={{ fontSize: responsiveFontSize(11), fontWeight: '700', color: '#334155' }}>{b.l}</Text>
-                                                <Text style={{ fontSize: responsiveFontSize(11), fontWeight: '800', color: b.color }}>{b.v}  ({b.pct}%)</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#334155' }}>{b.l}</Text>
+                                                <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: b.color }}>{b.v}  ({b.pct}%)</Text>
                                             </View>
                                             <MBar pct={b.pct} color={b.color} />
                                         </View>
                                     ))}
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: verticalScale(15) }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: moderateScale(10), marginBottom: verticalScale(15) }}>
                                     <View style={S.searchBox}>
                                         <Icon name="search" size={14} color="#94a3b8" />
                                         <TextInput style={S.searchInput} value={search} onChangeText={setSearch} placeholder="Search by Global ID or Name..." placeholderTextColor="#94a3b8" />
@@ -409,7 +410,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                             </View>
                         ) : null}
                         ListEmptyComponent={!revLoading ? (
-                            <View style={{ alignItems: 'center', paddingTop: verticalScale(40) }}><Icon name="droplet" size={36} color="#cbd5e1" /><Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), marginTop: verticalScale(12) }}>{search ? 'No sites match your search' : 'No revenue data available'}</Text></View>
+                            <View style={{ alignItems: 'center', paddingTop: verticalScale(40) }}><Icon name="droplet" size={36} color="#cbd5e1" /><Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, marginTop: verticalScale(12) }}>{search ? 'No sites match your search' : 'No revenue data available'}</Text></View>
                         ) : null}
                     />
                 )
@@ -434,7 +435,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                     { l: 'Battery', v: '7,200 kWh', pct: 12, color: C.blue4 },
                                 ].map(b => (
                                     <View key={b.l} style={{ marginBottom: verticalScale(10) }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontSize: responsiveFontSize(11), fontWeight: '700', color: '#334155' }}>{b.l}</Text><Text style={{ fontSize: responsiveFontSize(11), fontWeight: '800', color: b.color }}>{b.v} ({b.pct}%)</Text></View>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#334155' }}>{b.l}</Text><Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: b.color }}>{b.v} ({b.pct}%)</Text></View>
                                         <MBar pct={b.pct} color={b.color} />
                                     </View>
                                 ))}
@@ -462,7 +463,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                         <View style={S.card}><Text style={S.cardTitle}>Power Factor Analysis</Text><STable headers={['Site', 'PF', 'Status', 'Penalty']} rows={[['Delhi-Central-01', '0.82', '🟡 Warning', '₹465'], ['Kolkata-East-12', '0.91', '🟢 Normal', 'No penalty'], ['Mumbai-West-19', '0.88', '🔵 Attention', 'Monitoring'], ['Chennai-South-05', '0.80', '🔴 Critical', '₹610']]} /></View>
                     )}
                     {activeTab === 'sanctioned' && (
-                        <View style={S.card}><Text style={S.cardTitle}>Load Optimization</Text><View style={S.warnBanner}><Icon name="alert-triangle" size={14} color="#f59e0b" /><Text style={{ fontSize: responsiveFontSize(11), color: '#f59e0b', fontWeight: '600', flex: 1 }}>1 site within 5% of sanctioned load limit.</Text></View><STable headers={['Site', 'Sanctioned (kW)', 'Current (kW)', 'Status']} rows={[['Delhi-Central-01', '60', '58', '🟡 Approaching'], ['Jaipur-City-03', '75', '63', '🟢 Normal'], ['Chennai-South-05', '80', '72', '🔵 Attention']]} /></View>
+                        <View style={S.card}><Text style={S.cardTitle}>Load Optimization</Text><View style={S.warnBanner}><Icon name="alert-triangle" size={14} color="#f59e0b" /><Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#f59e0b', fontWeight: '600', flex: 1 }}>1 site within 5% of sanctioned load limit.</Text></View><STable headers={['Site', 'Sanctioned (kW)', 'Current (kW)', 'Status']} rows={[['Delhi-Central-01', '60', '58', '🟡 Approaching'], ['Jaipur-City-03', '75', '63', '🟢 Normal'], ['Chennai-South-05', '80', '72', '🔵 Attention']]} /></View>
                     )}
                     {activeTab === 'events' && (
                         <View>
@@ -471,7 +472,7 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
                                 { title: "Rath Yatra Coverage", type: 'Festival', color: C.warning, detail: "Load increased 18% in covered regions. Additional generator deployed. No downtime reported." },
                                 { title: "VVIP Visit Monitoring", type: 'VVIP', color: '#3b82f6', detail: "High-availability enabled for 15 city sites. Status updates every 15 min. 1 minor voltage dip resolved." },
                             ].map(ev => (
-                                <View key={ev.title} style={[S.eventCard, { borderLeftColor: ev.color }]}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(8) }}><Text style={{ fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', flex: 1 }}>{ev.title}</Text><View style={{ paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 12, backgroundColor: `${ev.color}15`, borderWidth: 1, borderColor: ev.color }}><Text style={{ fontSize: responsiveFontSize(9), fontWeight: '800', color: ev.color }}>{ev.type}</Text></View></View><Text style={{ fontSize: responsiveFontSize(11), color: '#64748b', lineHeight: 17 }}>{ev.detail}</Text></View>
+                                <View key={ev.title} style={[S.eventCard, { borderLeftColor: ev.color }]}><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(8) }}><Text style={{ fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a', flex: 1 }}>{ev.title}</Text><View style={{ paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 12, backgroundColor: `${ev.color}15`, borderWidth: 1, borderColor: ev.color }}><Text style={{ fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', color: ev.color }}>{ev.type}</Text></View></View><Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', lineHeight: 17 }}>{ev.detail}</Text></View>
                             ))}
                         </View>
                     )}
@@ -492,40 +493,40 @@ export default function OptimizationReportsScreen({ navigation, route }: any) {
 const FM = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: moderateScale(40) },
     box: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(20) },
-    title: { fontSize: responsiveFontSize(15), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    title: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
     opt: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(12), paddingHorizontal: moderateScale(10), borderRadius: 10, marginBottom: verticalScale(4) },
     optActive: { backgroundColor: `${C.primary}10` },
-    optTxt: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
+    optTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', fontWeight: '600' },
 });
 
 const S = StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: verticalScale(12), color: C.primary, fontWeight: '600', fontSize: responsiveFontSize(13) },
+    loaderTxt: { marginTop: verticalScale(12), color: C.primary, fontWeight: '600', fontSize: responsiveFontSize(13), flexShrink: 1, },
     tabBarContainer: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
     tabScroll: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), gap: 6, alignItems: 'center' },
     tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: moderateScale(11), paddingVertical: verticalScale(7), borderRadius: 20, borderWidth: 1.5, borderColor: '#e2e8f0', backgroundColor: '#f8fafc' },
     tabBtnActive: { backgroundColor: `${C.primary}12`, borderColor: C.primary },
-    tabTxt: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#64748b' },
+    tabTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     tabTxtActive: { color: C.primary },
     resetBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#64748b', borderRadius: 10, paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(8), elevation: 1 },
-    resetTxt: { color: '#fff', fontSize: responsiveFontSize(12), fontWeight: '700' },
+    resetTxt: { color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700' },
     card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
-    cardTitle: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    cardTitle: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
     filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), borderWidth: 1.5, borderColor: '#d0e4f7', elevation: 1 },
-    filterBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: C.primary },
+    filterBtnTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: C.primary },
     searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), elevation: 1, gap: 6 },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(11), color: '#0f172a', fontWeight: '500' },
-    rowCount: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(11), flexShrink: 1, color: '#0f172a', fontWeight: '500' },
+    rowCount: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
     pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingVertical: verticalScale(16) },
     pageBtn: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1 },
     pageBtnDis: { opacity: 0.4 },
-    pageBtnTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: C.primary },
-    pageInfo: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#1e293b' },
+    pageBtnTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: C.primary },
+    pageInfo: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
     errBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: moderateScale(30) },
-    errTxt: { color: C.danger, fontSize: responsiveFontSize(13), fontWeight: '600', marginTop: verticalScale(12), marginBottom: verticalScale(16), textAlign: 'center' },
+    errTxt: { color: C.danger, fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', marginTop: verticalScale(12), marginBottom: verticalScale(16), textAlign: 'center' },
     retryBtn: { backgroundColor: C.primary, borderRadius: 10, paddingHorizontal: moderateScale(24), paddingVertical: verticalScale(10) },
-    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
+    retryTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13), flexShrink: 1, },
     warnBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.1)', borderRadius: 8, padding: moderateScale(10), marginBottom: verticalScale(12), borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
     eventCard: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(12), borderLeftWidth: 5, elevation: 2 },
 });

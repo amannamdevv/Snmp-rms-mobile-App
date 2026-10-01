@@ -382,8 +382,8 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: moderateScale(16) },
   row: { flexDirection: 'row', gap: moderateScale(10), alignItems: 'center' },
   heroSection: { marginBottom: verticalScale(20), alignItems: 'center' },
-  heroTitle: { fontSize: responsiveFontSize(24), fontWeight: '800', color: '#1e293b' },
-  heroSub: { fontSize: responsiveFontSize(13), color: '#64748b', marginTop: moderateScale(4) },
+  heroTitle: { fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', color: '#1e293b' },
+  heroSub: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', marginTop: moderateScale(4) },
 
   statsRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: verticalScale(24) },
   statBox: { 
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05, 
     shadowRadius: 8 
   },
-  statVal: { fontSize: responsiveFontSize(20), fontWeight: '800', color: '#1e3c72' },
-  statLab: { fontSize: responsiveFontSize(10), color: '#64748b', fontWeight: '600', marginTop: moderateScale(4), textAlign: 'center' },
+  statVal: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
+  statLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: moderateScale(4), textAlign: 'center' },
 
   card: { 
     backgroundColor: '#fff', 
@@ -420,8 +420,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center' 
   },
-  cardTitle: { fontSize: responsiveFontSize(16), fontWeight: '700', color: '#1e293b' },
-  cardDesc: { fontSize: responsiveFontSize(12), color: '#64748b' },
+  cardTitle: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
+  cardDesc: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
 
   tabs: { 
     flexDirection: 'row', 
@@ -432,21 +432,20 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, paddingVertical: verticalScale(8), alignItems: 'center', borderRadius: moderateScale(10) },
   tabActive: { backgroundColor: '#fff', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-  tabText: { fontSize: responsiveFontSize(13), fontWeight: '600', color: '#64748b' },
+  tabText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', color: '#64748b' },
   tabTextActive: { color: '#1e3c72' },
 
   panel: { minHeight: verticalScale(220) },
   chart: { borderRadius: moderateScale(16), marginVertical: verticalScale(8), marginLeft: scale(-10) },
 
   form: { gap: moderateScale(12) },
-  inputLabel: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#475569', marginBottom: moderateScale(4) },
+  inputLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: moderateScale(4) },
   input: { 
     borderWidth: 1, 
     borderColor: '#e2e8f0', 
     borderRadius: moderateScale(10), 
     padding: moderateScale(12), 
-    fontSize: responsiveFontSize(14), 
-    color: '#1e293b', 
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', 
     backgroundColor: '#fcfcfc' 
   },
   pickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(8) },
@@ -459,7 +458,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff' 
   },
   chipActive: { borderColor: '#1e3c72', backgroundColor: 'rgba(30, 60, 114, 0.05)' },
-  chipText: { fontSize: responsiveFontSize(11), fontWeight: '600', color: '#64748b' },
+  chipText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', color: '#64748b' },
   chipTextActive: { color: '#1e3c72' },
 
   fileBtn: { 
@@ -472,7 +471,7 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e1', 
     backgroundColor: '#f8fafc' 
   },
-  fileBtnText: { fontSize: responsiveFontSize(13), color: '#64748b', fontWeight: '500' },
+  fileBtnText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '500' },
   submitBtn: { 
     backgroundColor: '#1e3c72', 
     padding: verticalScale(14), 
@@ -480,5 +479,5 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginTop: verticalScale(8) 
   },
-  submitBtnText: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '700' },
+  submitBtnText: { color: '#fff', fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700' },
 });

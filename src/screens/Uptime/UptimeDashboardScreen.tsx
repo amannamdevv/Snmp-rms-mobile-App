@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl, Platform, Modal
@@ -13,7 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppIcon from '../../components/AppIcon';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const screenWidth = Dimensions.get('window').width;
+let screenWidth = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') screenWidth = _d.width; } catch(_) {}
 
 export default function UptimeDashboard({ navigation, route }: any) {
     const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
     const [fullname, setFullname] = useState('Administrator');
 
     // Filter States
-    const [startDate, setStartDate] = useState(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000));
+    const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
     const [endDate, setEndDate] = useState(new Date());
     const [season, setSeason] = useState('All');
     const [groupBy, setGroupBy] = useState('Site-wise');
@@ -136,7 +137,69 @@ export default function UptimeDashboard({ navigation, route }: any) {
         // No need to call fetchDashboardData here, as the useEffect will trigger on state change
     };
 
-    const renderItem = ({ item }: { item: any }) => (
+    const renderItem = ({ item }: { item: any }) => {
+    // Shared variables based on tab
+    let siteDisplay = (item.site_id && item.site_name) ? `${item.site_id} - ${item.site_name}` : (item.site_name || item.site_id);
+    let title = siteDisplay || item.circle_name || item.opco_name || item.cause_type || item.global_id || 'Unknown';
+    let subTitle = '';
+    let rightValue = '';
+    let rightSub = '';
+    let valueColor = '#1e3c72';
+
+    if (activeTab === 'circle') {
+        subTitle = `Total Sites: ${item.total_sites || 0} | SLA Target: ${item.sla_target || '99.5'}%`;
+        rightValue = `${item.uptime_percent !== undefined ? item.uptime_percent : item.avg_uptime || 0}%`;
+        rightSub = `Downtime: ${item.downtime_hours || 0}h`;
+        let up = item.uptime_percent || item.avg_uptime || 0;
+        valueColor = up >= 99.5 ? '#2ecc71' : up >= 98 ? '#f39c12' : '#e74c3c';
+    } 
+    else if (activeTab === 'opco') {
+        subTitle = `Total Sites: ${item.total_sites || 0}`;
+        rightValue = `${item.uptime_percent !== undefined ? item.uptime_percent : item.avg_uptime || 0}%`;
+        rightSub = `Downtime: ${item.downtime_hours || 0}h`;
+        let up = item.uptime_percent || item.avg_uptime || 0;
+        valueColor = up >= 99.5 ? '#2ecc71' : up >= 98 ? '#f39c12' : '#e74c3c';
+    }
+    else if (activeTab === 'attribute') {
+        title = item.cause_type || 'Unknown Cause';
+        subTitle = item.description ? `Desc: ${item.description}` : 'Attribute Analysis';
+        rightValue = `${item.outage_count || 0}`;
+        rightSub = `Downtime: ${item.downtime_hours || 0}h`;
+        valueColor = '#e74c3c'; // Outages are usually red/warning
+    }
+    else if (activeTab === 'repeat') {
+        title = siteDisplay || item.global_id || 'Unknown Site';
+        subTitle = `Circle: ${item.circle || item.circle_name || 'N/A'} | GID: ${item.global_id || item.site_id || 'N/A'}`;
+        rightValue = `${item.outage_count || 0}`;
+        rightSub = `Downtime: ${item.downtime_hours || 0}h`;
+        valueColor = '#e74c3c';
+    }
+    else if (activeTab === 'seasonal') {
+        title = siteDisplay || item.circle_name || 'Unknown';
+        subTitle = `Circle: ${item.circle || item.circle_name || 'N/A'} | Checks: ${item.completed_checks || 0}/${item.total_checks || 0}`;
+        rightValue = `${item.prepared_percent || item.completion_percent || 0}%`;
+        rightSub = 'Completed';
+        let up = item.prepared_percent || item.completion_percent || 0;
+        valueColor = up >= 90 ? '#2ecc71' : up >= 75 ? '#f39c12' : '#e74c3c';
+    }
+    else if (activeTab === 'monthly' || activeTab === 'quarterly') {
+        title = siteDisplay || item.opco_name || item.circle_name || 'Unknown';
+        subTitle = `Circle: ${item.circle || item.circle_name || 'N/A'}`;
+        
+        let historyArray = activeTab === 'monthly' ? item.monthly : item.quarterly;
+        historyArray = historyArray || [];
+        
+        let latestUp = 0;
+        if(historyArray.length > 0) {
+            latestUp = historyArray[historyArray.length - 1].uptime_percent;
+        }
+
+        rightValue = `${latestUp || 0}%`;
+        rightSub = 'Latest Uptime';
+        valueColor = latestUp >= 99.5 ? '#2ecc71' : latestUp >= 98 ? '#f39c12' : '#e74c3c';
+    }
+
+    return (
         <TouchableOpacity
             style={styles.tableRow}
             onPress={() => {
@@ -150,66 +213,37 @@ export default function UptimeDashboard({ navigation, route }: any) {
                 }
             }}
         >
-            <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle} numberOfLines={1}>
-                    {item.site_name || item.circle_name || item.opco_name || item.cause_type || item.global_id || item.site_id || 'Unknown'}
-                </Text>
+            <View style={{ flex: 1, paddingRight: moderateScale(10) }}>
+                <Text style={styles.rowTitle} numberOfLines={1}>{title}</Text>
+                <Text style={styles.rowSub} numberOfLines={2}>{subTitle}</Text>
                 
-                {activeTab === 'seasonal' ? (
-                    <View>
-                        <Text style={styles.rowSub}>Circle: {item.circle_name}</Text>
-                        <Text style={styles.rowSub}>Checks: {item.completed_checks}/{item.total_checks} Completed</Text>
-                    </View>
-                ) : activeTab === 'monthly' || activeTab === 'quarterly' ? (
-                    <View>
-                        <Text style={styles.rowSub}>Circle: {item.circle || item.circle_name}</Text>
-                        <View style={styles.historyRow}>
-                           {(item.history || []).slice(0, 3).map((h: any, idx: number) => (
+                {(activeTab === 'monthly' || activeTab === 'quarterly') && (
+                    <View style={styles.historyRow}>
+                       {((activeTab === 'monthly' ? item.monthly : item.quarterly) || []).map((h: any, idx: number) => {
+                           let label = h.month || h.quarter || 'N/A';
+                           let up = h.uptime_percent !== undefined ? h.uptime_percent : 0;
+                           let cColor = up >= 99.5 ? '#2ecc71' : up >= 98 ? '#f39c12' : '#e74c3c';
+                           return (
                                <View key={idx} style={styles.historyPill}>
-                                   <Text style={styles.historyLabel}>{h.period || h.month || h.quarter}</Text>
-                                   <Text style={[styles.historyVal, { color: h.uptime >= 99.5 ? '#2ecc71' : '#e74c3c' }]}>{h.uptime}%</Text>
+                                   <Text style={styles.historyLabel}>{label}</Text>
+                                   <Text style={[styles.historyVal, { color: cColor }]}>{up}%</Text>
                                </View>
-                           ))}
-                        </View>
+                           )
+                       })}
                     </View>
-                ) : (
-                    <Text style={styles.rowSub}>
-                        {activeTab === 'attribute' ? `Downtime: ${item.downtime_hours}h` : 
-                         activeTab === 'repeat' ? `Circle: ${item.circle || item.circle_name} | Global ID: ${item.global_id || item.site_id}` : 
-                         `Total Sites: ${item.total_sites || item.outage_count}`}
-                    </Text>
-                )}
-                
-                {activeTab === 'repeat' && (
-                    <Text style={[styles.rowSub, { color: '#e67e22', fontWeight: 'bold' }]}>
-                        Total Downtime: {item.downtime_hours}h
-                    </Text>
                 )}
             </View>
 
             <View style={styles.rowRight}>
                 <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[styles.uptimeValue, { 
-                        color: (item.uptime_percent >= 99.5 || item.sla_met || item.avg_uptime >= 99.5 || item.prepared_percent >= 90) ? '#2ecc71' : 
-                               (item.uptime_percent >= 98 || item.avg_uptime >= 98) ? '#f39c12' : '#e74c3c' 
-                    }]}>
-                        {item.uptime_percent !== undefined ? `${item.uptime_percent}%` : 
-                         item.avg_uptime !== undefined ? `${item.avg_uptime}%` :
-                         item.prepared_percent !== undefined ? `${item.prepared_percent}%` :
-                         item.outage_count !== undefined ? `${item.outage_count}` : 'N/A'}
-                    </Text>
-                    <Text style={styles.valueSub}>
-                        {activeTab === 'repeat' ? 'Outage Count' : 
-                         activeTab === 'opco' ? `${item.downtime_hours}h Downtime` :
-                         activeTab === 'seasonal' ? 'Completion' :
-                         activeTab === 'monthly' || activeTab === 'quarterly' ? 'Latest Uptime' :
-                         'Avg Uptime'}
-                    </Text>
+                    <Text style={[styles.uptimeValue, { color: valueColor }]}>{rightValue}</Text>
+                    <Text style={styles.valueSub}>{rightSub}</Text>
                 </View>
                 {activeTab === 'circle' && <AppIcon name="chevron-right" size={16} color="#cbd5e1" style={{ marginLeft: moderateScale(10) }} />}
             </View>
         </TouchableOpacity>
     );
+};
 
     const onDateChange = (event: any, selectedDate?: Date, type?: 'start' | 'end') => {
         if (type === 'start') {
@@ -333,28 +367,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                     </ScrollView>
                 </View>
 
-                {/* Compliance Pie Chart */}
-                {!loading && (
-                    <View style={styles.chartArea}>
-                        <View style={styles.chartInfo}>
-                           <Text style={styles.chartAreaTitle}>SLA Compliance Distribution</Text>
-                           <Text style={styles.chartAreaSub}>{groupBy} trend over period</Text>
-                        </View>
-                        <PieChart
-                            data={[
-                                { name: 'Meeting SLA', population: kpis.met, color: '#2ecc71', legendFontColor: '#7F7F7F', legendFontSize: 12 },
-                                { name: 'Failing SLA', population: kpis.failed, color: '#e74c3c', legendFontColor: '#7F7F7F', legendFontSize: 12 }
-                            ]}
-                            width={screenWidth - 40}
-                            height={160}
-                            chartConfig={{ color: (opacity = 1) => `rgba(0,0,0, ${opacity})` }}
-                            accessor={"population"}
-                            backgroundColor={"transparent"}
-                            paddingLeft={"15"}
-                            absolute
-                        />
-                    </View>
-                )}
+                
 
                 {/* Data List */}
                 <View style={styles.listArea}>
@@ -390,7 +403,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Select Season</Text>
-                        {['All', 'Summer', 'Monsoon', 'Winter'].map(s => (
+                        {['All', 'Summer', 'Monsoon'].map(s => (
                             <TouchableOpacity key={s} style={styles.modalOption} onPress={() => { setSeason(s); setShowSeasonModal(false); }}>
                                 <Text style={[styles.optionText, season === s && { color: '#1e3c72', fontWeight: 'bold' }]}>{s}</Text>
                                 {season === s && <AppIcon name="check" size={18} color="#1e3c72" />}
@@ -414,62 +427,62 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     kpiScroll: { flexDirection: 'row', marginHorizontal: -5 },
     kpiBox: { backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(12), marginRight: moderateScale(10), width: moderateScale(120), borderTopWidth: 4, elevation: 3, alignItems: 'center' },
-    kpiTextValue: { fontSize: responsiveFontSize(22), fontWeight: 'bold', color: '#1e3c72', marginBottom: verticalScale(4) },
-    kpiTitleLabel: { fontSize: responsiveFontSize(9), color: '#64748b', marginTop: verticalScale(2), textTransform: 'uppercase', textAlign: 'center' },
+    kpiTextValue: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72', marginBottom: verticalScale(4) },
+    kpiTitleLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', marginTop: verticalScale(2), textTransform: 'uppercase', textAlign: 'center' },
     
     filterSection: { backgroundColor: '#fff', margin: moderateScale(15), padding: moderateScale(15), borderRadius: 15, elevation: 4 },
-    dateControlRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(15) },
+    dateControlRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: verticalScale(15) },
     dateInputWrapper: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-    filterLabelSmall: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-    filterValueText: { fontSize: responsiveFontSize(12), color: '#1e3c72', fontWeight: 'bold' },
-    filterLabelSec: { fontSize: responsiveFontSize(11), fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(10) },
+    filterLabelSmall: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+    filterValueText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#1e3c72', fontWeight: 'bold' },
+    filterLabelSec: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(10) },
     quickSelectScroll: { flexDirection: 'row', marginBottom: verticalScale(15) },
     qsBtn: { backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(8), borderRadius: 20, marginRight: moderateScale(8) },
-    qsText: { fontSize: responsiveFontSize(11), color: '#475569', fontWeight: '600' },
+    qsText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#475569', fontWeight: '600' },
     applyBtnLarge: { backgroundColor: '#1e3c72', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: moderateScale(14), borderRadius: 10 },
-    applyBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14) },
+    applyBtnText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(14), flexShrink: 1, },
 
     groupSection: { backgroundColor: '#fff', marginHorizontal: moderateScale(15), paddingHorizontal: moderateScale(15), paddingBottom: verticalScale(15), borderBottomLeftRadius: 15, borderBottomRightRadius: 15, marginTop: -15 },
-    groupLabel: { fontSize: responsiveFontSize(11), fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(8) },
-    groupButtons: { flexDirection: 'row', gap: 10 },
+    groupLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: 'bold', color: '#64748b', marginBottom: verticalScale(8) },
+    groupButtons: { flexDirection: 'row', gap: moderateScale(10) },
     groupBtn: { flex: 1, padding: moderateScale(10), borderRadius: 8, backgroundColor: '#f1f5f9', alignItems: 'center' },
     groupBtnActive: { backgroundColor: '#1e3c72' },
-    groupBtnText: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: '600' },
+    groupBtnText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '600' },
     groupBtnTextActive: { color: '#fff' },
 
     tabBarContainer: { backgroundColor: '#f0f2f5', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
     tabScroll: { paddingHorizontal: moderateScale(15) },
     tabItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(15), paddingVertical: verticalScale(10), borderRadius: 25, backgroundColor: '#fff', marginRight: moderateScale(10), elevation: 1 },
     activeTabItem: { backgroundColor: '#1e3c72' },
-    tabItemText: { fontSize: responsiveFontSize(12), color: '#64748b', fontWeight: 'bold', marginLeft: moderateScale(6) },
+    tabItemText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: 'bold', marginLeft: moderateScale(6) },
     activeTabItemText: { color: '#fff' },
 
     chartArea: { backgroundColor: '#fff', margin: moderateScale(15), borderRadius: 15, padding: moderateScale(15), elevation: 3 },
     chartInfo: { marginBottom: verticalScale(15) },
-    chartAreaTitle: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e3c72' },
-    chartAreaSub: { fontSize: responsiveFontSize(10), color: '#94a3b8' },
+    chartAreaTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
+    chartAreaSub: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8' },
 
     listArea: { paddingHorizontal: moderateScale(15) },
     listAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(12) },
-    listAreaTitle: { fontSize: responsiveFontSize(13), fontWeight: 'bold', color: '#64748b' },
-    listAreaCount: { fontSize: responsiveFontSize(12), color: '#94a3b8' },
+    listAreaTitle: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: 'bold', color: '#64748b' },
+    listAreaCount: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#94a3b8' },
     dataCardWrap: { backgroundColor: '#fff', borderRadius: 15, elevation: 3, overflow: 'hidden' },
     tableRow: { flexDirection: 'row', justifyContent: 'space-between', padding: moderateScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', alignItems: 'center' },
-    rowTitle: { fontSize: responsiveFontSize(14), fontWeight: '900', color: '#1e293b' },
-    rowSub: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(3) },
-    historyRow: { flexDirection: 'row', gap: 6, marginTop: verticalScale(8) },
+    rowTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '900', color: '#1e293b' },
+    rowSub: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: verticalScale(3) },
+    historyRow: { flexDirection: 'row', gap: 6, marginTop: verticalScale(8), flexWrap: 'wrap' },
     historyPill: { backgroundColor: '#f8fafc', padding: moderateScale(5), borderRadius: 6, borderWidth: 1, borderColor: '#e2e8f0', minWidth: 60, alignItems: 'center' },
-    historyLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase' },
-    historyVal: { fontSize: responsiveFontSize(10), fontWeight: 'bold' },
+    historyLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase' },
+    historyVal: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold' },
     rowRight: { flexDirection: 'row', alignItems: 'center' },
-    uptimeValue: { fontSize: responsiveFontSize(16), fontWeight: 'bold' },
-    valueSub: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2), fontWeight: 'bold', textTransform: 'uppercase' },
+    uptimeValue: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold' },
+    valueSub: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(2), fontWeight: 'bold', textTransform: 'uppercase' },
     noData: { padding: moderateScale(40), alignItems: 'center' },
-    noDataText: { marginTop: verticalScale(10), color: '#94a3b8', fontSize: responsiveFontSize(13) },
+    noDataText: { marginTop: verticalScale(10), color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
     modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: moderateScale(25) },
-    modalTitle: { fontSize: responsiveFontSize(18), fontWeight: 'bold', marginBottom: verticalScale(20), color: '#1e3c72' },
+    modalTitle: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', marginBottom: verticalScale(20), color: '#1e3c72' },
     modalOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-    optionText: { fontSize: responsiveFontSize(16), color: '#475569' }
+    optionText: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#475569' }
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, FlatList, RefreshControl, TextInput, Platform
@@ -11,7 +11,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 
-const { width } = Dimensions.get('window');
+let width = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') width = _d.width; } catch(_) {}
 
 export default function UptimeSiteDetails({ route, navigation }: any) {
     const { state_id, state_name, start_date: initialStart, end_date: initialEnd } = route.params;
@@ -292,16 +293,16 @@ const styles = StyleSheet.create({
         elevation: 3,
         alignItems: 'center'
     },
-    statVal: { fontSize: responsiveFontSize(18), fontWeight: '800', color: '#1e3c72' },
-    statLab: { fontSize: responsiveFontSize(10), color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(3), fontWeight: '700' },
+    statVal: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
+    statLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(3), fontWeight: '700' },
     
     // NEW Filter Styles
     filterSection: { backgroundColor: '#fff', padding: moderateScale(16), marginHorizontal: moderateScale(16), marginTop: verticalScale(12), borderRadius: 16, elevation: 4 },
-    datePickerRow: { flexDirection: 'row', gap: 12, marginBottom: verticalScale(15) },
+    datePickerRow: { flexDirection: 'row', gap: moderateScale(12), marginBottom: verticalScale(15) },
     dateInput: { flex: 1, backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' },
-    dateLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(3), fontWeight: '700' },
-    dateValue: { fontSize: responsiveFontSize(14), color: '#1e3c72', fontWeight: '800' },
-    actionButtons: { flexDirection: 'row', gap: 10 },
+    dateLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(3), fontWeight: '700' },
+    dateValue: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e3c72', fontWeight: '800' },
+    actionButtons: { flexDirection: 'row', gap: moderateScale(10) },
     applyBtn: { 
         flex: 2, 
         backgroundColor: '#1e3c72', 
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         gap: 6
     },
-    btnText: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: 'bold' },
+    btnText: { color: '#fff', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: 'bold' },
 
     searchContainer: { 
         flexDirection: 'row', 
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
         borderColor: '#e2e8f0',
         elevation: 2
     },
-    searchInput: { flex: 1, marginLeft: moderateScale(10), fontSize: responsiveFontSize(14), color: '#334155' },
+    searchInput: { flex: 1, marginLeft: moderateScale(10), fontSize: responsiveFontSize(14), flexShrink: 1, color: '#334155' },
     listContent: { padding: moderateScale(15), paddingTop: verticalScale(0), paddingBottom: verticalScale(30) },
     siteCard: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(15), marginBottom: verticalScale(15), elevation: 3 },
     cardTop: { flexDirection: 'row', alignItems: 'center' },
@@ -349,18 +350,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: moderateScale(15)
     },
-    uptimePercent: { fontSize: responsiveFontSize(14), fontWeight: 'bold' },
+    uptimePercent: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold' },
     siteInfo: { flex: 1 },
-    siteName: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e293b' },
-    siteId: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(3) },
+    siteName: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
+    siteId: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: verticalScale(3) },
     slaBadge: { alignSelf: 'flex-start', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 10, marginTop: verticalScale(5) },
-    slaText: { color: '#fff', fontSize: responsiveFontSize(9), fontWeight: 'bold' },
+    slaText: { color: '#fff', fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: 'bold' },
     divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(12) },
     metricsRow: { flexDirection: 'row', justifyContent: 'space-between' },
     metric: { flex: 1, alignItems: 'center' },
-    metricVal: { fontSize: responsiveFontSize(14), fontWeight: 'bold', color: '#1e3c72' },
-    metricLab: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2) },
+    metricVal: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
+    metricLab: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(2) },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: verticalScale(50) },
-    loadingText: { marginTop: verticalScale(10), color: '#64748b', fontSize: responsiveFontSize(14) },
+    loadingText: { marginTop: verticalScale(10), color: '#64748b', fontSize: responsiveFontSize(14), flexShrink: 1, },
     emptyText: { marginTop: verticalScale(10), color: '#94a3b8', textAlign: 'center' }
 });

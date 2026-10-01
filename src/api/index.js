@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Constants & Configuration ──────────────────────────────────────────────────────────
@@ -149,6 +149,16 @@ export const api = {
   },
   getEbPresence: async (filters) => {
     const response = await djangoApi.get('/api/eb-presence/', { params: filters });
+    return response.data;
+  },
+
+  // ── SOLAR ANALYTICS ──
+  getSolarAnalyticsMonthly: async (filters) => {
+    const response = await djangoApi.get('/api/solar-report/monthly/', { params: filters });
+    return response.data;
+  },
+  getSolarAnalyticsDaily: async (filters) => {
+    const response = await djangoApi.get('/api/solar-report/daily/', { params: filters });
     return response.data;
   },
   getNonCommAging: async (filters) => {
@@ -348,6 +358,10 @@ export const api = {
     const response = await djangoApi.get('/api/energy/run-hours-details/', { params });
     return response.data;
   },
+  getGridAnalytics: async (params = {}) => {
+    const response = await djangoApi.get('/api/grid-analytics/', { params });
+    return response.data;
+  },
 
   // ── MAINTENANCE & TOOLS ──
   getTTTools: async () => {
@@ -377,8 +391,15 @@ export const api = {
     return response.data;
   },
   getHistoricalAlarms: async (params = {}) => {
-    const response = await djangoApi.get('/api/historical-alarms/', { params });
-    return response.data;
+    console.log('Sending params:', params);
+    try {
+      const response = await djangoApi.get('/api/historical-alarms-snmp/', { params });
+      console.log('API Response:', JSON.stringify(response.data).substring(0, 200));
+      return response.data;
+    } catch(e) {
+      console.log('API Error:', e.message, e.response?.data);
+      throw e;
+    }
   },
   exportFilteredData: async (filters) => {
     const response = await djangoApi.get('/api/site-status/', { params: { ...filters, page: 1, page_size: 10000 } });
@@ -427,7 +448,7 @@ export const api = {
   // ── METADATA & DROPDOWNS ──
   getClients: async () => {
     const response = await djangoApi.get('/client-data/');
-    const list = toArray(response.data, 'clients');
+    const list = toArray(response.data, 'clients', 'client_data');
     const data = list.map(c => ({
       client_id: c.client_id ?? c.ctmids ?? c.ctmid ?? c.id,
       client_name: c.client_name ?? c.companyname ?? c.name,
@@ -469,6 +490,10 @@ export const api = {
   },
 
   // ── ASSET HEALTH ──
+  getAssetHealthOverview: async (params = {}) => {
+    const response = await djangoApi.get('/api/asset-health/overview/', { params });
+    return response.data;
+  },
   getAssetHealthBattery: async (params = {}) => {
     const response = await djangoApi.get('/api/asset-health/battery/', { params });
     return response.data;
@@ -543,11 +568,17 @@ export const api = {
     return response.data;
   },
   sendSnmpGet: async (formData) => {
-    const response = await djangoApi.post('/snmp/api/get/', formData);
+    const response = await djangoApi.post('/snmp/api/get/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
     return response.data;
   },
   sendSnmpSet: async (formData) => {
-    const response = await djangoApi.post('/snmp/api/set/', formData);
+    const response = await djangoApi.post('/snmp/api/set/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return response.data;
+  },
+
+  // ── User Management ──
+  submitUserManagementData: async (payload) => {
+    const response = await djangoApi.post('/api/user-management-input/', payload);
     return response.data;
   },
 };

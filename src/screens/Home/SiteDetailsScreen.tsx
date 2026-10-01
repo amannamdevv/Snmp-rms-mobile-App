@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   ActivityIndicator, Switch
@@ -548,98 +548,98 @@ const EmptyState = ({ text }: { text: string }) => (
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#EBF2FA' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#EBF2FA' },
-  loadingText: { marginTop: verticalScale(12), color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(14) },
+  loadingText: { marginTop: verticalScale(12), color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(14), flexShrink: 1, },
 
   // Status Banner
   statusBanner: { paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(14), flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   bannerActive: { backgroundColor: '#01497C' },
   bannerNonActive: { backgroundColor: '#7F1D1D' },
-  bannerSiteName: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '700' },
-  bannerSub: { color: 'rgba(255,255,255,0.75)', fontSize: responsiveFontSize(11), marginTop: verticalScale(2) },
+  bannerSiteName: { color: '#fff', fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700' },
+  bannerSub: { color: 'rgba(255,255,255,0.75)', fontSize: responsiveFontSize(11), flexShrink: 1, marginTop: verticalScale(2) },
   statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 20, gap: 6 },
   pillActive: { backgroundColor: 'rgba(34,197,94,0.25)' },
   pillNonActive: { backgroundColor: 'rgba(239,68,68,0.25)' },
   statusDot: { width: moderateScale(8), height: verticalScale(8), borderRadius: 4 },
   dotActive: { backgroundColor: '#22C55E' },
   dotNonActive: { backgroundColor: '#EF4444' },
-  statusPillTxt: { color: '#fff', fontSize: responsiveFontSize(12), fontWeight: '700' },
+  statusPillTxt: { color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700' },
 
   // Tab Bar
   tabBarWrapper: { backgroundColor: '#fff', elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: verticalScale(2) } },
   tabBarContent: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4) },
   tabBtn: { paddingHorizontal: moderateScale(18), paddingVertical: verticalScale(12), borderBottomWidth: 3, borderColor: 'transparent' },
   tabActive: { borderColor: '#01497C' },
-  tabTxt: { color: '#888', fontWeight: '600', fontSize: responsiveFontSize(13) },
+  tabTxt: { color: '#888', fontWeight: '600', fontSize: responsiveFontSize(13), flexShrink: 1, },
   tabTxtActive: { color: '#01497C' },
 
   // Content
   tabContent: { padding: moderateScale(12) },
   card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2, shadowColor: '#01497C', shadowOpacity: 0.07, shadowRadius: 6, shadowOffset: { width: 0, height: verticalScale(2) } },
-  cardTitle: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#01497C', marginBottom: verticalScale(14), paddingBottom: verticalScale(10), borderBottomWidth: 1.5, borderColor: '#E2EBF4' },
+  cardTitle: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#01497C', marginBottom: verticalScale(14), paddingBottom: verticalScale(10), borderBottomWidth: 1.5, borderColor: '#E2EBF4' },
 
   // Detail Rows (two-column)
-  detailRow: { flexDirection: 'row', marginBottom: verticalScale(14), gap: 12 },
+  detailRow: { flexDirection: 'row', marginBottom: verticalScale(14), gap: moderateScale(12) },
   detailCol: { flex: 1 },
-  detailLabel: { fontSize: responsiveFontSize(11), color: '#2A6F97', fontWeight: '700', marginBottom: verticalScale(3), textTransform: 'uppercase', letterSpacing: 0.3 },
-  detailValue: { fontSize: responsiveFontSize(13), color: '#1C2F3E', fontWeight: '500' },
+  detailLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#2A6F97', fontWeight: '700', marginBottom: verticalScale(3), textTransform: 'uppercase', letterSpacing: 0.3 },
+  detailValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1C2F3E', fontWeight: '500' },
 
   // Static Rows (label – value)
   staticRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(11), borderBottomWidth: 1, borderColor: '#F0F5FA' },
-  staticLabel: { color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(13), flex: 1.2 },
-  staticVal: { color: '#333', fontSize: responsiveFontSize(13), flex: 1, textAlign: 'right' },
+  staticLabel: { color: '#01497C', fontWeight: '600', fontSize: responsiveFontSize(13), flexShrink: 1, flex: 1.2 },
+  staticVal: { color: '#333', fontSize: responsiveFontSize(13), flexShrink: 1, flex: 1, textAlign: 'right' },
 
   // Capacity Cards
-  capacityRow: { flexDirection: 'row', gap: 10, marginBottom: verticalScale(14) },
+  capacityRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: verticalScale(14) },
   capCard: { flex: 1, backgroundColor: '#01497C', padding: moderateScale(14), borderRadius: 12, alignItems: 'center' },
-  capHead: { color: '#89C2D9', fontSize: responsiveFontSize(9), fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(6) },
-  capVal: { color: '#fff', fontSize: responsiveFontSize(16), fontWeight: '800', marginBottom: verticalScale(4) },
-  capSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFontSize(9) },
+  capHead: { color: '#89C2D9', fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: verticalScale(6) },
+  capVal: { color: '#fff', fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
+  capSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFontSize(9), flexShrink: 1, },
 
   // Channel Grid
-  channelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  channelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10) },
   channelBox: { width: '47%', backgroundColor: '#F0F7FF', padding: moderateScale(12), borderRadius: 10, borderWidth: 1, borderColor: '#D0E8F5' },
-  chLabel: { fontSize: responsiveFontSize(10), color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
-  chValue: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#01497C' },
+  chLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#2A6F97', fontWeight: '700', textTransform: 'uppercase', marginBottom: verticalScale(4) },
+  chValue: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#01497C' },
 
   // TPMS
-  tpmsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, paddingTop: verticalScale(4) },
+  tpmsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(16), paddingTop: verticalScale(4) },
   checkItem: { flexDirection: 'row', alignItems: 'center', width: '45%', gap: 8 },
   checkBox: { width: moderateScale(22), height: verticalScale(22), borderWidth: 2, borderColor: '#CBD5E0', borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
   checkBoxOn: { backgroundColor: '#2e7d32', borderColor: '#2e7d32' },
-  checkMark: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: '700' },
-  checkLabel: { fontSize: responsiveFontSize(13), color: '#334155' },
+  checkMark: { color: '#fff', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700' },
+  checkLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155' },
 
   // Contacts
-  contactRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: verticalScale(12), borderBottomWidth: 1, borderColor: '#F0F5FA' },
+  contactRow: { flexDirection: 'row', alignItems: 'flex-start', gap: moderateScale(12), paddingVertical: verticalScale(12), borderBottomWidth: 1, borderColor: '#F0F5FA' },
   levelBadge: { width: moderateScale(36), height: verticalScale(36), borderRadius: 18, backgroundColor: '#01497C', alignItems: 'center', justifyContent: 'center' },
-  levelBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13) },
-  contactName: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#1C2F3E' },
-  contactDesig: { fontSize: responsiveFontSize(11), color: '#64748B', marginTop: verticalScale(2) },
-  contactMobile: { fontSize: responsiveFontSize(13), color: '#2A6F97', fontWeight: '600', marginTop: verticalScale(2) },
-  subSectionTitle: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(4) },
+  levelBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13), flexShrink: 1, },
+  contactName: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#1C2F3E' },
+  contactDesig: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748B', marginTop: verticalScale(2) },
+  contactMobile: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#2A6F97', fontWeight: '600', marginTop: verticalScale(2) },
+  subSectionTitle: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: verticalScale(8), marginTop: verticalScale(4) },
   divider: { height: 1, backgroundColor: '#E2EBF4', marginVertical: verticalScale(12) },
 
   // Alarm list rows
   alarmListRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: verticalScale(10), borderBottomWidth: 1, borderColor: '#F0F5FA' },
-  alarmListTxt: { fontSize: responsiveFontSize(13), color: '#334155', flex: 1 },
+  alarmListTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', flex: 1 },
 
   // Badges
   badgeConfig: { backgroundColor: '#2A6F97', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
   badgeActive: { backgroundColor: '#DC2626', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
   badgeClosed: { backgroundColor: '#2E7D32', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
-  badgeText: { color: '#fff', fontSize: responsiveFontSize(9), fontWeight: '800' },
+  badgeText: { color: '#fff', fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800' },
 
   // Table
   tableHeader: { flexDirection: 'row', backgroundColor: '#EBF2FA', paddingVertical: verticalScale(8), paddingHorizontal: moderateScale(4), borderRadius: 6, marginBottom: verticalScale(2) },
-  thCell: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#01497C', paddingHorizontal: moderateScale(4) },
+  thCell: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#01497C', paddingHorizontal: moderateScale(4) },
   tableRow: { flexDirection: 'row', paddingVertical: verticalScale(9), paddingHorizontal: moderateScale(4), borderBottomWidth: 1, borderColor: '#F0F5FA' },
   tableRowAlt: { backgroundColor: '#FAFCFF' },
-  tdCell: { fontSize: responsiveFontSize(10), color: '#334155', paddingHorizontal: moderateScale(4) },
-  tdCellBold: { fontSize: responsiveFontSize(10), color: '#01497C', fontWeight: '600', paddingHorizontal: moderateScale(4) },
+  tdCell: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#334155', paddingHorizontal: moderateScale(4) },
+  tdCellBold: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#01497C', fontWeight: '600', paddingHorizontal: moderateScale(4) },
   tdCellCenter: { alignItems: 'center', justifyContent: 'center' },
 
   // Alarm Cards Styling
-  alarmListContainer: { gap: 12 },
+  alarmListContainer: { gap: moderateScale(12) },
   alarmRowCard: { 
     backgroundColor: '#F8FAFC', 
     borderRadius: 12, 
@@ -654,8 +654,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10) 
   },
   alarmCardName: { 
-    fontSize: responsiveFontSize(14), 
-    fontWeight: '700', 
+    fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', 
     color: '#1C2F3E', 
     flex: 1, 
     marginRight: moderateScale(10) 
@@ -663,7 +662,7 @@ const styles = StyleSheet.create({
   alarmCardDetails: { 
     flexDirection: 'row', 
     flexWrap: 'wrap', 
-    gap: 15, 
+    gap: moderateScale(15), 
     marginBottom: verticalScale(8) 
   },
   alarmCardInfo: { 
@@ -671,8 +670,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' 
   },
   alarmCardInfoTxt: { 
-    fontSize: responsiveFontSize(12), 
-    color: '#64748B', 
+    fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748B', 
     fontWeight: '600' 
   },
   alarmCardTimeline: { 
@@ -687,18 +685,16 @@ const styles = StyleSheet.create({
   },
   timelinePoint: { flex: 1 },
   timelineLabel: { 
-    fontSize: responsiveFontSize(9), 
-    color: '#94A3B8', 
+    fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94A3B8', 
     fontWeight: '800', 
     letterSpacing: 0.5, 
     marginBottom: verticalScale(2) 
   },
   timelineVal: { 
-    fontSize: responsiveFontSize(11), 
-    color: '#334155', 
+    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155', 
     fontWeight: '700' 
   },
 
   // Empty
-  emptyText: { textAlign: 'center', color: '#94A3B8', padding: moderateScale(20), fontSize: responsiveFontSize(13), fontStyle: 'italic' },
+  emptyText: { textAlign: 'center', color: '#94A3B8', padding: moderateScale(20), fontSize: responsiveFontSize(13), flexShrink: 1, fontStyle: 'italic' },
 });

@@ -1,5 +1,5 @@
-﻿import React, { useEffect, useState } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import React, { useEffect, useState } from 'react';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
   View,
   Text,
@@ -106,7 +106,7 @@ const SiteCard = ({ item, onSiteDetailsClick }: { item: Site; onSiteDetailsClick
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: moderateScale(5) }}>
           <Text style={[styles.siteName, { flex: 1, marginRight: moderateScale(10) }]}>{item.site_name}</Text>
-          <Text style={{ fontSize: responsiveFontSize(12), color: '#475569', fontWeight: 'bold' }}>IMEI: {item.imei}</Text>
+          <Text style={{ fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', fontWeight: 'bold' }}>IMEI: {item.imei}</Text>
         </View>
   
         <View style={styles.infoRow}>
@@ -177,7 +177,13 @@ export default function SiteStatusScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
-      const res = await api.getSiteStatus({ status: statusFilter, ...currentFilters }, pageNumber, 10);
+      // StatusAPIView expects "ctmids" not "customer_id"
+      const mappedFilters: any = { ...currentFilters };
+      if (mappedFilters.customer_id) {
+        mappedFilters.ctmids = mappedFilters.customer_id;
+        delete mappedFilters.customer_id;
+      }
+      const res = await api.getSiteStatus({ status: statusFilter, ...mappedFilters }, pageNumber, 10);
 
       if (res && res.sites) {
         // Use unfiltered_kpi if available to keep top-level counts accurate
@@ -392,11 +398,11 @@ const styles = StyleSheet.create({
   iconBtn: { padding: moderateScale(8), marginLeft: moderateScale(10), position: 'relative' },
   activeFilterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
 
-  kpiContainer: { flexDirection: 'row', paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(12), gap: 10 },
+  kpiContainer: { flexDirection: 'row', paddingHorizontal: moderateScale(16), paddingVertical: verticalScale(12), gap: moderateScale(10) },
   kpiCard: { flex: 1, backgroundColor: '#fff', padding: moderateScale(12), borderRadius: 10, alignItems: 'center', elevation: 3, borderTopWidth: 4 },
   kpiActive: { backgroundColor: '#f0f4ff', elevation: 1 },
-  kpiValue: { fontSize: responsiveFontSize(22), fontWeight: '800', color: '#1e3c72' },
-  kpiLabel: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: verticalScale(2), fontWeight: '700', textTransform: 'uppercase' },
+  kpiValue: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
+  kpiLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginTop: verticalScale(2), fontWeight: '700', textTransform: 'uppercase' },
 
   searchContainer: {
     backgroundColor: '#fff',
@@ -416,45 +422,44 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
     height: '100%',
     padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+  emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   card: { backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, marginBottom: verticalScale(12), elevation: 2 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12) },
-  siteId: { fontSize: responsiveFontSize(16), fontWeight: '800', color: '#1e293b' },
+  siteId: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1e293b' },
   badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
   activeBadge: { backgroundColor: '#d1fae5' },
   downBadge: { backgroundColor: '#fee2e2' },
-  badgeText: { fontSize: responsiveFontSize(12), fontWeight: '600', color: '#333' },
-  siteName: { fontSize: responsiveFontSize(13), fontWeight: '600', marginBottom: verticalScale(12), color: '#64748b' },
+  badgeText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '600', color: '#333' },
+  siteName: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', marginBottom: verticalScale(12), color: '#64748b' },
 
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(8) },
   infoCol: { flex: 1 },
-  infoLabel: { fontSize: responsiveFontSize(11), color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  infoValue: { fontSize: responsiveFontSize(13), color: '#333', fontWeight: '500' },
+  infoLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '500' },
 
   // Expanded Section Styles
   expandedContainer: { marginTop: verticalScale(12), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#eee' },
   commGrid: { flexDirection: 'column', gap: 8, marginBottom: verticalScale(10) },
   commBox: { backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-  commBoxTitle: { fontSize: responsiveFontSize(14), fontWeight: '700', color: '#475569', marginBottom: verticalScale(8) },
-  commLabel: { fontSize: responsiveFontSize(11), color: '#64748b', marginBottom: verticalScale(4) },
-  commValue: { fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600' },
+  commBoxTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: verticalScale(8) },
+  commLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginBottom: verticalScale(4) },
+  commValue: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#0f172a', fontWeight: '600' },
   remarksBox: { backgroundColor: '#f0f9ff', padding: moderateScale(12), borderRadius: 8, borderLeftWidth: 4, borderLeftColor: '#38bdf8' },
-  remarksTitle: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#0369a1', marginBottom: verticalScale(4) },
-  remarksText: { fontSize: responsiveFontSize(12), color: '#0c4a6e' },
-  noDataText: { textAlign: 'center', color: '#888', fontSize: responsiveFontSize(13), marginVertical: verticalScale(10) },
+  remarksTitle: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#0369a1', marginBottom: verticalScale(4) },
+  remarksText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#0c4a6e' },
+  noDataText: { textAlign: 'center', color: '#888', fontSize: responsiveFontSize(13), flexShrink: 1, marginVertical: verticalScale(10) },
 
   // Action Buttons Row
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: verticalScale(16), gap: 10 },
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: verticalScale(16), gap: moderateScale(10) },
   actionBtnOutline: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, borderWidth: 1, borderColor: '#64748b', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  actionBtnOutlineText: { color: '#475569', fontSize: responsiveFontSize(13), fontWeight: '600' },
+  actionBtnOutlineText: { color: '#475569', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600' },
   actionBtnSolid: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, backgroundColor: '#1e3c72', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
-  actionBtnSolidText: { color: '#fff', fontSize: responsiveFontSize(13), fontWeight: '600' },
+  actionBtnSolidText: { color: '#fff', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600' },
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import * as Animatable from 'react-native-animatable';
@@ -51,8 +51,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#02006B',
-    fontSize: responsiveFontSize(24),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: 'bold',
     textAlign: 'center',
     marginTop: verticalScale(20),
   },

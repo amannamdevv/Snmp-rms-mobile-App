@@ -1,5 +1,5 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import React, { useEffect, useState, useCallback } from 'react';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, RefreshControl, Alert, TextInput
@@ -185,8 +185,14 @@ export default function NonCommSitesScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
+      // site-communication-statuss API expects "ctmids" not "customer_id"
+      const mappedFilters: any = { ...currentFilters };
+      if (mappedFilters.customer_id) {
+        mappedFilters.ctmids = mappedFilters.customer_id;
+        delete mappedFilters.customer_id;
+      }
       if (pageNum === 1) {
-        const bucketRes = await api.getNonCommAging(currentFilters);
+        const bucketRes = await api.getNonCommAging(mappedFilters);
         // Fallback for different response types
         const bucketData = bucketRes.status === 'success' ? bucketRes.data : bucketRes;
         if (bucketData?.aging_buckets) {
@@ -195,7 +201,7 @@ export default function NonCommSitesScreen({ navigation }: Props) {
         }
       }
 
-      const listRes = await api.getNonCommSitesList(currentFilters, pageNum, 10);
+      const listRes = await api.getNonCommSitesList(mappedFilters, pageNum, 10);
       // Robustly handle different response structures ( {sites: [...]}, {data: {sites: [...]}}, [...] )
       let listRaw = listRes.sites || (listRes.data?.sites || listRes.data || listRes);
       if (Array.isArray(listRaw)) {
@@ -401,12 +407,12 @@ const styles = StyleSheet.create({
 
   bucketsSection: { backgroundColor: '#fff', paddingBottom: verticalScale(12), elevation: 2 },
   totalRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(16), paddingTop: verticalScale(14), paddingBottom: verticalScale(8), gap: 8 },
-  totalText: { fontSize: responsiveFontSize(14), color: '#475569', fontWeight: '600' },
+  totalText: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '600' },
   totalCount: { color: '#dc2626', fontWeight: '800' },
-  bucketsContainer: { paddingHorizontal: moderateScale(16), gap: 10, paddingBottom: verticalScale(4) },
+  bucketsContainer: { paddingHorizontal: moderateScale(16), gap: moderateScale(10), paddingBottom: verticalScale(4) },
   bucketCard: { backgroundColor: '#f8fafc', padding: moderateScale(12), borderRadius: 10, minWidth: 88, alignItems: 'center', elevation: 1, borderTopWidth: 4, borderWidth: 1, borderColor: '#e2e8f0' },
-  bucketCount: { fontSize: responsiveFontSize(22), fontWeight: '800' },
-  bucketLabel: { fontSize: responsiveFontSize(10), color: '#64748b', marginTop: verticalScale(4), fontWeight: '600', textAlign: 'center' },
+  bucketCount: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '800' },
+  bucketLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', marginTop: verticalScale(4), fontWeight: '600', textAlign: 'center' },
 
   searchContainer: {
     backgroundColor: '#fff',
@@ -426,41 +432,40 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
     height: '100%',
     padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { fontSize: responsiveFontSize(18), fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-  emptySubtitle: { fontSize: responsiveFontSize(14), color: '#94a3b8', marginTop: verticalScale(4) },
+  emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   // Site card
   card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 3, borderLeftWidth: 5, borderLeftColor: '#89c2d9', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
   cardCritical: { borderLeftColor: '#dc2626', backgroundColor: '#fffbfb' },
 
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(12) },
-  siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72', lineHeight: 20 },
-  siteId: { fontSize: responsiveFontSize(11), color: '#94a3b8', marginTop: verticalScale(3), fontWeight: '500' },
+  siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72', lineHeight: 20 },
+  siteId: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(3), fontWeight: '500' },
   daysBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(9), paddingVertical: verticalScale(5), borderRadius: 20, borderWidth: 1.5 },
-  daysBadgeText: { fontSize: responsiveFontSize(10), fontWeight: '700' },
+  daysBadgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' },
 
   divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
 
   infoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   infoCell: { width: '50%', marginBottom: verticalScale(10), paddingRight: moderateScale(8) },
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(2), gap: 4 },
-  infoLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
-  infoValue: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '600' },
+  infoLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
+  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', fontWeight: '600' },
 
-  durationRow: { marginTop: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: 10 },
+  durationRow: { marginTop: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: moderateScale(10) },
   durationBarBg: { flex: 1, height: verticalScale(5), backgroundColor: '#e2e8f0', borderRadius: 3, overflow: 'hidden' },
   durationBarFill: { height: '100%', borderRadius: 3 },
-  durationLabel: { fontSize: responsiveFontSize(10), fontWeight: '700', width: moderateScale(65), textAlign: 'right' },
+  durationLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', width: moderateScale(65), textAlign: 'right' },
   alarmSec: { padding: moderateScale(10), backgroundColor: '#fff5f5', borderRadius: 8, marginTop: verticalScale(12), borderWidth: 1, borderColor: '#fee2e2' },
-  secTitle: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: verticalScale(6), letterSpacing: 0.5 },
+  secTitle: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: verticalScale(6), letterSpacing: 0.5 },
   alarmRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4), gap: 6 },
-  alarmName: { flex: 1, fontSize: responsiveFontSize(11), fontWeight: '600', color: '#450a0a' },
-  alarmTime: { fontSize: responsiveFontSize(10), color: '#991b1b', fontStyle: 'italic' },
+  alarmName: { flex: 1, fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', color: '#450a0a' },
+  alarmTime: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#991b1b', fontStyle: 'italic' },
 });
 

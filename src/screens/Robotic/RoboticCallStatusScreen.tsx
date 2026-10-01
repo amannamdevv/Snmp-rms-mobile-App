@@ -24,7 +24,7 @@ import { api } from '../../api';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import FilterModal from '../../components/FilterModal';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, scale, verticalScale } from '../../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoboticCallStatus'>;
@@ -299,6 +299,7 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
           {renderKPICard("Answered", summary.answered, "check-circle", ['#38ef7d', '#11998e'], 'answered')}
           {renderKPICard("No Answer", summary.unanswered, "x-circle", ['#f9a120', '#f9a120'], 'unanswered')}
           {renderKPICard("Busy", summary.busy, "clock", ['#764ba2', '#6f42c1'], 'busy')}
+          {renderKPICard("Channel Unavailable", summary.na, "alert-triangle", ['#ef4444', '#dc2626'], 'na')}
           {renderKPICard("Blocked", summary.pending, "slash", ['#6c757d', '#6c757d'], 'pending')}
         </ScrollView>
       </View>
@@ -398,8 +399,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: verticalScale(8)
   },
-  kpiValueText: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e293b' },
-  kpiLabelText: { fontSize: responsiveFontSize(10), color: '#64748b', textTransform: 'uppercase' },
+  kpiValueText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
+  kpiLabelText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', textTransform: 'uppercase' },
 
   searchContainer: {
     backgroundColor: '#fff',
@@ -419,8 +420,7 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: moderateScale(8) },
   searchInput: {
     flex: 1,
-    fontSize: responsiveFontSize(14),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b',
     height: '100%',
     padding: moderateScale(0),
   },
@@ -438,15 +438,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4
   },
   recordHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12) },
-  imeiText: { fontSize: responsiveFontSize(15), fontWeight: 'bold', color: '#1e3c72' },
-  phoneText: { fontSize: responsiveFontSize(13), color: '#64748b' },
+  imeiText: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
+  phoneText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b' },
   statusBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: moderateScale(8) },
-  statusText: { fontSize: responsiveFontSize(11), fontWeight: '700' },
+  statusText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
   
   recordDetailRow: { flexDirection: 'row', marginBottom: verticalScale(10) },
   detailCol: { flex: 1 },
-  detailLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', textTransform: 'uppercase' },
-  detailValue: { fontSize: responsiveFontSize(13), color: '#334155', fontWeight: '500' },
+  detailLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase' },
+  detailValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', fontWeight: '500' },
 
   footerRow: { flexDirection: 'row', marginTop: verticalScale(5) },
   tag: { 
@@ -456,9 +456,9 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(15), 
     marginRight: moderateScale(8) 
   },
-  tagText: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
+  tagText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600' },
 
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { marginTop: verticalScale(10), color: '#334155', fontSize: responsiveFontSize(16), fontWeight: '700' },
-  emptySubtitle: { marginTop: verticalScale(4), color: '#94a3b8', fontSize: responsiveFontSize(13) }
+  emptyText: { marginTop: verticalScale(10), color: '#334155', fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700' },
+  emptySubtitle: { marginTop: verticalScale(4), color: '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, }
 });

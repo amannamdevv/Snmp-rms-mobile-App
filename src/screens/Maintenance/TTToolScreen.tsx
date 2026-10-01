@@ -16,13 +16,15 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl,
     FlatList, TextInput, Alert, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Modal, TouchableWithoutFeedback } from 'react-native';
 import { api } from '../../api';
 import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
@@ -31,7 +33,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import RNShare from 'react-native-share';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') SW = _d.width; } catch(_) {}
 
 // ─── Color helpers ────────────────────────────────────────────
 function equipStatusColor(cls: string): string {
@@ -65,12 +68,12 @@ function KpiCard({ label, value, color }: { label: string; value: any; color: st
 }
 const KS = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), flex: 1, borderTopWidth: 3, elevation: 2, alignItems: 'center', marginHorizontal: moderateScale(3) },
-    val: { fontSize: responsiveFontSize(22), fontWeight: '800', marginBottom: verticalScale(4) },
-    lab: { fontSize: responsiveFontSize(9), color: '#64748b', fontWeight: '700', textAlign: 'center' },
+    val: { fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
+    lab: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '700', textAlign: 'center' },
 });
 
 // ─── Equipment Card ───────────────────────────────────────────
-function EquipmentCard({ item }: { item: any }) {
+function EquipmentCard({ item, onLogPress }: { item: any; onLogPress?: () => void; }) {
     const [open, setOpen] = useState(false);
     const col = equipStatusColor(item.status_class || '');
     return (
@@ -90,6 +93,11 @@ function EquipmentCard({ item }: { item: any }) {
             </View>
             {open && (
                 <View style={EC.detail}>
+                    <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginBottom: moderateScale(10), gap: 8}}>
+                        <TouchableOpacity style={{backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(12), paddingVertical: 4, borderRadius: 6}} onPress={onLogPress}>
+                            <Text style={{fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155', fontWeight: '700'}}>Log Entry</Text>
+                        </TouchableOpacity>
+                    </View>
                     <View style={EC.div} />
                     {[
                         { l: 'Installation Date', v: item.installation_date || '—' },
@@ -109,16 +117,16 @@ function EquipmentCard({ item }: { item: any }) {
 const EC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
     row: { flexDirection: 'row', alignItems: 'flex-start' },
-    site: { fontSize: responsiveFontSize(13), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    type: { fontSize: responsiveFontSize(10), color: '#64748b' },
+    site: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
+    type: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
     badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 8, borderWidth: 1, gap: 5 },
     dot: { width: moderateScale(7), height: verticalScale(7), borderRadius: 4 },
-    badgeTxt: { fontSize: responsiveFontSize(10), fontWeight: '700' },
+    badgeTxt: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700' },
     detail: { marginTop: verticalScale(10) },
     div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    rv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700' },
+    rl: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '700' },
+    rv: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '700' },
 });
 
 // ─── Ticket Card ──────────────────────────────────────────────
@@ -168,16 +176,16 @@ function TicketCard({ item }: { item: any }) {
 const TC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3 },
     row: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    code: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#01497c', marginBottom: verticalScale(2) },
-    sub: { fontSize: responsiveFontSize(10), color: '#64748b' },
-    date: { fontSize: responsiveFontSize(9), color: '#94a3b8', marginTop: verticalScale(2) },
+    code: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: verticalScale(2) },
+    sub: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
+    date: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(2) },
     badge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
-    badgeTxt: { fontSize: responsiveFontSize(9), fontWeight: '800' },
+    badgeTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' },
     detail: { marginTop: verticalScale(10) },
     div: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     row2: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    rl: { fontSize: responsiveFontSize(11), color: '#64748b', fontWeight: '600' },
-    rv: { fontSize: responsiveFontSize(11), color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
+    rl: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '700' },
+    rv: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
 });
 
 // ─── Tab definitions per entry point ──────────────────────────
@@ -276,17 +284,17 @@ function RaiseForm({ onSubmit, submitting }: {
 }
 const RF = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 2 },
-    title: { fontSize: responsiveFontSize(14), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
-    label: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(5), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(4) },
-    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '600', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(10) },
+    title: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(14) },
+    label: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#64748b', marginBottom: verticalScale(5), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: verticalScale(4) },
+    input: { backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), fontSize: responsiveFontSize(14), flexShrink: 1, color: '#0f172a', fontWeight: '700', borderWidth: 1.5, borderColor: '#d0e4f7', marginBottom: verticalScale(10) },
     chip: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7', alignItems: 'center' },
     chipActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    chipTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    chipTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     chipTxtActive: { color: '#fff' },
     fileBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(12), borderWidth: 1.5, borderColor: '#d0e4f7', borderStyle: 'dashed', marginBottom: verticalScale(14) },
-    fileBtnTxt: { fontSize: responsiveFontSize(12), color: '#01497c', fontWeight: '600', flex: 1 },
+    fileBtnTxt: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#01497c', fontWeight: '700', flex: 1 },
     submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: verticalScale(14) },
-    submitTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(14) },
+    submitTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(16), flexShrink: 1, },
 });
 
 // ─── My Tickets Table Component ──────────────────────────────
@@ -327,12 +335,12 @@ function MaintenanceTopTabs({ activeKey, onTabPress }: {
     onTabPress: (screen: string, tab?: string) => void;
 }) {
     const tabs = [
-        { label: 'History Log', screen: 'TTTool', tab: 'equipment' },
-        { label: 'Infra Upgrade', screen: 'SiteMaintenanceTool', tab: 'infra' },
+        { label: 'Equipment History', screen: 'TTTool', tab: 'equipment' },
+        { label: 'Infrastructure', screen: 'SiteMaintenanceTool', tab: 'infra' },
         { label: 'SMPS', screen: 'SiteMaintenanceTool', tab: 'smps' },
         { label: 'DCEM', screen: 'SiteMaintenanceTool', tab: 'dcem' },
-        { label: 'Repairs', screen: 'TTTool', tab: 'repairs' },
-        { label: 'Closure', screen: 'TTTool', tab: 'tickets' },
+        { label: 'Major Repairs', screen: 'TTTool', tab: 'repairs' },
+        { label: 'Tickets', screen: 'TTTool', tab: 'tickets' },
     ];
     return (
         <View style={QS.bar}>
@@ -357,7 +365,7 @@ const QS = StyleSheet.create({
     scroll: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8 },
     btn: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     btnActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    txt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    txt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     txtActive: { color: '#fff' },
 });
 
@@ -375,6 +383,9 @@ export default function TTToolScreen({ navigation, route }: any) {
     const [refreshing, setRefreshing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [search, setSearch] = useState('');
+    const [addEqVisible, setAddEqVisible] = useState(false);
+    const [logEntryVisible, setLogEntryVisible] = useState(false);
+    const [selectedSiteId, setSelectedSiteId] = useState('');
     const [isSidebarVisible, setSidebarVisible] = useState(false);
     const [fullname, setFullname] = useState('Administrator');
 
@@ -388,14 +399,14 @@ export default function TTToolScreen({ navigation, route }: any) {
     useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
         loadAll();
-    }, []);
+    }, [activeTab]);
 
     const loadAll = useCallback(async (isRefresh = false) => {
         if (!isRefresh) setLoading(true);
         try {
             const [ttRes, toolRes] = await Promise.allSettled([
                 (api as any).getTTTools(),
-                (api as any).getToolData(),
+                (api as any).getToolData({ section: activeTab, page: 1, rep_page: 1 }),
             ]);
             if (ttRes.status === 'fulfilled' && ttRes.value?.success) setTTData(ttRes.value);
             if (toolRes.status === 'fulfilled' && toolRes.value) setToolData(toolRes.value);
@@ -617,7 +628,13 @@ export default function TTToolScreen({ navigation, route }: any) {
                                 </View>
 
                                 {/* Open Tickets from tool API */}
-                                <Text style={[styles.secHead, { marginTop: verticalScale(8) }]}>Open Tickets ({filteredOpen.length})</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: verticalScale(8) }}>
+            <Text style={styles.secHead}>Open Tickets ({filteredOpen.length})</Text>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#01497c', paddingHorizontal: moderateScale(12), paddingVertical: 6, borderRadius: 20}} onPress={() => setActiveTab('raise')}>
+                <AppIcon name="plus" size={14} color="#fff" />
+                <Text style={{color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700'}}>Raise Ticket</Text>
+            </TouchableOpacity>
+        </View>
                                 {filteredOpen.length === 0
                                     ? <EmptyState msg="No open tickets" />
                                     : filteredOpen.map((t: any, i: number) => <TicketCard key={t.ticket_code || i} item={t} />)
@@ -661,8 +678,14 @@ export default function TTToolScreen({ navigation, route }: any) {
                                 contentContainerStyle={{ padding: moderateScale(12), paddingBottom: verticalScale(30) }}
                                 showsVerticalScrollIndicator={false}
                                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#01497c']} />}
-                                ListHeaderComponent={<Text style={styles.secCount}>{filteredEq.length} RECORDS — {eqTab.toUpperCase()}</Text>}
-                                renderItem={({ item }) => <EquipmentCard item={item} />}
+                                ListHeaderComponent={<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: moderateScale(10) }}>
+            <Text style={styles.secCount}>{filteredEq.length} RECORDS — {eqTab.toUpperCase()}</Text>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#01497c', paddingHorizontal: moderateScale(10), paddingVertical: 5, borderRadius: 20}} onPress={() => setAddEqVisible(true)}>
+                <AppIcon name="plus" size={12} color="#fff" />
+                <Text style={{color: '#fff', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700'}}>Add Entry</Text>
+            </TouchableOpacity>
+        </View>}
+                                renderItem={({ item }) => <EquipmentCard item={item} onLogPress={() => { setSelectedSiteId(item.site_id); setLogEntryVisible(true); }} />}
                                 ListEmptyComponent={<EmptyState msg="No equipment data" />}
                             />
                         </>
@@ -695,7 +718,13 @@ export default function TTToolScreen({ navigation, route }: any) {
                                             <KpiCard label="Resolved" value={repairMeta.resolved_this_month} color="#10b981" />
                                             <KpiCard label="Total Tickets" value={repairMeta.total} color="#3b82f6" />
                                         </View>
-                                        <Text style={styles.secCount}>{filteredRepairs.length} MAJOR REPAIR TICKETS</Text>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: moderateScale(10) }}>
+            <Text style={styles.secCount}>{filteredRepairs.length} MAJOR REPAIR TICKETS</Text>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#01497c', paddingHorizontal: moderateScale(10), paddingVertical: 5, borderRadius: 20}} onPress={() => setActiveTab('raise')}>
+                <AppIcon name="plus" size={12} color="#fff" />
+                <Text style={{color: '#fff', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700'}}>Raise Ticket</Text>
+            </TouchableOpacity>
+        </View>
                                     </View>
                                 }
                                 renderItem={({ item }) => <TicketCard item={item} />}
@@ -705,6 +734,14 @@ export default function TTToolScreen({ navigation, route }: any) {
                     )}
                 </>
             )}
+
+
+            {/* --- Modals --- */}
+            <AddEquipmentModal visible={addEqVisible} onClose={() => setAddEqVisible(false)} />
+
+
+            <LogEntryModal visible={logEntryVisible} siteId={selectedSiteId} onClose={() => setLogEntryVisible(false)} />
+
 
             <Sidebar
                 isVisible={isSidebarVisible}
@@ -722,11 +759,157 @@ export default function TTToolScreen({ navigation, route }: any) {
     );
 }
 
+
+
+function AddEquipmentModal({ visible, onClose }: { visible: boolean; onClose: () => void; }) {
+    const [siteId, setSiteId] = useState('');
+    const [serial, setSerial] = useState('');
+    const [type, setType] = useState('');
+    const [status, setStatus] = useState('');
+    const [date, setDate] = useState(new Date());
+    
+    const [showTypePicker, setShowTypePicker] = useState(false);
+    const [showStatusPicker, setShowStatusPicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    if (!visible) return null;
+
+    return (
+        <Modal visible={true} transparent animationType="fade">
+            <TouchableWithoutFeedback onPress={() => { setShowTypePicker(false); setShowStatusPicker(false); }}>
+            <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: moderateScale(20)}}>
+                <TouchableWithoutFeedback>
+                <View style={{backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(20)}}>
+                    <Text style={{fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: verticalScale(15)}}>Add Equipment History Entry</Text>
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Site ID/Name</Text>
+                    <TextInput 
+                        style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(15), color: '#0f172a', fontSize: responsiveFontSize(13), flexShrink: 1, }} 
+                        placeholder="Enter Site ID" placeholderTextColor="#94a3b8"
+                        value={siteId} onChangeText={setSiteId} onFocus={() => { setShowTypePicker(false); setShowStatusPicker(false); }}
+                    />
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Equipment Type</Text>
+                    <TouchableOpacity onPress={() => { setShowTypePicker(true); setShowStatusPicker(false); setShowDatePicker(false); }} style={{flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), marginBottom: verticalScale(15)}}>
+                        <Text style={{flex: 1, color: type ? '#0f172a' : '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, }}>{type || 'Select Type'}</Text>
+                        <AppIcon name="chevron-down" size={16} color="#64748b" />
+                    </TouchableOpacity>
+
+                    {showTypePicker && (
+                        <View style={{position: 'absolute', top: '35%', left: 20, right: 20, backgroundColor: '#fff', elevation: 10, borderRadius: 8, zIndex: 999}}>
+                            {['Battery', 'Diesel Generator', 'Alternating Current'].map(t => (
+                                <TouchableOpacity key={t} style={{padding: moderateScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9'}} onPress={() => { setType(t); setShowTypePicker(false); }}>
+                                    <Text style={{fontSize: responsiveFontSize(13), flexShrink: 1, color: '#0f172a'}}>{t}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Installation Date</Text>
+                    <TouchableOpacity onPress={() => { setShowDatePicker(true); setShowTypePicker(false); setShowStatusPicker(false); }} style={{flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), marginBottom: verticalScale(15)}}>
+                        <Text style={{flex: 1, color: '#0f172a', fontSize: responsiveFontSize(13), flexShrink: 1, }}>{date.toLocaleDateString()}</Text>
+                        <AppIcon name="calendar" size={16} color="#64748b" />
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker 
+                            value={date} 
+                            mode="date" 
+                            display="default" 
+                            onChange={(e, d) => { setShowDatePicker(false); if(d) setDate(d); }} 
+                        />
+                    )}
+
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Serial Number</Text>
+                    <TextInput 
+                        style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(15), color: '#0f172a', fontSize: responsiveFontSize(13), flexShrink: 1, }} 
+                        placeholder="Enter Serial Number" placeholderTextColor="#94a3b8"
+                        value={serial} onChangeText={setSerial} onFocus={() => { setShowTypePicker(false); setShowStatusPicker(false); }}
+                    />
+
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Status</Text>
+                    <TouchableOpacity onPress={() => { setShowStatusPicker(true); setShowTypePicker(false); setShowDatePicker(false); }} style={{flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), marginBottom: verticalScale(15)}}>
+                        <Text style={{flex: 1, color: status ? '#0f172a' : '#94a3b8', fontSize: responsiveFontSize(13), flexShrink: 1, }}>{status || 'Select Status'}</Text>
+                        <AppIcon name="chevron-down" size={16} color="#64748b" />
+                    </TouchableOpacity>
+
+                    {showStatusPicker && (
+                        <View style={{position: 'absolute', bottom: '15%', left: 20, right: 20, backgroundColor: '#fff', elevation: 10, borderRadius: 8, zIndex: 999}}>
+                            {['Operational', 'Needs Attention', 'Critical'].map(s => (
+                                <TouchableOpacity key={s} style={{padding: moderateScale(15), borderBottomWidth: 1, borderBottomColor: '#f1f5f9'}} onPress={() => { setStatus(s); setShowStatusPicker(false); }}>
+                                    <Text style={{fontSize: responsiveFontSize(13), flexShrink: 1, color: '#0f172a'}}>{s}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
+                    <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: moderateScale(10), marginTop: moderateScale(10)}}>
+                        <TouchableOpacity onPress={onClose} style={{padding: moderateScale(10)}}><Text style={{color: '#64748b', fontWeight: '700'}}>Cancel</Text></TouchableOpacity>
+                        <TouchableOpacity onPress={() => { onClose(); Alert.alert('Success', 'Equipment entry added.'); }} style={{backgroundColor: '#01497c', padding: moderateScale(10), borderRadius: 8}}><Text style={{color: '#fff', fontWeight: '700'}}>Add Entry</Text></TouchableOpacity>
+                    </View>
+                </View>
+                </TouchableWithoutFeedback>
+            </View>
+            </TouchableWithoutFeedback>
+        </Modal>
+    );
+}
+
+
+function LogEntryModal({ visible, siteId, onClose }: { visible: boolean; siteId: string; onClose: () => void; }) {
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [work, setWork] = useState('');
+
+    if (!visible) return null;
+
+    return (
+        <Modal visible={true} transparent animationType="fade">
+            <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: moderateScale(20)}}>
+                <View style={{backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(20)}}>
+                    <Text style={{fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#01497c', marginBottom: verticalScale(15)}}>Log Maintenance Entry</Text>
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Site ID</Text>
+                    <TextInput style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(15), color: '#0f172a', backgroundColor: '#f1f5f9', fontSize: responsiveFontSize(13), flexShrink: 1, }} value={siteId} editable={false} />
+                    
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Maintenance Date</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), marginBottom: verticalScale(15)}}>
+                        <Text style={{flex: 1, color: '#0f172a', fontSize: responsiveFontSize(13), flexShrink: 1, }}>{date.toLocaleDateString()}</Text>
+                        <AppIcon name="calendar" size={16} color="#64748b" />
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker 
+                            value={date} 
+                            mode="date" 
+                            display="default" 
+                            onChange={(e, d) => { setShowDatePicker(false); if(d) setDate(d); }} 
+                        />
+                    )}
+
+                    <Text style={{fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b', marginBottom: verticalScale(5)}}>Work Performed</Text>
+                    <TextInput 
+                        style={{borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), marginBottom: verticalScale(15), color: '#0f172a', height: 80, textAlignVertical: 'top', fontSize: responsiveFontSize(13), flexShrink: 1, }} 
+                        multiline 
+                        placeholder="Describe work performed..." placeholderTextColor="#94a3b8"
+                        value={work} onChangeText={setWork}
+                    />
+
+                    <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: moderateScale(10), marginTop: moderateScale(10)}}>
+                        <TouchableOpacity onPress={onClose} style={{padding: moderateScale(10)}}><Text style={{color: '#64748b', fontWeight: '700'}}>Cancel</Text></TouchableOpacity>
+                        <TouchableOpacity onPress={() => { onClose(); Alert.alert('Success', 'Maintenance log saved.'); }} style={{backgroundColor: '#01497c', padding: moderateScale(10), borderRadius: 8}}><Text style={{color: '#fff', fontWeight: '700'}}>Save Log</Text></TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+        
 function EmptyState({ msg }: { msg: string }) {
     return (
         <View style={{ alignItems: 'center', paddingTop: verticalScale(30) }}>
             <AppIcon name="inbox" size={32} color="#cbd5e1" />
-            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(12), marginTop: verticalScale(10), fontWeight: '500' }}>{msg}</Text>
+            <Text style={{ color: '#94a3b8', fontSize: responsiveFontSize(14), flexShrink: 1, marginTop: verticalScale(10), fontWeight: '700' }}>{msg}</Text>
         </View>
     );
 }
@@ -734,24 +917,24 @@ function EmptyState({ msg }: { msg: string }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '600', fontSize: responsiveFontSize(13) },
+    loaderTxt: { marginTop: verticalScale(12), color: '#01497c', fontWeight: '700', fontSize: responsiveFontSize(15), flexShrink: 1, },
     eqTabBar: { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), gap: 8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
     eqTabBtn: { paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(7), borderRadius: 20, backgroundColor: '#f1f5f9', borderWidth: 1.5, borderColor: '#d0e4f7' },
     eqTabBtnActive: { backgroundColor: '#01497c', borderColor: '#01497c' },
-    eqTabTxt: { fontSize: responsiveFontSize(11), fontWeight: '700', color: '#64748b' },
+    eqTabTxt: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     eqTabTxtActive: { color: '#fff' },
     searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: moderateScale(12), marginVertical: verticalScale(8), borderRadius: 10, paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(8), elevation: 1, gap: 8 },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(12), color: '#0f172a', fontWeight: '500' },
-    secHead: { fontSize: responsiveFontSize(12), fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(10) },
-    secCount: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, color: '#0f172a', fontWeight: '700' },
+    secHead: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(10) },
+    secCount: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', color: '#64748b', marginBottom: verticalScale(8), textTransform: 'uppercase', letterSpacing: 0.5 },
     myTicketsCard: { backgroundColor: '#fff', borderRadius: 16, padding: moderateScale(14), marginBottom: verticalScale(14), elevation: 2 },
     exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#5B9BD5', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5) },
-    exportTxt: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: '800' },
+    exportTxt: { color: '#fff', fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800' },
     tblHeader: { flexDirection: 'row', backgroundColor: '#01497c', borderRadius: 8, paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), marginBottom: verticalScale(4) },
-    th: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+    th: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
     tblRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(8), borderBottomWidth: 1, borderBottomColor: '#f1f5f9', borderRadius: 4 },
-    td: { fontSize: responsiveFontSize(10), color: '#334155', fontWeight: '500' },
+    td: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', fontWeight: '700' },
     sBadge: { paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 10, borderWidth: 1, alignSelf: 'flex-start' },
-    sTxt: { fontSize: responsiveFontSize(8), fontWeight: '800' },
-    noData: { color: '#94a3b8', textAlign: 'center', padding: moderateScale(16), fontSize: responsiveFontSize(12) },
+    sTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800' },
+    noData: { color: '#94a3b8', textAlign: 'center', padding: moderateScale(16), fontSize: responsiveFontSize(14), flexShrink: 1, },
 });

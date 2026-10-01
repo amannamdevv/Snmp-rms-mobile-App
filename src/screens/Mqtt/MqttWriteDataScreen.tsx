@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { api } from '../../api';
-import { scale, moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, scale, verticalScale } from '../../utils/responsive';
 
 const DELTA_PARAMS = [
   'BAT_LLVD',
@@ -283,8 +283,7 @@ const styles = StyleSheet.create({
   backBtn: { marginRight: scale(12) },
   headerTitle: {
     color: '#fff',
-    fontSize: responsiveFontSize(18),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold',
     flex: 1,
   },
   liveBadge: {
@@ -302,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff4b4b',
     marginRight: moderateScale(4),
   },
-  liveText: { color: '#fff', fontSize: responsiveFontSize(10), fontWeight: 'bold' },
+  liveText: { color: '#fff', fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold' },
   scrollContent: { padding: moderateScale(20) },
   card: {
     backgroundColor: '#fff',
@@ -315,14 +314,12 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardHeader: {
-    fontSize: responsiveFontSize(20),
-    fontWeight: 'bold',
+    fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: 'bold',
     color: '#1e293b',
     textAlign: 'center',
   },
   cardSubHeader: {
-    fontSize: responsiveFontSize(12),
-    color: '#64748b',
+    fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b',
     textAlign: 'center',
     marginBottom: moderateScale(20),
   },
@@ -350,7 +347,7 @@ const styles = StyleSheet.create({
   tabText: { color: '#64748b', fontWeight: '600' },
   activeTabText: { color: '#fff' },
   fieldContainer: { marginBottom: moderateScale(16) },
-  label: { color: '#475569', fontSize: responsiveFontSize(14), fontWeight: '600', marginBottom: verticalScale(6) },
+  label: { color: '#475569', fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '600', marginBottom: verticalScale(6) },
   required: { color: '#ef4444' },
   input: {
     backgroundColor: '#fff',
@@ -358,8 +355,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 8,
     padding: moderateScale(12),
-    fontSize: responsiveFontSize(16),
-    color: '#1e293b',
+    fontSize: responsiveFontSize(16), flexShrink: 1, color: '#1e293b',
   },
   valueInputWrapper: {
     flexDirection: 'row',
@@ -388,7 +384,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: moderateScale(20),
   },
-  loadButtonText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(15) },
+  loadButtonText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(15), flexShrink: 1, },
   pickerTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -399,7 +395,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: moderateScale(12),
   },
-  pickerTriggerText: { fontSize: responsiveFontSize(16), color: '#1e293b' },
+  pickerTriggerText: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#1e293b' },
   sendButton: {
     flexDirection: 'row',
     backgroundColor: '#6366f1',
@@ -409,7 +405,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: verticalScale(8),
   },
-  sendButtonText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(16) },
+  sendButtonText: { color: '#fff', fontWeight: 'bold', fontSize: responsiveFontSize(16), flexShrink: 1, },
   currentValContainer: {
     marginTop: verticalScale(16),
     padding: moderateScale(12),
@@ -418,8 +414,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#6366f1',
   },
-  currentValLabel: { fontSize: responsiveFontSize(12), color: '#64748b' },
-  currentValText: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e293b' },
+  currentValLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
+  currentValText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
   statusCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
@@ -428,7 +424,7 @@ const styles = StyleSheet.create({
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', marginTop: verticalScale(8) },
   statusText: { marginLeft: moderateScale(8), fontWeight: 'bold' },
-  statusMsg: { marginTop: verticalScale(4), color: '#475569', fontSize: responsiveFontSize(13) },
+  statusMsg: { marginTop: verticalScale(4), color: '#475569', fontSize: responsiveFontSize(13), flexShrink: 1, },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -449,7 +445,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalTitle: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e293b' },
+  modalTitle: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
   modalItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -458,7 +454,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  modalItemText: { fontSize: responsiveFontSize(16), color: '#475569' },
+  modalItemText: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#475569' },
   modalItemTextActive: { color: '#6366f1', fontWeight: 'bold' },
 });
 

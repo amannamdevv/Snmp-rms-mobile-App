@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
     ActivityIndicator, RefreshControl, Alert, TextInput
@@ -247,14 +247,14 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
     header: { padding: moderateScale(20), borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 10 },
     topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: verticalScale(20) },
-    headerTitle: { color: '#fff', fontSize: responsiveFontSize(18), fontWeight: 'bold', flex: 1, marginLeft: moderateScale(15) },
+    headerTitle: { color: '#fff', fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', flex: 1, marginLeft: moderateScale(15) },
     headerIcons: { flexDirection: 'row', alignItems: 'center' },
     headerIcon: { padding: moderateScale(8), position: 'relative' },
     filterDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4, backgroundColor: '#ef4444', borderWidth: 1, borderColor: '#1e3c72' },
     summaryBox: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', borderRadius: 15, padding: moderateScale(15), marginHorizontal: moderateScale(15), marginTop: verticalScale(15), elevation: 3 },
     summaryItem: { alignItems: 'center' },
-    summaryVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), fontWeight: 'bold' },
-    summaryLab: { color: '#64748b', fontSize: responsiveFontSize(10), textTransform: 'uppercase', marginTop: verticalScale(2) },
+    summaryVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold' },
+    summaryLab: { color: '#64748b', fontSize: responsiveFontSize(10), flexShrink: 1, textTransform: 'uppercase', marginTop: verticalScale(2) },
     
     searchContainer: { 
         backgroundColor: '#fff', 
@@ -268,31 +268,31 @@ const styles = StyleSheet.create({
         elevation: 2
     },
     searchIcon: { marginRight: moderateScale(10) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(13), color: '#1e293b', height: verticalScale(40), padding: moderateScale(0) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', height: verticalScale(40), padding: moderateScale(0) },
 
     listContainer: { padding: moderateScale(15) },
     card: { backgroundColor: '#fff', borderRadius: 20, marginBottom: verticalScale(15), elevation: 3, padding: moderateScale(15), borderLeftWidth: 5, borderLeftColor: '#1e3c72' },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     stateInfo: { flex: 1 },
-    stateName: { fontSize: responsiveFontSize(18), fontWeight: 'bold', color: '#1e3c72' },
-    totalSites: { fontSize: responsiveFontSize(12), color: '#64748b', marginTop: verticalScale(2) },
+    stateName: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
+    totalSites: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', marginTop: verticalScale(2) },
     percentageContainer: { alignItems: 'flex-end' },
-    percentageText: { fontSize: responsiveFontSize(22), fontWeight: 'bold' },
-    percentageLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase' },
+    percentageText: { fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: 'bold' },
+    percentageLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase' },
     
     divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(12) },
     statsRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 12 },
     statBox: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-    statVal: { fontSize: responsiveFontSize(16), fontWeight: 'bold', color: '#334155' },
-    statLab: { fontSize: responsiveFontSize(10), color: '#64748b', marginLeft: moderateScale(2) },
+    statVal: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold', color: '#334155' },
+    statLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', marginLeft: moderateScale(2) },
     verticalDivider: { width: 1, height: '60%', backgroundColor: '#e2e8f0' },
     
     cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: verticalScale(12), paddingTop: verticalScale(10), borderTopWidth: 1, borderTopColor: '#f8fafc' },
-    footerText: { fontSize: responsiveFontSize(10), color: '#64748b', fontStyle: 'italic' },
+    footerText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontStyle: 'italic' },
     
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     loadingText: { marginTop: verticalScale(15), color: '#1e3c72', fontWeight: 'bold' },
     emptyContainer: { alignItems: 'center', marginTop: verticalScale(100) },
-    emptyText: { marginTop: verticalScale(15), fontSize: responsiveFontSize(18), color: '#334155', fontWeight: 'bold' },
-    emptySubtitle: { marginTop: verticalScale(5), fontSize: responsiveFontSize(14), color: '#94a3b8' }
+    emptyText: { marginTop: verticalScale(15), fontSize: responsiveFontSize(18), flexShrink: 1, color: '#334155', fontWeight: 'bold' },
+    emptySubtitle: { marginTop: verticalScale(5), fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8' }
 });

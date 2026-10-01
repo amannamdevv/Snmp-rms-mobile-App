@@ -1,10 +1,13 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   Animated, Dimensions, TouchableWithoutFeedback, Modal, SafeAreaView, Easing
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { scale, verticalScale, moderateScale, responsiveFontSize, SCREEN_WIDTH as width } from '../utils/responsive';
+import { responsiveFontSize, moderateScale, scale, verticalScale } from '../utils/responsive';
+
+let width = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') width = _d.width; } catch(_) {}
 
 interface SidebarProps {
   isVisible: boolean;
@@ -48,17 +51,15 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
   const isHistorySubActive = ['SiteLogs', 'HistoricalAlarms'].includes(activeRoute || '');
   const isMaintenanceSubActive = ['TTTool', 'SiteMaintenanceTool'].includes(activeRoute || '');
   const isOptimizationSubActive = ['OptimizationReports'].includes(activeRoute || '');
-  const isMqttSubActive = ['MqttWriteData', 'SnmpTool'].includes(activeRoute || '');
+  const isPmSubActive = ['PMAnalytics'].includes(activeRoute || '');
 
   useEffect(() => {
     if (isSitesSubActive) {
       setExpandedMenu('Live Sites Status');
-    } else if (isAlarmsSubActive) {
-      setExpandedMenu('Alarms Management');
     } else if (isUptimeSubActive) {
       setExpandedMenu('Uptime & SLA Analytics');
     } else if (isAssetSubActive) {
-      setExpandedMenu('Asset Health');
+      setExpandedMenu('Asset Health Management');
     } else if (isEnergySubActive) {
       setExpandedMenu('Energy Management');
     } else if (isHistorySubActive) {
@@ -67,6 +68,8 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
       setExpandedMenu('Site Maintenance Tool');
     } else if (isOptimizationSubActive) {
       setExpandedMenu('Optimization Reports');
+    } else if (isPmSubActive) {
+      setExpandedMenu('PM Analytics');
     }
   }, [activeRoute]);
 
@@ -114,7 +117,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
               <View style={[styles.avatarCircle, { backgroundColor: getAvatarColor(fullname || 'A') }]}>
                 <Text style={styles.avatarText}>{fullname ? fullname.charAt(0).toUpperCase() : 'A'}</Text>
               </View>
-              <View style={{ marginLeft: 16, flex: 1 }}>
+              <View style={{ marginLeft: moderateScale(16), flex: 1 }}>
                 <Text style={styles.profileGreeting}>{getGreeting().text}</Text>
                 <Text style={styles.profileName} numberOfLines={1}>{fullname || 'Guest'}</Text>
 
@@ -126,7 +129,16 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
 
             <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
 
-              {/* 1. HOME */}
+              {/* 1. OVERVIEW */}
+              <TouchableOpacity
+                style={[styles.item, activeRoute === 'Overview' && styles.itemActive]}
+                onPress={() => navigateTo('Overview')}
+              >
+                <Icon name="layout" size={20} color={activeRoute === 'Overview' ? "#61A5C2" : "#fff"} style={styles.icon} />
+                <Text style={[styles.text, activeRoute === 'Overview' && { color: '#61A5C2' }]}>Overview</Text>
+              </TouchableOpacity>
+
+              {/* 2. HOME */}
               <TouchableOpacity
                 style={[styles.item, activeRoute === 'Home' && styles.itemActive]}
                 onPress={() => navigateTo('Home')}
@@ -135,7 +147,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Text style={[styles.text, activeRoute === 'Home' && { color: '#61A5C2' }]}>Home</Text>
               </TouchableOpacity>
 
-              {/* 2. DASHBOARD */}
+              {/* 3. DASHBOARD */}
               <TouchableOpacity
                 style={[styles.item, activeRoute === 'Dashboard' && styles.itemActive]}
                 onPress={() => navigateTo('Dashboard')}
@@ -170,38 +182,8 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 </View>
               )}
 
-              {/* 4. ALARMS MANAGEMENT DROP-DOWN */}
-              <TouchableOpacity style={styles.accordion} onPress={() => toggleAccordion('Alarms Management')} activeOpacity={0.7}>
-                <View style={styles.row}>
-                  <Icon name="bell" size={20} color={(isAlarmsSubActive || expandedMenu === 'Alarms Management') ? "#61A5C2" : "#fff"} style={styles.icon} />
-                  <Text style={[styles.text, (isAlarmsSubActive || expandedMenu === 'Alarms Management') && { color: '#61A5C2' }]}>Alarms Management</Text>
-                </View>
-                <Icon name={expandedMenu === 'Alarms Management' ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" />
-              </TouchableOpacity>
-
-              {expandedMenu === 'Alarms Management' && (
-                <View style={styles.subMenu}>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('LiveAlarms', { severity: 'Fire' })}>
-                    <Text style={styles.subText}>• Fire & Smoke</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('LiveAlarms', { severity: 'Major' })}>
-                    <Text style={styles.subText}>• Major Alarms</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('LiveAlarms', { severity: 'Minor' })}>
-                    <Text style={styles.subText}>• Minor Alarms</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {/* 5. AMF SMPS LAST COM */}
-              <TouchableOpacity
-                style={[styles.item, activeRoute === 'CommReport' && styles.itemActive]}
-                onPress={() => navigateTo('CommReport')}
-                activeOpacity={0.7}
-              >
-                <Icon name="file-text" size={20} color={activeRoute === 'CommReport' ? "#61A5C2" : "#fff"} style={styles.icon} />
-                <Text style={[styles.text, activeRoute === 'CommReport' && { color: '#61A5C2' }]}>Amf Smps Last Com</Text>
-              </TouchableOpacity>
+              {/* ALARMS MANAGEMENT REMOVED (Not in SNMP RMS) */}
+              {/* AMF SMPS LAST COM REMOVED (Not in SNMP RMS) */}
 
               {/* 6. ENERGY MANAGEMENT */}
               <TouchableOpacity
@@ -241,6 +223,15 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Text style={[styles.text, activeRoute === 'DCEMAnalytics' && { color: '#61A5C2' }]}>DCEM Analytics</Text>
               </TouchableOpacity>
 
+              {/* 9b. SOLAR ANALYTICS */}
+              <TouchableOpacity
+                style={[styles.item, activeRoute === 'SolarAnalytics' && styles.itemActive]}
+                onPress={() => navigateTo('SolarAnalytics')}
+              >
+                <Icon name="sun" size={20} color={activeRoute === 'SolarAnalytics' ? "#61A5C2" : "#fff"} style={styles.icon} />
+                <Text style={[styles.text, activeRoute === 'SolarAnalytics' && { color: '#61A5C2' }]}>Solar Analytics</Text>
+              </TouchableOpacity>
+
               {/* 10. UPTIME & SLA ANALYTICS DROP-DOWN */}
               <TouchableOpacity style={styles.accordion} onPress={() => toggleAccordion('Uptime & SLA Analytics')} activeOpacity={0.7}>
                 <View style={styles.row}>
@@ -267,12 +258,6 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                   <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('UptimeDashboard', { tab: 'seasonal' })}>
                     <Text style={[styles.subText, activeRoute === 'UptimeDashboard' && styles.activeSubText]}>• Seasonal Preparedness</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('UptimeDashboard', { tab: 'monthly' })}>
-                    <Text style={[styles.subText, activeRoute === 'UptimeDashboard' && styles.activeSubText]}>• Monthly History</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('UptimeDashboard', { tab: 'quarterly' })}>
-                    <Text style={[styles.subText, activeRoute === 'UptimeDashboard' && styles.activeSubText]}>• Quarterly History</Text>
-                  </TouchableOpacity>
                 </View>
               )}
 
@@ -287,18 +272,18 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
 
               {/* 12. ASSET HEALTH MANAGEMENT DROP-DOWN */}
               <TouchableOpacity
-                style={[styles.accordion, (isAssetSubActive || expandedMenu === 'Asset Health') && styles.itemActive]}
-                onPress={() => toggleAccordion('Asset Health')}
+                style={[styles.accordion, (isAssetSubActive || expandedMenu === 'Asset Health Management') && styles.itemActive]}
+                onPress={() => toggleAccordion('Asset Health Management')}
                 activeOpacity={0.7}
               >
                 <View style={styles.row}>
-                  <Icon name="activity" size={20} color={(isAssetSubActive || expandedMenu === 'Asset Health') ? "#61A5C2" : "#fff"} style={styles.icon} />
-                  <Text style={[styles.text, (isAssetSubActive || expandedMenu === 'Asset Health') && { color: '#61A5C2' }]}>Asset Health Management</Text>
+                  <Icon name="activity" size={20} color={(isAssetSubActive || expandedMenu === 'Asset Health Management') ? "#61A5C2" : "#fff"} style={styles.icon} />
+                  <Text style={[styles.text, (isAssetSubActive || expandedMenu === 'Asset Health Management') && { color: '#61A5C2' }]}>Asset Health Management</Text>
                 </View>
-                <Icon name={expandedMenu === 'Asset Health' ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" />
+                <Icon name={expandedMenu === 'Asset Health Management' ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" />
               </TouchableOpacity>
 
-              {expandedMenu === 'Asset Health' && (
+              {expandedMenu === 'Asset Health Management' && (
                 <View style={styles.subMenu}>
                   {[
                     { name: 'Battery', tab: 'battery' },
@@ -328,6 +313,27 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Icon name="phone-call" size={20} color={activeRoute === 'RoboticCallStatus' ? "#61A5C2" : "#fff"} style={styles.icon} />
                 <Text style={[styles.text, activeRoute === 'RoboticCallStatus' && { color: '#61A5C2' }]}>Robotic Call Status</Text>
               </TouchableOpacity>
+
+              {/* 14. PM ANALYTICS DROP-DOWN (HIDDEN FOR NOW)
+              <TouchableOpacity style={styles.accordion} onPress={() => toggleAccordion('PM Analytics')} activeOpacity={0.7}>
+                <View style={styles.row}>
+                  <Icon name="clipboard" size={20} color={(isPmSubActive || expandedMenu === 'PM Analytics') ? "#61A5C2" : "#fff"} style={styles.icon} />
+                  <Text style={[styles.text, (isPmSubActive || expandedMenu === 'PM Analytics') && { color: '#61A5C2' }]}>PM Analytics</Text>
+                </View>
+                <Icon name={expandedMenu === 'PM Analytics' ? "chevron-up" : "chevron-down"} size={16} color="#94a3b8" />
+              </TouchableOpacity>
+
+              {expandedMenu === 'PM Analytics' && (
+                <View style={styles.subMenu}>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('PMAnalytics', { tab: 'monthly' })}>
+                    <Text style={styles.subText}>• Monitoring Monthly PM / Qtrly PM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.subItem} onPress={() => navigateTo('PMAnalytics', { tab: 'circle' })}>
+                    <Text style={styles.subText}>• Circle wise completion</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              */}
 
               {/* 15. SITE MAINTENANCE TOOL dropdown */}
               <TouchableOpacity
@@ -378,7 +384,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Text style={[styles.text, activeRoute === 'GridBilling' && { color: '#61A5C2' }]}>Grid Power Analytics</Text>
               </TouchableOpacity>
 
-              {/* 17. OPTIMIZATION REPORTS DROP-DOWN */}
+              {/* 17. OPTIMIZATION REPORTS DROP-DOWN (HIDDEN FOR MOBILE)
               <TouchableOpacity
                 style={styles.accordion}
                 onPress={() => toggleAccordion('Optimization Reports')}
@@ -417,6 +423,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                   ))}
                 </View>
               )}
+              */}
 
               {/* 18. TT TOOL */}
               <TouchableOpacity
@@ -447,24 +454,24 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Text style={[styles.text, activeRoute === 'ResourceMapping' && { color: '#61A5C2' }]}>Mapping of Resources</Text>
               </TouchableOpacity>
 
-              {/* 21. MQTT WRITE DATA */}
+              {/* 21. USER MANAGEMENT */}
               <TouchableOpacity
-                style={[styles.item, activeRoute === 'MqttWriteData' && styles.itemActive]}
-                onPress={() => navigateTo('MqttWriteData')}
+                style={[styles.item, activeRoute === 'UserManagement' && styles.itemActive]}
+                onPress={() => navigateTo('UserManagement')}
                 activeOpacity={0.7}
               >
-                <Icon name="terminal" size={20} color={activeRoute === 'MqttWriteData' ? "#61A5C2" : "#fff"} style={styles.icon} />
-                <Text style={[styles.text, activeRoute === 'MqttWriteData' && { color: '#61A5C2' }]}>MQTT Write Data</Text>
+                <Icon name="users" size={20} color={activeRoute === 'UserManagement' ? "#61A5C2" : "#fff"} style={styles.icon} />
+                <Text style={[styles.text, activeRoute === 'UserManagement' && { color: '#61A5C2' }]}>User Management</Text>
               </TouchableOpacity>
 
-              {/* 21b. SNMP TOOL */}
+              {/* 21b. SNMP RMS WRITE COMMAND */}
               <TouchableOpacity
                 style={[styles.item, activeRoute === 'SnmpTool' && styles.itemActive]}
                 onPress={() => navigateTo('SnmpTool')}
                 activeOpacity={0.7}
               >
                 <Icon name="cpu" size={20} color={activeRoute === 'SnmpTool' ? "#61A5C2" : "#fff"} style={styles.icon} />
-                <Text style={[styles.text, activeRoute === 'SnmpTool' && { color: '#61A5C2' }]}>SNMP Tool</Text>
+                <Text style={[styles.text, activeRoute === 'SnmpTool' && { color: '#61A5C2' }]}>SNMP RMS WRITE COMMAND</Text>
               </TouchableOpacity>
 
               {/* 22. HISTORY LOGS DROP-DOWN */}
@@ -480,7 +487,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <View style={styles.subMenu}>
                   {[
                     { name: 'Site Logs', route: 'SiteLogs' },
-                    { name: 'Historical Alarms', route: 'HistoricalAlarms' },
+                    { name: 'Alarm Logs', route: 'HistoricalAlarms' },
                   ].map((item) => (
                     <TouchableOpacity
                       key={item.route}
@@ -492,6 +499,10 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                   ))}
                 </View>
               )}
+
+
+              {/* 23. QUALITY ANALYTICS (FW) — hidden */}
+              {/* 24. PERMIT TO WORK ANALYTICS (FW) — hidden */}
 
             </ScrollView>
 
@@ -546,12 +557,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }
   },
-  avatarText: { color: '#fff', fontSize: responsiveFontSize(22), fontWeight: '900' },
-  profileGreeting: { color: '#89C2D9', fontSize: responsiveFontSize(13), fontWeight: '700', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
-  profileName: { color: '#fff', fontSize: responsiveFontSize(20), fontWeight: '900', letterSpacing: 0.3 },
+  avatarText: { color: '#fff', fontSize: responsiveFontSize(22), flexShrink: 1, fontWeight: '900' },
+  profileGreeting: { color: '#89C2D9', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  profileName: { color: '#fff', fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '900', letterSpacing: 0.3 },
   statusRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 6, borderWidth: 1.5, borderColor: 'rgba(16, 185, 129, 0.3)' },
-  statusText: { color: '#10b981', fontSize: responsiveFontSize(11), fontWeight: '700' },
+  statusText: { color: '#10b981', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
   closeBtn: {
     width: 32,
     height: 32,
@@ -578,10 +589,10 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center' },
   icon: { marginRight: moderateScale(15) },
-  text: { color: '#fff', fontSize: responsiveFontSize(15), fontWeight: '500' },
+  text: { color: '#fff', fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '500' },
   subMenu: { backgroundColor: '#0a1629', paddingBottom: verticalScale(10) },
   subItem: { padding: moderateScale(10), paddingLeft: moderateScale(55) },
-  subText: { color: '#89C2D9', fontSize: responsiveFontSize(13) },
+  subText: { color: '#89C2D9', fontSize: responsiveFontSize(13), flexShrink: 1, },
   activeSubText: { color: '#fff', fontWeight: 'bold' },
   footer: {
     padding: moderateScale(20),
@@ -597,5 +608,5 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(8),
     justifyContent: 'center'
   },
-  logoutText: { color: '#fca5a5', fontSize: responsiveFontSize(16), fontWeight: 'bold' }
+  logoutText: { color: '#fca5a5', fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold' }
 });

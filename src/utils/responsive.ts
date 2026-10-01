@@ -1,6 +1,16 @@
 import { Dimensions, PixelRatio, Platform } from 'react-native';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+let SCREEN_WIDTH = 375;
+let SCREEN_HEIGHT = 812;
+try {
+  const dims = Dimensions.get('window');
+  if (dims && typeof dims.width === 'number') {
+    SCREEN_WIDTH = dims.width;
+    SCREEN_HEIGHT = dims.height;
+  }
+} catch (_) {
+  // Runtime not ready — use safe defaults
+}
 
 // Standard mobile device size (iPhone 11 as a baseline)
 const guidelineBaseWidth = 375;

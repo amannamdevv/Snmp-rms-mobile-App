@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+{% block body %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root {
+    --background-light: #c5d4eeff;
+    --background-dark: linear-gradient(180deg, #141f34 0%, #101c2c 100%);
+    --card-light: #fff;
+    --card-dark: #141f34;
+    --card-text-light: #233344;
+    --card-text-dark: #d5d9e4;
+    --card-border-light: #e4e8ef;
+    --card-border-dark: #364665;
+    --box-shadow-light: 0 2px 8px rgba(22, 36, 59, 0.2);
+    --box-shadow-dark: 0 2px 8px rgba(10, 24, 48, 0.12);
+    --chart-box-light: #fff;
+    --chart-box-dark: #18243a;
+    --chart-border-light: #e4e8ef;
+    --chart-border-dark: #364665;
+    --non-comm-red: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.sidebar:hover ~ .main-content {
+    margin-left: 250px;
+    width: calc(100vw - 250px);
+}
+
+body { background: var(--background-light); font-family: Arial, sans-serif; color: #333; }
+body.dark-mode { background: var(--background-dark); }
+
+.main-content {
+    margin-left: 72px;
+    margin-top: 56px;
+    width: 100%;
+    max-width: calc(100vw - 72px);
+    transition: margin-left .3s;
+    min-height: calc(100vh - 56px);
+    background: var(--background-light);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+body.dark-mode .main-content { background: var(--background-dark); }
+
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { font-size: 2rem; font-weight: bold; color: #000; }
+body.dark-mode .header h1 { color: #fff; }
+.header p { color: #6b7280; }
+body.dark-mode .header p { color: #9ca3af; }
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.main-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media(min-width: 1024px) { .main-grid { grid-template-columns: 1fr 1fr; } }
+
+.card {
+    background: var(--card-light);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+body.dark-mode .card { background: var(--card-dark); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+
+.card-header { padding: 24px 24px 0; border-bottom: 1px solid var(--card-border-light); margin-bottom: 24px; }
+body.dark-mode .card-header { border-bottom: 1px solid var(--card-border-dark); }
+
+.card-title { font-size: 1.25rem; font-weight: 600; color: #000; display: flex; align-items: center; gap: 8px; }
+body.dark-mode .card-title { color: #fff; }
+
+.card-content { padding: 24px; }
+.card-content h3 { font-size: 0.875rem; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+body.dark-mode .card-content h3 { color: #9ca3af; }
+
+.status-count { font-size: 2.5rem; font-weight: bold; color: #000; }
+body.dark-mode .status-count { color: #fff; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 14px; font-weight: 500; color: #000; margin-bottom: 6px; }
+body.dark-mode .form-label { color: #fff; }
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--card-border-light);
+    border-radius: 6px;
+    color: #000;
+    font-size: 14px;
+    background-color: var(--card-light);
+    transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+}
+body.dark-mode .form-input,
+body.dark-mode .form-select,
+body.dark-mode .form-textarea {
+    border: 1px solid var(--card-border-dark);
+    color: #fff;
+    background-color: var(--card-dark);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #3b82f6; }
+.form-textarea { min-height: 80px; resize: vertical; }
+.form-option { background-color: var(--card-light); color: #000; }
+body.dark-mode .form-option { background-color: var(--card-dark); color: #fff; }
+
+.btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color 0.2s; }
+.btn-primary { background-color: #3b82f6; color: white; width: 100%; padding: 12px; }
+.btn-primary:hover { background-color: #2563eb; }
+.btn-primary:disabled { background-color: #93c5fd; cursor: not-allowed; }
+
+.table-container { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--card-border-light); }
+body.dark-mode .table th, body.dark-mode .table td { border-bottom: 1px solid var(--card-border-dark); }
+.table th { font-weight: 600; color: #000; background-color: transparent; }
+body.dark-mode .table th { color: #fff; }
+.table td { color: #000; }
+body.dark-mode .table td { color: #d5d9e4; background-color: #141f34; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; border: 1px solid; }
+.badge.open { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+body.dark-mode .badge.open { background: rgba(239,68,68,0.2); color: #fca5a5; border-color: #ef4444; }
+.badge.progress { background: #fefce8; color: #a16207; border-color: #fde68a; }
+body.dark-mode .badge.progress { background: rgba(251,191,36,0.2); color: #fde047; border-color: #fbbf24; }
+.badge.closed { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+body.dark-mode .badge.closed { background: rgba(34,197,94,0.2); color: #86efac; border-color: #22c55e; }
+
+.file-selected { margin-top: 8px; font-size: 12px; color: #3b82f6; }
+body.dark-mode .file-selected { color: #60a5fa; }
+.file-selected.hidden { display: none; }
+
+.toast {
+    position: fixed;
+    top: 72px;
+    right: 24px;
+    z-index: 9999;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    max-width: 360px;
+}
+.toast.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.toast.error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+body.dark-mode .toast.success { background: rgba(34,197,94,0.15); color: #86efac; border-color: #22c55e; }
+body.dark-mode .toast.error   { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: #ef4444; }
+</style>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<div class="main-content">
+  <!-- Header -->
+  <div class="header">
+    <h1>TT Tool - Trouble Ticket Management</h1>
+    <p>Manage and track trouble tickets for your RMS sites</p>
+  </div>
+
+  <!-- Quick Status Overview -->
+  <div class="status-grid">
+    <div class="card">
+      <div class="card-content">
+        <h3>Open Tickets</h3>
+        <div class="status-count" id="openCount">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-content">
+        <h3>In Progress</h3>
+        <div class="status-count" id="progressCount">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-content">
+        <h3>Closed</h3>
+        <div class="status-count" id="closedCount">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Raise New TT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ri-ticket-line"></i> Raise New TT</div>
+      </div>
+      <div class="card-content">
+        <div id="ttForm">
+          <div class="form-group">
+            <label class="form-label" for="siteId">Site ID / Name *</label>
+            <input type="text" id="siteId" class="form-input" placeholder="Enter site ID or name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="category">Issue Category *</label>
+            <select id="category" class="form-select">
+              <option class="form-option" value="">Select issue category</option>
+              <option class="form-option" value="Infra">Infrastructure</option>
+              <option class="form-option" value="Power">Power</option>
+              <option class="form-option" value="DG">DG (Diesel Generator)</option>
+              <option class="form-option" value="AC">Alternating Current</option>
+              <option class="form-option" value="Battery">Battery</option>
+              <option class="form-option" value="Safety">Safety</option>
+              <option class="form-option" value="Others">Others</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="description">Issue Description *</label>
+            <textarea id="description" class="form-textarea" placeholder="Describe the issue in detail"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="priority">Priority *</label>
+            <select id="priority" class="form-select">
+              <option class="form-option" value="">Select priority level</option>
+              <option class="form-option" value="Critical">Critical</option>
+              <option class="form-option" value="Major">Major</option>
+              <option class="form-option" value="Minor">Minor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="file">Attach Photo/File</label>
+            <input type="file" id="file" class="form-input" accept="image/*,.pdf,.doc,.docx">
+            <div id="fileSelected" class="file-selected hidden"></div>
+          </div>
+          <button type="button" id="submitBtn" class="btn btn-primary" onclick="submitTicket()">Submit Ticket</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Tickets -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ri-coupon-line"></i> My Tickets</div>
+      </div>
+      <div class="card-content">
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>TT No</th>
+                <th>Site ID</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Raised On</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsTableBody">
+              <tr><td colspan="5">Loading tickets...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = '/api/tt_tools/';   // ← single source of truth for the API
+
+// ─── CSRF Helper ──────────────────────────────────────────────────────────────
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        document.cookie.split(';').forEach(cookie => {
+            const c = cookie.trim();
+            if (c.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(c.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+
+// ─── Render Tickets Table ─────────────────────────────────────────────────────
+function renderTickets(tickets) {
+    const tbody = document.getElementById('ticketsTableBody');
+    if (!tickets || tickets.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No tickets found</td></tr>';
+        return;
+    }
+    tbody.innerHTML = tickets.map(t => {
+        const statusClass = t.status.toLowerCase() === 'in progress' ? 'progress' : t.status.toLowerCase();
+        return `
+            <tr>
+                <td><strong>${t.id}</strong></td>
+                <td>${t.site_id}</td>
+                <td>${t.issue_category}</td>
+                <td><span class="badge ${statusClass}">${t.status}</span></td>
+                <td>${t.raised_date}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ─── GET  /api/tt_tools/ ──────────────────────────────────────────────────────
+async function loadPageData() {
+    try {
+        const res = await fetch(API_URL, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('openCount').textContent     = data.open_count;
+            document.getElementById('progressCount').textContent = data.progress_count;
+            document.getElementById('closedCount').textContent   = data.closed_count;
+            renderTickets(data.tickets);
+        }
+    } catch (err) {
+        console.error('Failed to load page data:', err);
+        document.getElementById('ticketsTableBody').innerHTML =
+            '<tr><td colspan="5">Failed to load tickets.</td></tr>';
+    }
+}
+
+// ─── POST  /api/tt_tools/ ─────────────────────────────────────────────────────
+async function submitTicket() {
+    const siteId      = document.getElementById('siteId').value.trim();
+    const category    = document.getElementById('category').value;
+    const description = document.getElementById('description').value.trim();
+    const priority    = document.getElementById('priority').value;
+    const fileInput   = document.getElementById('file');
+
+    if (!siteId || !category || !description || !priority) {
+        showToast('⚠ Please fill all required fields.', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('siteId',       siteId);
+    formData.append('category',     category);
+    formData.append('description',  description);
+    formData.append('priority',     priority);
+    if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken':       getCookie('csrftoken'),
+                'X-Requested-With':  'XMLHttpRequest',
+            },
+            body: formData,
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Reset form
+            document.getElementById('siteId').value      = '';
+            document.getElementById('category').value    = '';
+            document.getElementById('description').value = '';
+            document.getElementById('priority').value    = '';
+            fileInput.value = '';
+            document.getElementById('fileSelected').classList.add('hidden');
+            // Refresh table + counts
+            loadPageData();
+        } else {
+            showToast(data.error || 'Submission failed.', 'error');
+        }
+    } catch (err) {
+        console.error('Submit error:', err);
+        showToast('Something went wrong. Please try again.', 'error');
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Submit Ticket';
+    }
+}
+
+// ─── File Input Handler ───────────────────────────────────────────────────────
+document.getElementById('file').addEventListener('change', function () {
+    const fileSelected = document.getElementById('fileSelected');
+    if (this.files && this.files[0]) {
+        fileSelected.textContent = `Selected: ${this.files[0].name}`;
+        fileSelected.classList.remove('hidden');
+    } else {
+        fileSelected.classList.add('hidden');
+    }
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    loadPageData();
+    document.addEventListener('themeChanged', function (e) {
+        console.log('Theme changed to:', e.detail.theme);
+    });
+});
+</script>
+
+{% endblock body %}

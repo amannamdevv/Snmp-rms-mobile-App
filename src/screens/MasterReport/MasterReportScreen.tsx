@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     ActivityIndicator, Dimensions, RefreshControl, Platform, Modal, TextInput, Linking, Alert
@@ -13,11 +13,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import FilterModal from '../../components/FilterModal';
 import GlobalFilterBanner from '../../components/GlobalFilterBanner';
 import { useGlobalFilter } from '../../context/FilterContext';
-import { moderateScale, responsiveFontSize, verticalScale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
-const screenWidth = Dimensions.get('window').width;
+let screenWidth = 375;
+try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') screenWidth = _d.width; } catch(_) {}
 
 export default function MasterReport({ navigation }: any) {
     const { globalFilters, setGlobalFilters } = useGlobalFilter();
@@ -144,37 +145,39 @@ export default function MasterReport({ navigation }: any) {
                 <View style={styles.cardHeader}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.siteName}>{item.site_name}</Text>
-                        <Text style={styles.siteId}>Global ID: {item.global_id || '—'} | ID: {item.site_id}</Text>
+                        <Text style={styles.siteId}>
+                            <Text style={{ color: '#334155', fontWeight: 'bold' }}>Global ID: {item.global_id || '—'}</Text>
+                            {'  |  '}Site ID: {item.site_id}
+                        </Text>
+                        <Text style={[styles.siteId, { marginTop: 4 }]}>
+                            <Text style={{ color: '#334155', fontWeight: 'bold' }}>IMEI: {item.imei || '—'}</Text>
+                        </Text>
                     </View>
                     <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
                 </View>
 
                 <View style={styles.summaryRow}>
                     <View style={styles.summaryItem}>
-                        <Text style={styles.summaryLabel}>Mains R/Y/B</Text>
-                        <Text style={styles.summaryValue}>{item.mains_r}/{item.mains_y}/{item.mains_b}</Text>
-                    </View>
-                    <View style={styles.summaryItem}>
-                        <Text style={styles.summaryLabel}>DG R/Y/B</Text>
-                        <Text style={styles.summaryValue}>{item.dg_r}/{item.dg_y}/{item.dg_b}</Text>
-                    </View>
-                    <View style={styles.summaryItem}>
                         <Text style={styles.summaryLabel}>Batt Volt</Text>
                         <Text style={[styles.summaryValue, { color: '#2ecc71' }]}>{item.bts_volt}V</Text>
+                    </View>
+                    <View style={[styles.summaryItem, { flex: 1.5 }]}>
+                        <Text style={styles.summaryLabel}>Updated At</Text>
+                        <Text style={styles.summaryValue}>{item.updated_time ? new Date(item.updated_time).toLocaleString() : '-'}</Text>
                     </View>
                 </View>
 
                 <View style={styles.durationRow}>
                     <View style={styles.durBox}>
-                        <Icon name="zap" size={10} color="#3498db" />
+                        <Icon name="zap" size={14} color="#3498db" />
                         <Text style={styles.durText}>Mains: {item.mains_duration}</Text>
                     </View>
                     <View style={styles.durBox}>
-                        <Icon name="activity" size={10} color="#e67e22" />
+                        <Icon name="activity" size={14} color="#e67e22" />
                         <Text style={styles.durText}>DG: {item.dg_duration}</Text>
                     </View>
                     <View style={styles.durBox}>
-                        <Icon name="battery" size={10} color="#2ecc71" />
+                        <Icon name="battery" size={14} color="#2ecc71" />
                         <Text style={styles.durText}>Batt: {item.bts_duration}</Text>
                     </View>
                 </View>
@@ -184,13 +187,24 @@ export default function MasterReport({ navigation }: any) {
                         <View style={styles.divider} />
 
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>IMEI:</Text>
-                            <Text style={styles.detailValue}>{item.imei}</Text>
+                            <Text style={styles.detailLabel}>Mains R/Y/B:</Text>
+                            <Text style={styles.detailValue}>{item.mains_r}/{item.mains_y}/{item.mains_b}</Text>
                         </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>DG R/Y/B:</Text>
+                            <Text style={styles.detailValue}>{item.dg_r}/{item.dg_y}/{item.dg_b}</Text>
+                        </View>
+
                         <View style={styles.detailRow}>
                             <Text style={styles.detailLabel}>Active Alarms:</Text>
                             <Text style={[styles.detailValue, { color: item.active_alarms_count > 0 ? '#e74c3c' : '#2ecc71' }]}>
                                 {item.active_alarms_count || 0} ({item.active_alarms || 'None'})
+                            </Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Active Alarm Start:</Text>
+                            <Text style={styles.detailValueSmall}>
+                                {item.active_alarm_start_time ? new Date(item.active_alarm_start_time).toLocaleString() : '-'}
                             </Text>
                         </View>
                         <View style={styles.detailRow}>
@@ -206,10 +220,6 @@ export default function MasterReport({ navigation }: any) {
                         <View style={styles.detailRow}>
                             <Text style={styles.detailLabel}>Volt Start/End:</Text>
                             <Text style={styles.detailValue}>{item.start_volt || '-'} / {item.end_volt || '-'}</Text>
-                        </View>
-                        <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Updated At:</Text>
-                            <Text style={styles.detailValue}>{item.updated_time ? new Date(item.updated_time).toLocaleString() : '-'}</Text>
                         </View>
 
                         <Text style={styles.sectionTitle}>System Settings</Text>
@@ -376,59 +386,59 @@ export default function MasterReport({ navigation }: any) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },
-    countBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(20), marginTop: verticalScale(15), gap: 10 },
-    countText: { fontSize: responsiveFontSize(10), fontWeight: '800', color: '#64748b', letterSpacing: 0.5 },
+    countBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(20), marginTop: verticalScale(15), gap: moderateScale(10) },
+    countText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#64748b', letterSpacing: 0.5 },
     countLine: { flex: 1, height: 1, backgroundColor: '#cbd5e1' },
     headerStats: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: moderateScale(15), backgroundColor: '#fff', marginHorizontal: moderateScale(15), marginTop: moderateScale(15), borderRadius: moderateScale(15), elevation: 3 },
     searchContainer: { paddingHorizontal: moderateScale(15), marginTop: moderateScale(15) },
     searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: moderateScale(12), paddingHorizontal: moderateScale(12), height: moderateScale(45), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: verticalScale(2) }, shadowOpacity: 0.1, shadowRadius: 4 },
     searchIcon: { marginRight: moderateScale(8) },
-    searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', paddingVertical: verticalScale(0) },
+    searchInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', paddingVertical: verticalScale(0) },
     statBox: { backgroundColor: '#f1f5f9', paddingHorizontal: moderateScale(15), paddingVertical: moderateScale(8), borderRadius: moderateScale(12) },
-    inlineFilterBar: { flexDirection: 'row', gap: 10, padding: moderateScale(12), backgroundColor: '#fff', marginHorizontal: moderateScale(15), marginTop: verticalScale(15), borderRadius: 15, alignItems: 'flex-end', elevation: 3 },
+    inlineFilterBar: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10), padding: moderateScale(12), backgroundColor: '#fff', marginHorizontal: moderateScale(15), marginTop: verticalScale(15), borderRadius: 15, alignItems: 'flex-end', elevation: 3 },
     filterGroup: { gap: 4 },
-    filterLabel: { fontSize: responsiveFontSize(9), fontWeight: '800', color: '#64748b', textTransform: 'uppercase' },
+    filterLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#64748b', textTransform: 'uppercase' },
     datePickerBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: moderateScale(10), height: verticalScale(40), gap: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-    datePickerText: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#1e3c72' },
+    datePickerText: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
     gIdInputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, paddingHorizontal: moderateScale(10), height: verticalScale(40), borderWidth: 1, borderColor: '#e2e8f0' },
-    gIdInput: { flex: 1, fontSize: responsiveFontSize(13), fontWeight: '600', color: '#1e3c72', height: '100%', padding: moderateScale(0) },
+    gIdInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '600', color: '#1e3c72', height: '100%', padding: moderateScale(0) },
     searchIconButton: { width: moderateScale(40), height: verticalScale(40), backgroundColor: '#1e3c72', borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-    statVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), fontWeight: 'bold' },
-    statLab: { color: '#64748b', fontSize: responsiveFontSize(10), textTransform: 'uppercase' },
+    statVal: { color: '#1e3c72', fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold' },
+    statLab: { color: '#64748b', fontSize: responsiveFontSize(11), flexShrink: 1, textTransform: 'uppercase' },
     listContainer: { padding: moderateScale(15) },
     reportCard: { backgroundColor: '#fff', borderRadius: moderateScale(15), padding: moderateScale(15), marginBottom: moderateScale(15), elevation: 3, borderLeftWidth: 5, borderLeftColor: '#3498db' },
     alarmCard: { borderLeftColor: '#e74c3c', backgroundColor: '#fff5f5' },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: moderateScale(12) },
-    siteName: { fontSize: responsiveFontSize(15), fontWeight: '900', color: '#1e293b' },
-    siteId: { fontSize: responsiveFontSize(11), color: '#64748b', marginTop: moderateScale(2) },
+    siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '900', color: '#1e293b' },
+    siteId: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', marginTop: moderateScale(2) },
 
-    summaryRow: { flexDirection: 'row', gap: moderateScale(15), marginBottom: moderateScale(12) },
-    summaryItem: { flex: 1 },
-    summaryLabel: { fontSize: responsiveFontSize(9), color: '#94a3b8', textTransform: 'uppercase' },
-    summaryValue: { fontSize: responsiveFontSize(13), fontWeight: 'bold', color: '#1e293b' },
+    summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10), marginBottom: moderateScale(12) },
+    summaryItem: { width: '30%', minWidth: 90 },
+    summaryLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase' },
+    summaryValue: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold', color: '#1e293b', marginTop: 2 },
 
-    durationRow: { flexDirection: 'row', gap: moderateScale(10), backgroundColor: '#f8fafc', padding: moderateScale(8), borderRadius: moderateScale(8) },
-    durBox: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(4) },
-    durText: { fontSize: responsiveFontSize(10), color: '#475569', fontWeight: 'bold' },
+    durationRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: moderateScale(10), backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: moderateScale(8) },
+    durBox: { flexDirection: 'row', alignItems: 'center', gap: moderateScale(6) },
+    durText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#475569', fontWeight: 'bold' },
 
     expandedContent: { marginTop: moderateScale(15) },
     divider: { height: 1, backgroundColor: '#e2e8f0', marginBottom: moderateScale(15) },
-    detailRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: moderateScale(8) },
-    detailLabel: { fontSize: responsiveFontSize(12), color: '#64748b' },
-    detailValue: { fontSize: responsiveFontSize(12), color: '#1e293b', fontWeight: 'bold', flex: 1, textAlign: 'right', marginLeft: moderateScale(10) },
-    detailValueSmall: { fontSize: responsiveFontSize(10), color: '#1e293b', fontWeight: 'bold', flex: 1, textAlign: 'right', marginLeft: moderateScale(10) },
+    detailRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: moderateScale(8), flexWrap: 'wrap' },
+    detailLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b' },
+    detailValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: 'bold', flex: 1, textAlign: 'right', marginLeft: moderateScale(10) },
+    detailValueSmall: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#1e293b', fontWeight: 'bold', flex: 1, textAlign: 'right', marginLeft: moderateScale(10) },
 
-    sectionTitle: { fontSize: responsiveFontSize(12), fontWeight: 'bold', color: '#1e3c72', marginTop: moderateScale(15), marginBottom: moderateScale(10), textTransform: 'uppercase' },
-    settingsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(10) },
-    settingItem: { width: '47%', backgroundColor: '#f1f5f9', padding: moderateScale(8), borderRadius: moderateScale(8) },
-    settingLabel: { fontSize: responsiveFontSize(9), color: '#64748b', textTransform: 'uppercase' },
-    settingValue: { fontSize: responsiveFontSize(12), fontWeight: 'bold', color: '#1e293b' },
+    sectionTitle: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72', marginTop: moderateScale(15), marginBottom: moderateScale(10), textTransform: 'uppercase' },
+    settingsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: moderateScale(10) },
+    settingItem: { width: '47%', backgroundColor: '#f1f5f9', padding: moderateScale(10), borderRadius: moderateScale(8) },
+    settingLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', textTransform: 'uppercase' },
+    settingValue: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: 'bold', color: '#1e293b', marginTop: 2 },
 
     pagination: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: moderateScale(30), paddingVertical: moderateScale(10) },
     pageBtn: { width: moderateScale(40), height: moderateScale(40), backgroundColor: '#fff', borderRadius: moderateScale(20), justifyContent: 'center', alignItems: 'center', elevation: 2 },
-    pageInfo: { fontSize: responsiveFontSize(14), color: '#64748b', fontWeight: 'bold' },
+    pageInfo: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#64748b', fontWeight: 'bold' },
 
     noData: { alignItems: 'center', marginTop: moderateScale(50) },
-    noDataText: { color: '#64748b', fontSize: responsiveFontSize(14), marginTop: moderateScale(10) }
+    noDataText: { color: '#64748b', fontSize: responsiveFontSize(14), flexShrink: 1, marginTop: moderateScale(10) }
 });
 

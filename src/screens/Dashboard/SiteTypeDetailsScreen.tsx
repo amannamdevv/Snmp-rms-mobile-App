@@ -9,7 +9,7 @@ import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
-import { moderateScale, responsiveFontSize, verticalScale, scale } from '../../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SiteTypeDetails'>;
 
@@ -274,21 +274,21 @@ const styles = StyleSheet.create({
   categoryBar: { backgroundColor: '#fff', paddingVertical: verticalScale(12), borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
   catPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(14), paddingVertical: verticalScale(8), borderRadius: 20, backgroundColor: '#f1f5f9', marginHorizontal: moderateScale(5), borderWidth: 1, borderColor: '#e2e8f0' },
   catPillActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  catLabel: { fontSize: responsiveFontSize(12), fontWeight: '700', color: '#64748b' },
+  catLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b' },
   catLabelActive: { color: '#fff' },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: moderateScale(16), marginTop: verticalScale(12), paddingHorizontal: moderateScale(12), borderRadius: 12, height: verticalScale(48), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-  searchInput: { flex: 1, fontSize: responsiveFontSize(14), color: '#1e293b', padding: moderateScale(0), fontWeight: '500' },
+  searchInput: { flex: 1, fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', padding: moderateScale(0), fontWeight: '500' },
   card: { backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, marginBottom: verticalScale(12), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(4) },
-  siteName: { fontSize: responsiveFontSize(15), fontWeight: '700', color: '#1e3c72', flex: 1 },
+  siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72', flex: 1 },
   badge: { backgroundColor: '#e2e8f0', paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 12 },
-  badgeText: { fontSize: responsiveFontSize(10), fontWeight: '700', color: '#1e3c72' },
-  subIdText: { fontSize: responsiveFontSize(12), color: '#64748b', marginBottom: verticalScale(8) },
+  badgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+  subIdText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', marginBottom: verticalScale(8) },
   divider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: verticalScale(10) },
   infoRow: { flexDirection: 'row' },
   infoCol: { flex: 1 },
-  infoLabel: { fontSize: responsiveFontSize(10), color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  infoValue: { fontSize: responsiveFontSize(13), fontWeight: '700', color: '#334155' },
+  infoLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#334155' },
   empty: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { color: '#94a3b8', marginTop: verticalScale(12), fontSize: responsiveFontSize(16), fontWeight: '600' }
+  emptyText: { color: '#94a3b8', marginTop: verticalScale(12), fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '600' }
 });

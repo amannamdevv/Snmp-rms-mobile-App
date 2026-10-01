@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useGlobalFilter } from '../context/FilterContext';
-import { moderateScale, verticalScale, responsiveFontSize } from '../utils/responsive';
+import { responsiveFontSize, moderateScale, verticalScale } from '../utils/responsive';
 
 const GlobalFilterBanner = () => {
   const { hasActiveFilters, getFilterLabel, clearGlobalFilters, activeFilterCount } = useGlobalFilter();
@@ -37,8 +37,7 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    fontSize: responsiveFontSize(11),
-    color: '#e0e7ff',
+    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#e0e7ff',
     fontWeight: '500',
   },
   badge: {
@@ -48,8 +47,7 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(1),
   },
   badgeText: {
-    fontSize: responsiveFontSize(10),
-    color: '#fff',
+    fontSize: responsiveFontSize(10), flexShrink: 1, color: '#fff',
     fontWeight: '700',
   },
   clearBtn: {
@@ -62,8 +60,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   clearText: {
-    fontSize: responsiveFontSize(10),
-    color: '#fff',
+    fontSize: responsiveFontSize(10), flexShrink: 1, color: '#fff',
     fontWeight: '700',
   },
 });
