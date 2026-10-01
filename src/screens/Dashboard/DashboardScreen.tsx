@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -50,6 +52,8 @@ export default function DashboardScreen({ navigation }: Props) {
     no_data: 0,
   });
 
+  const { globalFilters } = useGlobalFilter();
+
   useEffect(() => {
     const loadName = async () => {
       const storedName = await AsyncStorage.getItem('user_fullname');
@@ -59,22 +63,27 @@ export default function DashboardScreen({ navigation }: Props) {
   }, []);
 
   useFocusEffect(
-    useCallback(() => { fetchDashboardData(); }, [])
+    useCallback(() => { fetchDashboardData(); }, [JSON.stringify(globalFilters)])
   );
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      // Build ctmids-compatible filters for StatusAPIView-based APIs
+      const f = { ...globalFilters } as any;
+      const fCtmids = { ...f };
+      if (fCtmids.customer_id) { fCtmids.ctmids = fCtmids.customer_id; delete fCtmids.customer_id; }
+
       let results = await Promise.all([
-        api.getSiteHealth({}, 1, 1).then(r => r ? r.kpi_data || r : null).catch((e) => { console.log('Err getSiteHealth fallback', e); return null; }),
-        api.getBatteryVitalsCounts({}).catch((e) => { console.log('Err getBatteryVitalsCounts', e); return null; }),
-        api.getAutomationStatus({}).catch((e) => { console.log('Err getAutomationStatus', e); return null; }),
-        api.getUptimeSummary({}).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
-        api.getSiteDistributionCounts({}).catch((e) => { console.log('Err getSiteDistributionCounts', e); return null; }),
-        api.getDgPresence({}).catch((e) => { console.log('Err getDgPresence', e); return null; }),
-        api.getEbPresence({}).catch((e) => { console.log('Err getEbPresence', e); return null; }),
-        api.getBatteryHealthAnalytics({}).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
-        api.getNonCommAging({}).catch((e) => { console.log('Err getNonCommAging', e); return null; }),
+        api.getSiteHealth(f, 1, 1).then(r => r ? r.kpi_data || r : null).catch((e) => { console.log('Err getSiteHealth fallback', e); return null; }),
+        api.getBatteryVitalsCounts(fCtmids).catch((e) => { console.log('Err getBatteryVitalsCounts', e); return null; }),
+        api.getAutomationStatus(fCtmids).catch((e) => { console.log('Err getAutomationStatus', e); return null; }),
+        api.getUptimeSummary(f).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
+        api.getSiteDistributionCounts(fCtmids).catch((e) => { console.log('Err getSiteDistributionCounts', e); return null; }),
+        api.getDgPresence(fCtmids).catch((e) => { console.log('Err getDgPresence', e); return null; }),
+        api.getEbPresence(fCtmids).catch((e) => { console.log('Err getEbPresence', e); return null; }),
+        api.getBatteryHealthAnalytics(f).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
+        api.getNonCommAging(fCtmids).catch((e) => { console.log('Err getNonCommAging', e); return null; }),
       ]);
 
       const [healthRes, vitalsRes, autoRes, uptimeRes, distRes, dgRes, ebRes, batteryRes, nonCommRes] = results;
@@ -178,6 +187,7 @@ export default function DashboardScreen({ navigation }: Props) {
       <Sidebar isVisible={isSidebarVisible} onClose={() => setSidebarVisible(false)} navigation={navigation} fullname={fullname} handleLogout={async () => { await AsyncStorage.removeItem('user_fullname'); await logoutApi(); navigation.replace('Login'); }} activeRoute="Dashboard" />
       <SafeAreaView style={styles.container}>
         <AppHeader title="DASHBOARD" leftAction="menu" onLeftPress={() => setSidebarVisible(true)} />
+        
 
         <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDashboardData(); }} />}>
 

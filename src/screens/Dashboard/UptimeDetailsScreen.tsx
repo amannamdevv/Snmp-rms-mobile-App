@@ -7,6 +7,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../api';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -40,6 +42,7 @@ export default function UptimeDetailsScreen({ route, navigation }: any) {
     const [refreshing, setRefreshing] = useState(false);
     const [filter, setFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const { globalFilters } = useGlobalFilter();
 
     const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
     const [endDate, setEndDate] = useState(new Date());
@@ -49,7 +52,7 @@ export default function UptimeDetailsScreen({ route, navigation }: any) {
 
     useEffect(() => {
         fetchUptime();
-    }, [state_id]);
+    }, [state_id, JSON.stringify(globalFilters)]);
 
     const formatDate = (date: Date) => {
         return date.toISOString().split('T')[0];
@@ -61,7 +64,8 @@ export default function UptimeDetailsScreen({ route, navigation }: any) {
             const params = {
                 state_id: state_id,
                 start_date: formatDate(startDate),
-                end_date: formatDate(endDate)
+                end_date: formatDate(endDate),
+                ...globalFilters
             };
             const res = await api.getUptimeDetails(params);
 

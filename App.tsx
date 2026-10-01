@@ -1,5 +1,8 @@
 import { FilterProvider } from './src/context/FilterContext';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
+import NetworkHandler from './src/components/NetworkHandler';
+import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -80,7 +83,21 @@ import { RootStackParamList } from './src/types/navigation';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const inAppUpdates = new SpInAppUpdates(false);
+      inAppUpdates.checkNeedsUpdate().then((result) => {
+        if (result.shouldUpdate) {
+          inAppUpdates.startUpdate({
+            updateType: IAUUpdateKind.FLEXIBLE,
+          }).catch(console.log);
+        }
+      }).catch(console.log);
+    }
+  }, []);
+
   return (
+    <NetworkHandler>
     <FilterProvider>
       <SafeAreaProvider>
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
@@ -147,5 +164,6 @@ export default function App() {
       </NavigationContainer>
     </SafeAreaProvider>
     </FilterProvider>
+    </NetworkHandler>
   );
 }

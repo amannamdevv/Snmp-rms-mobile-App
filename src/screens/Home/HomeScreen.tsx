@@ -7,6 +7,8 @@ import Sidebar from '../../components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 
 // ✅ Import shared utils — same logic as LiveAlarmsScreen
@@ -53,12 +55,13 @@ export default function HomeScreen({ navigation, route }: any) {
 
     const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { globalFilters } = useGlobalFilter();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchDashboardData();
     setRefreshing(false);
-  }, []);
+  }, [globalFilters]);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
 
   // ── Fullname ──────────────────────────────────────────────────
@@ -80,7 +83,7 @@ export default function HomeScreen({ navigation, route }: any) {
   useFocusEffect(
     useCallback(() => {
       fetchDashboardData();
-    }, [])
+    }, [JSON.stringify(globalFilters)])
   );
 
   // ── Fetch ─────────────────────────────────────────────────────
@@ -88,11 +91,11 @@ export default function HomeScreen({ navigation, route }: any) {
     setLoading(true);
     try {
       const [siteRes, runningRes, offlineRes, smpsRes, rmsRes, batteryRes] = await Promise.all([
-        api.getSiteStatus({}).catch(() => null),
-        api.getSiteRunningStatus({}).catch(() => null),
-        api.getNonCommAging({}).catch(() => null),
-        api.getSmpsAlarms({}).catch(() => []),
-        api.getRmsAlarms({}).catch(() => []),
+        api.getSiteStatus(globalFilters).catch(() => null),
+        api.getSiteRunningStatus(globalFilters).catch(() => null),
+        api.getNonCommAging(globalFilters).catch(() => null),
+        api.getSmpsAlarms(globalFilters).catch(() => []),
+        api.getRmsAlarms(globalFilters).catch(() => []),
       ]);
 
       // ── Site KPI ──
@@ -169,6 +172,7 @@ export default function HomeScreen({ navigation, route }: any) {
           leftAction="menu"
           onLeftPress={() => setSidebarVisible(true)}
         />
+        
         <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}>
 
           {/* 1. Site Status */}

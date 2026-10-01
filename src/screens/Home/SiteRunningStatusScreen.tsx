@@ -271,17 +271,12 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: gFilterCount > 0 },
+          
         ]}
       />
 
-      <GlobalFilterBanner />
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        onApply={(f: Record<string, string>) => setActiveFilters(f)}
-        initialFilters={activeFilters}
-      />
+      
+      
 
         <View style={styles.kpiContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.kpiScrollContainer}>

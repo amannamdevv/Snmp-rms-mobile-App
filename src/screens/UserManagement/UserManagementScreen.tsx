@@ -274,6 +274,7 @@ const UserManagementScreen = ({ navigation }: any) => {
         <AppHeader
           title="User Management"
           leftAction="menu" onLeftPress={() => setSidebarVisible(true)}
+          hideGlobalFilter={true}
         />
         <Sidebar
           isVisible={isSidebarVisible}

@@ -1,3 +1,4 @@
+import { useGlobalFilter } from '../../context/FilterContext';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -198,8 +199,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
         <AppHeader
           title="SNMP RMS"
           leftAction="menu" onLeftPress={() => setSidebarVisible(true)}
-          
-          
+          hideGlobalFilter={true}
         />
 
         <Sidebar

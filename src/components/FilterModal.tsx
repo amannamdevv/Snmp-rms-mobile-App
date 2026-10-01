@@ -133,6 +133,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
   const [selectedClusterName, setSelectedClusterName] = useState(initialFilters?.cluster_name || '');
 
   const [selectedClient, setSelectedClient] = useState(initialFilters?.customer_id || '');
+  const [selectedClientName, setSelectedClientName] = useState((initialFilters as any)?.customer_name || '');
 
   const [searchBy, setSearchBy] = useState(initialFilters?.search_type || 'imei');
   const [searchValue, setSearchValue] = useState(
@@ -254,6 +255,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
       cluster_id: selectedCluster,
       cluster_name: selectedClusterName,
       customer_id: selectedClient,
+      customer_name: selectedClientName,
       date_from: fromDate ? formatDate(fromDate) : '',
       date_to: toDate ? formatDate(toDate) : '',
       search_type: searchValue ? searchBy : '',
@@ -269,7 +271,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
     setSelectedDistrict(''); setSelectedDistrictName('');
     setSelectedCluster(''); setSelectedClusterName('');
     setDistricts([]); setClusters([]);
-    setSelectedClient('');
+    setSelectedClient(''); setSelectedClientName('');
     setFromDate(null); setToDate(null);
     setSearchBy('imei');
     setSearchValue('');
@@ -351,7 +353,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
               label="Client Name"
               value={selectedClient}
               options={clients}
-              onSelect={(id) => setSelectedClient(id)}
+              onSelect={(id, name) => { setSelectedClient(id); setSelectedClientName(name); }}
               placeholder="All"
             />
 

@@ -132,6 +132,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
         subtitle="REPORT ISSUES INSTANTLY"
         leftAction="menu"
         onLeftPress={() => setSidebarVisible(true)}
+        hideGlobalFilter={true}
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

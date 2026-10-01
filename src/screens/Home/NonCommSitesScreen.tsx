@@ -306,17 +306,12 @@ export default function NonCommSitesScreen({ navigation }: Props) {
           onLeftPress={() => navigation.goBack()}
           rightActions={[
             { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-            { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+            
           ]}
         />
 
-        <GlobalFilterBanner />
-      <FilterModal
-          visible={filterModalVisible}
-          onClose={() => setFilterModalVisible(false)}
-          onApply={(f: Record<string, string>) => setActiveFilters(f)}
-          initialFilters={activeFilters}
-        />
+        
+      
 
         {/* ── Aging Buckets ────────────────────────────────────────────────────── */}
         {buckets && (

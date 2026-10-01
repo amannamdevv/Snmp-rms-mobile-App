@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalFilter } from '../../context/FilterContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
@@ -22,6 +23,7 @@ export default function UptimeSiteDetails({ route, navigation }: any) {
     const [sites, setSites] = useState<any[]>([]);
     const [filteredSites, setFilteredSites] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const { globalFilters } = useGlobalFilter();
     
     // Date Filters
     const [startDate, setStartDate] = useState(new Date(initialStart || Date.now() - 30 * 24 * 60 * 60 * 1000));
@@ -40,7 +42,7 @@ export default function UptimeSiteDetails({ route, navigation }: any) {
 
     useEffect(() => {
         fetchSiteDetails();
-    }, [state_id]);
+    }, [state_id, JSON.stringify(globalFilters)]);
 
     const fetchSiteDetails = async () => {
         setLoading(true);
@@ -49,8 +51,7 @@ export default function UptimeSiteDetails({ route, navigation }: any) {
             const formattedEnd = endDate.toISOString().split('T')[0];
 
             // Get active filters from storage
-            const savedFilters = await AsyncStorage.getItem('persistentFilters');
-            const filters = savedFilters ? JSON.parse(savedFilters) : {};
+            const filters = globalFilters;
             
             const res = await api.getSiteWiseUptime({
                 ...filters,

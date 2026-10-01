@@ -14,6 +14,7 @@ import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
@@ -210,6 +211,7 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
     const [selMonth, setSelMonth] = useState((today.getMonth() + 1).toString().padStart(2, '0'));
     const [showFromPicker, setShowFromPicker] = useState(false);
     const [showToPicker, setShowToPicker] = useState(false);
+    const { globalFilters } = useGlobalFilter();
 
     const setMonthRange = (year: string, month: string) => {
         const y = parseInt(year);
@@ -227,7 +229,7 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
     const fetchData = useCallback(async (isRefresh = false) => {
         if (!isRefresh) setLoading(true);
         try {
-            const res = await (api as any).getDCEMAnalytics({ date_from: fromDate, date_to: toDate });
+            const res = await (api as any).getDCEMAnalytics({ ...globalFilters, date_from: fromDate, date_to: toDate });
             setData(res);
         } catch (e) {
             console.log('DCEM Analytics error:', e);
@@ -235,9 +237,9 @@ export default function DCEMAnalyticsScreen({ navigation }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [fromDate, toDate]);
+    }, [fromDate, toDate, JSON.stringify(globalFilters)]);
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); }, [JSON.stringify(globalFilters)]);
 
     const onRefresh = () => { setRefreshing(true); fetchData(true); };
 

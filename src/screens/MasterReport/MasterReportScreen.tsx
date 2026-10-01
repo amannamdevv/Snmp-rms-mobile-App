@@ -256,7 +256,7 @@ export default function MasterReport({ navigation }: any) {
                     onLeftPress={() => setSidebarVisible(true)}
                     rightActions={[
                         { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                        { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+                        
                     ]}
                 />
 
@@ -320,13 +320,8 @@ export default function MasterReport({ navigation }: any) {
                 </View>
             </View>
 
-            <GlobalFilterBanner />
-      <FilterModal
-                visible={filterModalVisible}
-                onClose={() => setFilterModalVisible(false)}
-                onApply={handleApplyFilters}
-                initialFilters={activeFilters}
-            />
+            
+      
 
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.countBar}>

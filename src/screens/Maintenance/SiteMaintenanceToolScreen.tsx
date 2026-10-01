@@ -1,3 +1,4 @@
+import { useGlobalFilter } from '../../context/FilterContext';
 /**
  * SiteMaintenanceToolScreen.tsx
  *
@@ -233,6 +234,8 @@ const QS = StyleSheet.create({
 
 // ─── MAIN ─────────────────────────────────────────────────────
 export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
+  const { globalFilters } = useGlobalFilter();
+
 
     const initialTab: TabKey = (route?.params?.initialTab as TabKey) || 'infra';
 
@@ -335,6 +338,7 @@ export default function SiteMaintenanceToolScreen({ navigation, route }: any) {
                 subtitle={TAB_INFO[activeTab].label}
                 leftAction="menu"
                 onLeftPress={() => setSidebarVisible(true)}
+                hideGlobalFilter={true}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleShare }
                 ]}

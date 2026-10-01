@@ -87,7 +87,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const labelKeys = ['state_name', 'district_name', 'cluster_name'];
+  const labelKeys = ['state_name', 'district_name', 'cluster_name', 'customer_name', 'search_type'];
   const activeFilterCount = Object.keys(globalFilters).filter(
     k => !labelKeys.includes(k)
   ).length;
@@ -96,11 +96,14 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
 
   const getFilterLabel = (): string => {
     const parts: string[] = [];
+    if ((globalFilters as any).customer_name) parts.push('Client: ' + (globalFilters as any).customer_name);
     if (globalFilters.state_name) parts.push(String(globalFilters.state_name));
     if (globalFilters.district_name) parts.push(String(globalFilters.district_name));
     if (globalFilters.cluster_name) parts.push(String(globalFilters.cluster_name));
     if (globalFilters.site_name) parts.push(String(globalFilters.site_name));
     if (globalFilters.imei) parts.push('IMEI: ' + globalFilters.imei);
+    if ((globalFilters as any).global_id) parts.push('Global ID: ' + (globalFilters as any).global_id);
+    if ((globalFilters as any).site_id) parts.push('Site ID: ' + (globalFilters as any).site_id);
     if (parts.length === 0 && hasActiveFilters) return 'Filters Active';
     return parts.join(' > ');
   };

@@ -111,16 +111,11 @@ export default function SiteDistributionScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+          
         ]}
       />
 
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        onApply={setActiveFilters}
-        initialFilters={activeFilters}
-      />
+      
 
       {loading || !counts ? (
         <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />

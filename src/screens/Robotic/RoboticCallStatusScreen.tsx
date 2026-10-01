@@ -1,3 +1,4 @@
+import { useGlobalFilter } from '../../context/FilterContext';
 import React, { useEffect, useState, useCallback } from 'react';
 import { 
   View, 
@@ -45,7 +46,7 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activeFilters, setActiveFilters] = useState<any>({});
+  const { globalFilters } = useGlobalFilter();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [fullname, setFullname] = useState('Administrator');
@@ -67,7 +68,7 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
         status: statusFilter, 
         page: pageNum, 
         limit: 20,
-        ...activeFilters 
+        ...globalFilters 
       });
 
       if (res && res.status === 'success') {
@@ -90,11 +91,11 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [statusFilter, activeFilters, loading]);
+  }, [statusFilter, globalFilters, loading]);
 
   useEffect(() => {
     fetchData(1, true);
-  }, [statusFilter, activeFilters]);
+  }, [statusFilter, globalFilters]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -120,7 +121,7 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
           page: currentPage, 
           page_size: 500, // Try 500 but expect cap at backend limit (e.g. 200)
           limit: 500, 
-          ...activeFilters 
+          ...globalFilters 
         };
         
         const res = await api.getRoboticCalls(exportParams);
@@ -274,19 +275,11 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
         onLeftPress={() => setSidebarVisible(true)}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true) }
+          
         ]}
       />
 
-      <FilterModal 
-        visible={filterModalVisible} 
-        onClose={() => setFilterModalVisible(false)} 
-        onApply={(filters) => {
-          setActiveFilters(filters);
-          setFilterModalVisible(false);
-        }}
-        initialFilters={activeFilters}
-      />
+      
 
       <View style={styles.kpiWrapper}>
         <ScrollView 

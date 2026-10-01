@@ -5,6 +5,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -41,7 +43,7 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [statusFilter, setStatusFilter] = useState(route.params?.status || 'all');
-  const [activeFilters, setActiveFilters] = useState({});
+  const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Sync status if changes from navigation
@@ -53,8 +55,10 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
 
   // Jab bhi filters ya tab badlein, list aur counts dono fetch karein
   useEffect(() => {
-    onRefresh();
-  }, [statusFilter, activeFilters]);
+    // Clear list to avoid duplicates during fast switching
+    setData([]);
+    fetchData(1, true);
+  }, [statusFilter, JSON.stringify(globalFilters)]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -66,11 +70,24 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
     if (loading && !isRefresh) return;
     setLoading(true);
     try {
-      const res = await api.getSiteHealth({ status: statusFilter, ...activeFilters }, pageNum, 20);
+      // getSiteHealth uses customer_id directly
+      const reqFilters = { ...globalFilters };
+      if (statusFilter !== 'all') {
+         reqFilters.status = statusFilter;
+      }
+      
+      const res = await api.getSiteHealth(reqFilters, pageNum, 20);
       
       if (res && res.sites) {
-        if (isRefresh) setData(res.sites);
-        else setData(prev => [...prev, ...res.sites]);
+        if (isRefresh) {
+            setData(res.sites);
+        } else {
+            setData(prev => {
+                const existingIds = new Set(prev.map(s => s.imei || s.site_id));
+                const newSites = res.sites.filter((s: any) => !existingIds.has(s.imei || s.site_id));
+                return [...prev, ...newSites];
+            });
+        }
 
         if (res.kpi_data) {
           setCounts({
@@ -94,7 +111,7 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
     setExporting(true);
     try {
       // Fetch larger set for export (Download All)
-      const res = await api.getSiteHealth({ status: statusFilter, ...activeFilters }, 1, 10000);
+      const res = await api.getSiteHealth({ status: statusFilter, ...globalFilters }, 1, 10000);
       if (res && res.sites) {
         if (res.sites.length === 0) {
           Alert.alert("No Data", "There is no data to export with the current filters.");
@@ -211,11 +228,11 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+          
         ]}
       />
-
-      <FilterModal visible={filterModalVisible} onClose={() => setFilterModalVisible(false)} onApply={setActiveFilters} initialFilters={activeFilters} />
+      
+      
 
       {/* Range Filters / Tabs */}
       <View style={styles.filterBar}>

@@ -250,11 +250,11 @@ export default function SolarAnalyticsScreen({ navigation }: any) {
                     leftAction="menu"
                     onLeftPress={() => setSidebarVisible(true)}
                     rightActions={[
-                        { icon: 'sliders', onPress: () => setFilterVisible(true) }
+                        
                     ]}
                 />
                 
-                <GlobalFilterBanner />
+                
 
                 <View style={styles.tabContainer}>
                     <TouchableOpacity 
@@ -310,15 +310,7 @@ export default function SolarAnalyticsScreen({ navigation }: any) {
                     />
                 )}
                 
-                <FilterModal
-                    visible={filterVisible}
-                    onClose={() => setFilterVisible(false)}
-                    initialFilters={globalFilters}
-                    onApply={(f) => {
-                        setGlobalFilters(f);
-                        setFilterVisible(false);
-                    }}
-                />
+                
                 <Sidebar
                     isVisible={sidebarVisible}
                     onClose={() => setSidebarVisible(false)}

@@ -10,6 +10,8 @@ import * as Animatable from 'react-native-animatable';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
@@ -39,7 +41,7 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
     const [exporting, setExporting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [reportData, setReportData] = useState<any[]>([]);
-    const [activeFilters, setActiveFilters] = useState({});
+    const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [summary, setSummary] = useState<any>(null);
     const [isSidebarVisible, setSidebarVisible] = useState(false);
@@ -90,12 +92,12 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
 
     useEffect(() => {
         fetchReport();
-    }, [activeFilters]);
+    }, [JSON.stringify(globalFilters)]);
 
     const fetchReport = async () => {
         if (!refreshing) setLoading(true);
         try {
-            const res = await api.getUptimeSummary(activeFilters);
+            const res = await api.getUptimeSummary(globalFilters);
             if (res && res.status === 'success') {
                 setReportData(res.state_report || []);
                 setSummary(res.summary);
@@ -168,18 +170,13 @@ export default function UptimeReportScreen({ navigation }: NativeStackScreenProp
                 onLeftPress={() => navigation.goBack()}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+                    
                 ]}
             />
             
+            
 
-
-            <FilterModal 
-                visible={filterModalVisible} 
-                onClose={() => setFilterModalVisible(false)} 
-                onApply={(f) => setActiveFilters(f)} 
-                initialFilters={activeFilters} 
-            />
+            
             
             {summary && (
                 <Animatable.View animation="fadeIn" style={styles.summaryBox}>

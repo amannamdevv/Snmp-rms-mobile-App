@@ -12,6 +12,7 @@ import Sidebar from '../../components/Sidebar';
 import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
@@ -338,6 +339,7 @@ export default function DCEMMonthlyReportScreen({ navigation, route }: any) {
     const [isSidebarVisible, setSidebarVisible] = useState(false);
     const [fullname, setFullname] = useState('Administrator');
     const [searchQuery, setSearchQuery] = useState('');
+    const { globalFilters } = useGlobalFilter();
 
     useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
@@ -348,6 +350,7 @@ export default function DCEMMonthlyReportScreen({ navigation, route }: any) {
         if (!isRefresh) setLoading(true);
         try {
             const res = await (api as any).getDCEMMonthlyReport({
+                ...globalFilters,
                 imei: imei.trim(),
                 year: parseInt(year),
                 month: parseInt(month),
@@ -359,12 +362,12 @@ export default function DCEMMonthlyReportScreen({ navigation, route }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [imei, year, month]);
+    }, [imei, year, month, JSON.stringify(globalFilters)]);
 
     // Auto-fetch if imei passed from navigation
     useEffect(() => {
         if (passedImei) fetchReport();
-    }, []);
+    }, [JSON.stringify(globalFilters)]);
 
     const onRefresh = () => { setRefreshing(true); fetchReport(true); };
 

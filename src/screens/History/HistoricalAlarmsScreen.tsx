@@ -328,7 +328,7 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'filter', onPress: () => setFilterVisible(true) },
+                    
                 ]}
             />
 
@@ -401,16 +401,7 @@ export default function HistoricalAlarmsScreen({ navigation }: any) {
                 />
             )}
 
-            <FilterModal
-                visible={filterVisible}
-                onClose={() => setFilterVisible(false)}
-                initialFilters={globalFilters}
-                onApply={(f) => {
-                    setGlobalFilters(f);
-                    setFilterVisible(false);
-                    onApply();
-                }}
-            />
+            
 
             
 

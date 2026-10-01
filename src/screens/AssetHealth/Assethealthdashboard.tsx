@@ -678,13 +678,18 @@ export default function AssetHealthScreen({ navigation, route }: any) {
             setTabLoading(prev => ({ ...prev, [tabKey]: false }));
             if (isRefresh) setRefreshing(false);
         }
-    }, []);
+    }, [globalFilters]);
 
     useEffect(() => {
         if (!tabData[activeTab] && !tabLoading[activeTab]) {
             fetchTab(activeTab);
         }
     }, [activeTab]);
+
+    useEffect(() => {
+        setTabData({});
+        fetchTab(activeTab);
+    }, [JSON.stringify(globalFilters)]);
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -730,11 +735,11 @@ export default function AssetHealthScreen({ navigation, route }: any) {
                     leftAction="menu"
                     onLeftPress={() => setSidebarVisible(true)}
                     rightActions={[
-                        { icon: 'sliders', onPress: () => setFilterVisible(true) },
+                        
                     ]}
                 />
 
-                <GlobalFilterBanner />
+                
 
                 <View style={MS.tabBar}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}
@@ -783,16 +788,7 @@ export default function AssetHealthScreen({ navigation, route }: any) {
                     {renderScreen()}
                 </View>
 
-                <FilterModal
-                    visible={filterVisible}
-                    onClose={() => setFilterVisible(false)}
-                    initialFilters={globalFilters}
-                    onApply={(f) => {
-                        setGlobalFilters(f);
-                        setFilterVisible(false);
-                        setTabData({}); // clear data to force reload
-                    }}
-                />
+                
                 <Sidebar
                     isVisible={isSidebarVisible}
                     onClose={() => setSidebarVisible(false)}

@@ -240,11 +240,11 @@ export default function PMAnalyticsScreen({ navigation, route }: any) {
                     leftAction="menu"
                     onLeftPress={() => setSidebarVisible(true)}
                     rightActions={[
-                        { icon: 'sliders', onPress: () => setFilterVisible(true) }
+                        
                     ]}
                 />
                 
-                <GlobalFilterBanner />
+                
 
                 {/* Horizontal Tabs */}
                 <View style={styles.tabsWrapper}>
@@ -276,15 +276,7 @@ export default function PMAnalyticsScreen({ navigation, route }: any) {
                     
                 </ScrollView>
 
-                <FilterModal
-                    visible={filterVisible}
-                    onClose={() => setFilterVisible(false)}
-                    initialFilters={globalFilters}
-                    onApply={(f) => {
-                        setGlobalFilters(f);
-                        setFilterVisible(false);
-                    }}
-                />
+                
                 <Sidebar
                     isVisible={sidebarVisible}
                     onClose={() => setSidebarVisible(false)}

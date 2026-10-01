@@ -5,6 +5,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../types/navigation';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -38,7 +40,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [localFilters, setLocalFilters] = useState(filters || {});
+  const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [counts, setCounts] = useState<any>(null);
@@ -59,7 +61,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
   useEffect(() => {
     fetchData();
     fetchCounts();
-  }, [activeType, localFilters]);
+  }, [activeType, JSON.stringify(globalFilters)]);
 
   useEffect(() => {
     if (route.params?.siteType) {
@@ -71,9 +73,9 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
   const fetchCounts = async () => {
     try {
       const [distRes, dgRes, ebRes] = await Promise.all([
-        api.getSiteDistributionCounts(localFilters),
-        api.getDgPresence(localFilters),
-        api.getEbPresence(localFilters)
+        api.getSiteDistributionCounts(globalFilters),
+        api.getDgPresence(globalFilters),
+        api.getEbPresence(globalFilters)
       ]);
       
       let merged: any = {};
@@ -97,7 +99,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.getSitesByType(activeType, localFilters);
+      const res = await api.getSitesByType(activeType, globalFilters);
       if (res && res.status === 'success' && res.data) {
         setData(res.data);
       } else if (Array.isArray(res)) {
@@ -117,7 +119,7 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const res = await api.getSitesByType(activeType, localFilters, 1, 10000);
+      const res = await api.getSitesByType(activeType, globalFilters, 1, 10000);
       const sitesToExport = (res && res.status === 'success') ? res.data : (Array.isArray(res) ? res : []);
       if (sitesToExport.length === 0) {
         Alert.alert("No Data", "Nothing to export.");
@@ -197,16 +199,12 @@ export default function SiteTypeDetailsScreen({ route, navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(localFilters).length > 0 },
+          
         ]}
       />
+      
 
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        onApply={(f: any) => { setLocalFilters(f); setFilterModalVisible(false); }}
-        initialFilters={localFilters}
-      />
+      
 
       <View style={styles.categoryBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: moderateScale(12) }}>

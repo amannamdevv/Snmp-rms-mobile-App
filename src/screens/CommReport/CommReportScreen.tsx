@@ -205,7 +205,7 @@ export default function CommReportScreen({ navigation }: Props) {
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'filter', onPress: () => setFilterModalVisible(true) },
+                    
                 ]}
             />
 
@@ -304,8 +304,8 @@ export default function CommReportScreen({ navigation }: Props) {
                 )}
                 <View style={{ height: verticalScale(40) }} />
             </ScrollView>
-            <GlobalFilterBanner />
-      <FilterModal visible={filterModalVisible} onClose={() => setFilterModalVisible(false)} onApply={f => { setActiveFilters(f); setFilterModalVisible(false); }} initialFilters={activeFilters} />
+            
+      
             <Sidebar
                 isVisible={isSidebarVisible}
                 onClose={() => setSidebarVisible(false)}

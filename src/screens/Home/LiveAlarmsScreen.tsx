@@ -313,24 +313,12 @@ export default function LiveAlarmsScreen({ route, navigation }: Props) {
                     onLeftPress={() => navigation.goBack()}
                     rightActions={[
                         { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                        {
-                            icon: 'filter',
-                            onPress: () => setFilterModalVisible(true),
-                            badge: gFilterCount > 0,
-                        },
+                        
                     ]}
                 />
 
-                <GlobalFilterBanner />
-      <FilterModal
-                    visible={filterModalVisible}
-                    onClose={() => setFilterModalVisible(false)}
-                    onApply={f => {
-                        setActiveFilters(f);
-                        setFilterModalVisible(false);
-                    }}
-                    initialFilters={activeFilters}
-                />
+                
+      
 
 
 

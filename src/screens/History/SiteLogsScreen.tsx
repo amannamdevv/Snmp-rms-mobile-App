@@ -270,7 +270,7 @@ export default function SiteLogsScreen({ navigation }: any) {
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleShare },
-                    { icon: 'filter', onPress: () => setFilterVisible(true) },
+                    
                 ]}
             />
 
@@ -366,16 +366,7 @@ export default function SiteLogsScreen({ navigation }: any) {
                 />
             )}
 
-            <FilterModal
-                visible={filterVisible}
-                onClose={() => setFilterVisible(false)}
-                initialFilters={globalFilters}
-                onApply={(f) => {
-                    setGlobalFilters(f);
-                    setFilterVisible(false);
-                    onApply();
-                }}
-            />
+            
 
             <Sidebar
                 isVisible={isSidebarVisible}

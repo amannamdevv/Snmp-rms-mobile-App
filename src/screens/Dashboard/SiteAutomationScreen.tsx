@@ -8,6 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -41,7 +43,7 @@ export default function SiteAutomationScreen({ navigation }: any) {
     const [exporting, setExporting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [statusFilter, setStatusFilter] = useState('all');
-    const [activeFilters, setActiveFilters] = useState({});
+    const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -49,7 +51,7 @@ export default function SiteAutomationScreen({ navigation }: any) {
     useEffect(() => {
         fetchAutomationData();
         fetchSummary();
-    }, [statusFilter, activeFilters]);
+    }, [statusFilter, JSON.stringify(globalFilters)]);
 
     const filteredData = useMemo(() => {
         if (!searchQuery) return data;
@@ -64,7 +66,7 @@ export default function SiteAutomationScreen({ navigation }: any) {
 
     const fetchSummary = async () => {
         try {
-            const res = await api.getAutomationStatus(activeFilters);
+            const res = await api.getAutomationStatus(globalFilters);
             if (res) setSummary(res.status === 'success' ? res.data : res);
         } catch (e) { console.log("Summary Fetch Error", e); }
     };
@@ -72,7 +74,11 @@ export default function SiteAutomationScreen({ navigation }: any) {
     const fetchAutomationData = async () => {
         if (!refreshing) setLoading(true);
         try {
-            const res = await api.getAutomationDetails({ status: statusFilter, ...activeFilters });
+            const reqFilters = { ...globalFilters };
+            if (statusFilter !== 'all') {
+                reqFilters.status = statusFilter;
+            }
+            const res = await api.getAutomationDetails(reqFilters);
             if (res && res.status === 'success') {
                 setData(res.data);
             }
@@ -88,7 +94,11 @@ export default function SiteAutomationScreen({ navigation }: any) {
         setExporting(true);
         try {
             // Fetch comprehensive set for export
-            const res = await api.getAutomationDetails({ status: statusFilter, ...activeFilters }, 1, 10000);
+            const reqFilters = { ...globalFilters };
+            if (statusFilter !== 'all') {
+                reqFilters.status = statusFilter;
+            }
+            const res = await api.getAutomationDetails(reqFilters, 1, 10000);
             const exportData = (res && res.status === 'success') ? res.data : [];
 
             if (exportData.length === 0) {
@@ -224,16 +234,12 @@ export default function SiteAutomationScreen({ navigation }: any) {
                     onLeftPress={() => navigation.goBack()}
                     rightActions={[
                         { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                        { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+                        
                     ]}
                 />
+                
 
-                <FilterModal
-                    visible={filterModalVisible}
-                    onClose={() => setFilterModalVisible(false)}
-                    onApply={(f) => setActiveFilters(f)}
-                    initialFilters={activeFilters}
-                />
+                
 
                 <View style={styles.statusFilterContainer}>
                     {[

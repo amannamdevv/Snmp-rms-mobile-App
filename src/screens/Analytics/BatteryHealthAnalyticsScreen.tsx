@@ -12,6 +12,9 @@ import AppIcon from '../../components/AppIcon';
 import Icon from 'react-native-vector-icons/Feather';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import FilterModal from '../../components/FilterModal';
+import { useGlobalFilter } from '../../context/FilterContext';
 
 let screenWidth = 375;
 try { const _d = Dimensions.get('window'); if (_d && typeof _d.width === 'number') screenWidth = _d.width; } catch(_) {}
@@ -58,15 +61,17 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
     const [isFilterModalVisible, setFilterModalVisible] = useState(false);
     const [pendingBatteryFilter, setPendingBatteryFilter] = useState('all');
 
+    const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
+
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [JSON.stringify(globalFilters)]);
 
     // ── Fetch ────────────────────────────────────────────────────
     const fetchData = async (isRefresh = false) => {
         if (!isRefresh) setLoading(true);
         try {
-            const res = await api.getBatteryHealthReport({});
+            const res = await api.getBatteryHealthReport({ ...globalFilters });
             if (res && res.sites) {
                 setSitesData(res.sites);
             }
@@ -501,9 +506,12 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                                 { text: 'Cancel', style: 'cancel' },
                             ]
                         ),
-                    }
+                    },
+                    
                 ]}
             />
+            
+            
 
             <View style={styles.filterBar}>
                 <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>

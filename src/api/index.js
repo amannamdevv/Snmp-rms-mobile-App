@@ -46,6 +46,36 @@ const attachDjangoAuth = async (config) => {
       // Some server configurations might also look for this header
       config.headers['X-Requested-With'] = 'XMLHttpRequest';
 
+      // Clean up UI-only query params so Django doesn't throw 500 errors on certain endpoints
+      if (config.params) {
+        const p = { ...config.params };
+        
+        // Some endpoints crash (500) if they receive state_name or customer_name
+        // Others (like /api/alarms/) require them. Delete conditionally.
+        const urlStr = config.url || '';
+        if (urlStr.includes('site-health') || urlStr.includes('grid-analytics')) {
+            delete p.state_name;
+            delete p.district_name;
+            delete p.cluster_name;
+            delete p.customer_name;
+            delete p.search_type;
+        }
+
+        // Ensure ctmids, client_id, and client are populated if customer_id exists
+        if (p.customer_id) {
+          p.ctmids = p.ctmids || p.customer_id;
+          p.client_id = p.client_id || p.customer_id;
+          p.client = p.client || p.customer_id;
+        }
+        
+        // Alias state_id, district_id, cluster_id just in case some APIs expect state, district, cluster
+        if (p.state_id) p.state = p.state || p.state_id;
+        if (p.district_id) p.district = p.district || p.district_id;
+        if (p.cluster_id) p.cluster = p.cluster || p.cluster_id;
+        
+        config.params = p;
+      }
+
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - sessionid attached`);
     } else {
       console.log('[API Request] WARNING: No djangoSession found in AsyncStorage!');

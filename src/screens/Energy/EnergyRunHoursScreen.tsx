@@ -297,11 +297,11 @@ export default function EnergyRunHoursScreen({ navigation }: any) {
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'sliders', onPress: () => setFilterVisible(true) },
+                    
                 ]}
             />
             
-            <GlobalFilterBanner />
+            
 
             {/* Section Filter Tabs */}
             <View style={styles.tabBar}>
@@ -487,17 +487,7 @@ export default function EnergyRunHoursScreen({ navigation }: any) {
 
 
             {/* Filter Modal */}
-            <FilterModal
-                visible={filterVisible}
-                onClose={() => setFilterVisible(false)}
-                initialFilters={globalFilters}
-                onApply={(f) => {
-                    setGlobalFilters(f);
-                    setFilterVisible(false);
-                    setData(null);
-                    fetchData(false, f);
-                }}
-            />
+            
 
             <Sidebar
                 isVisible={isSidebarVisible}

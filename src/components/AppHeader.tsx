@@ -5,6 +5,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { responsiveFontSize, moderateScale, scale, verticalScale } from '../utils/responsive';
+import FilterModal from './FilterModal';
+import GlobalFilterBanner from './GlobalFilterBanner';
+import { useGlobalFilter } from '../context/FilterContext';
 
 /** Fixed brand color used across all headers */
 export const HEADER_BG = '#1e3c72';
@@ -19,6 +22,7 @@ interface AppHeaderProps {
   onLeftPress?: () => void;
   /** Right-side icon buttons [{icon, onPress}] */
   rightActions?: Array<{ icon: string; onPress: () => void; badge?: boolean }>;
+  hideGlobalFilter?: boolean;
 }
 
 export default function AppHeader({
@@ -27,9 +31,24 @@ export default function AppHeader({
   leftAction = 'back',
   onLeftPress,
   rightActions = [],
+  hideGlobalFilter = false,
 }: AppHeaderProps) {
+  const [filterModalVisible, setFilterModalVisible] = React.useState(false);
+  const { globalFilters, setGlobalFilters, activeFilterCount } = useGlobalFilter();
+
+  const finalRightActions = [...rightActions].filter(a => a.icon !== 'download' && a.icon !== 'loader');
+  const hasFilter = finalRightActions.some(a => a.icon === 'filter');
+  if (!hasFilter && !hideGlobalFilter) {
+    finalRightActions.push({
+      icon: 'filter',
+      onPress: () => setFilterModalVisible(true),
+      badge: activeFilterCount > 0
+    });
+  }
+
   return (
-    <View style={styles.header}>
+    <>
+      <View style={styles.header}>
       {/* Left button */}
       <TouchableOpacity
         onPress={onLeftPress}
@@ -51,8 +70,8 @@ export default function AppHeader({
 
       {/* Right buttons */}
       <View style={styles.rightWrap}>
-        {rightActions.length > 0 ? (
-          rightActions.map((a, idx) => (
+        {finalRightActions.length > 0 ? (
+          finalRightActions.map((a, idx) => (
             <TouchableOpacity
               key={idx}
               onPress={a.onPress}
@@ -69,6 +88,16 @@ export default function AppHeader({
         )}
       </View>
     </View>
+    {!hideGlobalFilter && <GlobalFilterBanner />}
+    {!hideGlobalFilter && (
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onApply={(f: any) => { setGlobalFilters(f); setFilterModalVisible(false); }}
+        initialFilters={globalFilters}
+      />
+    )}
+    </>
   );
 }
 
@@ -125,4 +154,6 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
 });
+
+
 

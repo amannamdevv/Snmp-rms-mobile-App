@@ -10,6 +10,7 @@ import AppHeader from '../../components/AppHeader';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import Sidebar from '../../components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalFilter } from '../../context/FilterContext';
 import AppIcon from '../../components/AppIcon';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -36,6 +37,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
 
     // Chart Data
     const [chartData, setChartData] = useState<any>(null);
+    const { globalFilters } = useGlobalFilter();
 
     useEffect(() => {
         const loadUser = async () => {
@@ -44,7 +46,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
         };
         loadUser();
         fetchDashboardData();
-    }, [activeTab, startDate, endDate, season, groupBy]);
+    }, [activeTab, startDate, endDate, season, groupBy, JSON.stringify(globalFilters)]);
 
     // Handle deep link / sidebar navigation
     useEffect(() => {
@@ -58,6 +60,7 @@ export default function UptimeDashboard({ navigation, route }: any) {
             const formattedEnd = endDate.toISOString().split('T')[0];
             
             const filters = {
+                ...globalFilters,
                 start_date: formattedStart,
                 end_date: formattedEnd,
                 season: season !== 'All' ? season : undefined,
@@ -67,19 +70,21 @@ export default function UptimeDashboard({ navigation, route }: any) {
             const [compRes, trendRes] = await Promise.all([
                 api.getSlaCompliance(filters),
                 api.getUptimeComparison({ 
+                    ...globalFilters,
                     current_start: filters.start_date, 
                     current_end: filters.end_date 
                 })
             ]);
 
-            if (compRes.status === 'success') {
+            if (compRes) {
+                const cData = compRes.data || compRes;
                 setKpis({
-                    total: compRes.data.total_sites,
-                    met: compRes.data.sites_meeting_sla,
-                    failed: compRes.data.sites_failing_sla,
-                    compliance: compRes.data.compliance_percent,
-                    change: (trendRes.status === 'success') ? trendRes.comparison.uptime_change : 0,
-                    trend: (trendRes.status === 'success') ? trendRes.comparison.trend : 'neutral'
+                    total: cData.total_sites || 0,
+                    met: cData.sites_meeting_sla || 0,
+                    failed: cData.sites_failing_sla || 0,
+                    compliance: cData.compliance_percent || 0,
+                    change: (trendRes?.comparison) ? trendRes.comparison.uptime_change : 0,
+                    trend: (trendRes?.comparison) ? trendRes.comparison.trend : 'neutral'
                 });
             }
 

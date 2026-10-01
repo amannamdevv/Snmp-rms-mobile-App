@@ -1,3 +1,4 @@
+import { useGlobalFilter } from '../../context/FilterContext';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
@@ -211,6 +212,8 @@ function SiteCard({ item }: { item: Site }) {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ResourceMappingScreen({ navigation }: any) {
+  const { globalFilters } = useGlobalFilter();
+
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [summary, setSummary] = useState<SummaryData | null>(null);
@@ -234,14 +237,12 @@ export default function ResourceMappingScreen({ navigation }: any) {
       if (name) setFullname(name);
     };
     loadUser();
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const filters: any = {};
+      const filters: any = { ...globalFilters };
       if (siteName) filters.site_name = siteName;
       if (siteId) filters.site_id = siteId;
       if (globalId) filters.global_id = globalId;
@@ -258,7 +259,12 @@ export default function ResourceMappingScreen({ navigation }: any) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [siteName, siteId, globalId, imei, statusFilter]);
+  }, [globalFilters, siteName, siteId, globalId, imei, statusFilter]);
+
+  // Re-fetch when global filters change
+  useEffect(() => {
+    fetchData();
+  }, [JSON.stringify(globalFilters)]);
 
   const handleApply = useCallback(() => {
     setShowFilter(false);
@@ -310,9 +316,10 @@ export default function ResourceMappingScreen({ navigation }: any) {
         title="Mapping of Resources"
         leftAction="menu"
         onLeftPress={() => setSidebarVisible(true)}
+        hideGlobalFilter={true}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          { icon: 'filter', onPress: () => setShowFilter(true), badge: hasActiveFilters },
+          
         ]}
       />
 
@@ -450,16 +457,7 @@ export default function ResourceMappingScreen({ navigation }: any) {
       )}
 
       {/* Filter Modal */}
-      <FilterModal
-        visible={showFilter}
-        onClose={() => setShowFilter(false)}
-        onApply={handleApply}
-        siteName={siteName} setSiteName={setSiteName}
-        siteId={siteId} setSiteId={setSiteId}
-        globalId={globalId} setGlobalId={setGlobalId}
-        imei={imei} setImei={setImei}
-        statusFilter={statusFilter} setStatusFilter={setStatusFilter}
-      />
+      
 
       {/* Sidebar */}
       <Sidebar

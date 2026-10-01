@@ -699,16 +699,198 @@ const TODS = StyleSheet.create({
 });
 
 
+
+// ─── Grid Filter Bar Component (inline, like web) ────────────
+function GridFilterBar({ localFilters, setLocalFilters, states, districts, sites, onStateChange, onApply, onReset }: {
+    localFilters: any;
+    setLocalFilters: (f: any) => void;
+    states: any[];
+    districts: any[];
+    sites: any[];
+    onStateChange: (stateId: string) => void;
+    onApply: () => void;
+    onReset: () => void;
+}) {
+    const [showDateFrom, setShowDateFrom] = React.useState(false);
+    const [showDateTo, setShowDateTo] = React.useState(false);
+
+    const selectedState = states.find((s: any) => String(s.state_id) === String(localFilters.state_id));
+    const selectedDistrict = districts.find((d: any) => String(d.dist_id) === String(localFilters.dist_id));
+    const selectedSite = sites.find((s: any) => String(s.site_id) === String(localFilters.site_id));
+
+    return (
+        <View style={GFB.container}>
+            {/* Row 1: Date From + Date To */}
+            <View style={GFB.row}>
+                <View style={GFB.group}>
+                    <Text style={GFB.label}>DATE FROM</Text>
+                    <TouchableOpacity style={GFB.input} onPress={() => setShowDateFrom(true)} activeOpacity={0.8}>
+                        <Text style={GFB.inputTxt}>{localFilters.date_from || 'Select'}</Text>
+                        <AppIcon name="calendar" size={12} color="#5da3fa" />
+                    </TouchableOpacity>
+                    {showDateFrom && (
+                        <DateTimePicker
+                            value={new Date(localFilters.date_from || Date.now())}
+                            mode="date"
+                            display="calendar"
+                            onChange={(_e: any, d: any) => {
+                                setShowDateFrom(false);
+                                if (d) {
+                                    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+                                    setLocalFilters((p: any) => ({ ...p, date_from: `${y}-${m}-${day}` }));
+                                }
+                            }}
+                        />
+                    )}
+                </View>
+
+                <View style={GFB.group}>
+                    <Text style={GFB.label}>DATE TO</Text>
+                    <TouchableOpacity style={GFB.input} onPress={() => setShowDateTo(true)} activeOpacity={0.8}>
+                        <Text style={GFB.inputTxt}>{localFilters.date_to || 'Select'}</Text>
+                        <AppIcon name="calendar" size={12} color="#5da3fa" />
+                    </TouchableOpacity>
+                    {showDateTo && (
+                        <DateTimePicker
+                            value={new Date(localFilters.date_to || Date.now())}
+                            mode="date"
+                            display="calendar"
+                            onChange={(_e: any, d: any) => {
+                                setShowDateTo(false);
+                                if (d) {
+                                    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+                                    setLocalFilters((p: any) => ({ ...p, date_to: `${y}-${m}-${day}` }));
+                                }
+                            }}
+                        />
+                    )}
+                </View>
+            </View>
+
+            {/* Row 2: State + District */}
+            <View style={GFB.row}>
+                <DropPicker
+                    label="STATE / CIRCLE"
+                    value={localFilters.state_id}
+                    placeholder="All States"
+                    options={states.map((s: any) => ({ label: s.state_name, value: String(s.state_id) }))}
+                    onChange={(v: string) => {
+                        setLocalFilters((p: any) => ({ ...p, state_id: v, dist_id: '', site_id: '' }));
+                        onStateChange(v);
+                    }}
+                />
+                <DropPicker
+                    label="DISTRICT"
+                    value={localFilters.dist_id}
+                    placeholder="All Districts"
+                    options={districts.map((d: any) => ({ label: d.district_name, value: String(d.dist_id) }))}
+                    onChange={(v: string) => setLocalFilters((p: any) => ({ ...p, dist_id: v, site_id: '' }))}
+                />
+            </View>
+
+            {/* Row 3: Site + Technology */}
+            <View style={GFB.row}>
+                <DropPicker
+                    label="SITE"
+                    value={localFilters.site_id}
+                    placeholder="All Sites"
+                    options={sites.map((s: any) => ({ label: `${s.site_name} (${s.site_id})`, value: String(s.site_id) }))}
+                    onChange={(v: string) => setLocalFilters((p: any) => ({ ...p, site_id: v }))}
+                />
+                <DropPicker
+                    label="TECHNOLOGY"
+                    value={localFilters.technology}
+                    placeholder="All"
+                    options={[{ label: '2G', value: '2G' }, { label: '3G', value: '3G' }, { label: '4G', value: '4G' }, { label: '5G', value: '5G' }]}
+                    onChange={(v: string) => setLocalFilters((p: any) => ({ ...p, technology: v }))}
+                />
+            </View>
+
+            {/* Row 4: Apply + Reset + Info */}
+            <View style={[GFB.row, { justifyContent: 'flex-end', alignItems: 'center', gap: moderateScale(8) }]}>
+                {(localFilters.state_id || localFilters.site_id || localFilters.technology) && (
+                    <Text style={GFB.infoTxt} numberOfLines={1}>
+                        {localFilters.date_from} → {localFilters.date_to}{localFilters.site_id ? ` | Site: ${localFilters.site_id}` : ''}
+                    </Text>
+                )}
+                <TouchableOpacity style={GFB.applyBtn} onPress={onApply} activeOpacity={0.85}>
+                    <Text style={GFB.applyTxt}>Apply</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={GFB.resetBtn} onPress={onReset} activeOpacity={0.85}>
+                    <Text style={GFB.resetTxt}>Reset</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+}
+
+const GFB = StyleSheet.create({
+    container: {
+        backgroundColor: '#fff',
+        marginHorizontal: moderateScale(10),
+        marginTop: verticalScale(6),
+        marginBottom: verticalScale(4),
+        borderRadius: 14,
+        padding: moderateScale(12),
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        gap: verticalScale(8),
+    },
+    row: { flexDirection: 'row', gap: moderateScale(8) },
+    group: { flex: 1 },
+    label: {
+        fontSize: responsiveFontSize(9),
+        flexShrink: 1,
+        fontWeight: '800',
+        color: '#5da3fa',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: verticalScale(3),
+    },
+    input: {
+        borderWidth: 1.5,
+        borderColor: '#d0e4f7',
+        borderRadius: 8,
+        paddingHorizontal: moderateScale(10),
+        paddingVertical: verticalScale(7),
+        backgroundColor: '#f5faff',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    inputTxt: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#1c3d5a', fontWeight: '600', flex: 1, marginRight: 4 },
+    applyBtn: {
+        backgroundColor: '#1e3c72',
+        borderRadius: 8,
+        paddingHorizontal: moderateScale(18),
+        paddingVertical: verticalScale(8),
+    },
+    applyTxt: { color: '#fff', fontWeight: '800', fontSize: responsiveFontSize(13), flexShrink: 1 },
+    resetBtn: {
+        borderWidth: 1.5,
+        borderColor: '#5da3fa',
+        borderRadius: 8,
+        paddingHorizontal: moderateScale(14),
+        paddingVertical: verticalScale(8),
+    },
+    resetTxt: { color: '#5da3fa', fontWeight: '700', fontSize: responsiveFontSize(13), flexShrink: 1 },
+    infoTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', flex: 1 },
+});
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────
 const TABS = ['Overview', 'Quality', 'TOD'] as const;
 type TabType = typeof TABS[number];
 
 export default function GridBillingScreen({ navigation }: any) {
+  const [localFilters, setLocalFilters] = useState<any>({ date_from: daysAgoStr(30), date_to: todayStr(), state_id: '', dist_id: '', site_id: '', technology: '' });
+
     const [activeTab, setActiveTab] = useState<TabType>('Overview');
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [filterVisible, setFilterVisible] = useState(false);
     const [isSidebarVisible, setSidebarVisible] = useState(false);
     const [fullname, setFullname] = useState('Administrator');
     const [exporting, setExporting] = useState(false);
@@ -716,7 +898,7 @@ export default function GridBillingScreen({ navigation }: any) {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Filter state
-    const { globalFilters, setGlobalFilters } = useGlobalFilter();
+
 
     // Dropdown options from API response
     const [states, setStates] = useState<any[]>([]);
@@ -725,13 +907,12 @@ export default function GridBillingScreen({ navigation }: any) {
 
     useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
-        fetchData();
     }, []);
 
     const fetchData = useCallback(async (isRefresh = false, customFilters?: any) => {
         if (!isRefresh) setLoading(true);
         setErrorMsg(null);
-        const params = customFilters || globalFilters;
+        const params = customFilters || localFilters;
         try {
             console.log('[GridBilling] Fetching with params:', params);
             const res = await (api as any).getGridAnalytics(params);
@@ -749,9 +930,17 @@ export default function GridBillingScreen({ navigation }: any) {
             }
         } catch (e: any) {
             console.log('GridBilling fetch error:', e);
+            if ((e.response && e.response.status === 404) || (e.message && e.message.includes('404'))) {
+                setData(null);
+                setErrorMsg('No data available for the selected filters.');
+                setLoading(false);
+                setRefreshing(false);
+                return;
+            }
+            
             let msg = e.message || 'Failed to connect to server';
             if (msg.toLowerCase().includes('network error')) {
-                msg = 'Network Error: The data might be too large for this range, or your connection is unstable. Try a shorter date range (e.g., 7 days).';
+                msg = 'Network Error: The data might be too large for this range, or your connection is unstable. Try a shorter date range.';
             } else if (msg.toLowerCase().includes('timeout')) {
                 msg = 'Request Timed Out: The server is taking too long. Please try a smaller date range.';
             }
@@ -760,7 +949,13 @@ export default function GridBillingScreen({ navigation }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [globalFilters]);
+    }, [localFilters]);
+
+    // Initial fetch on mount
+    useEffect(() => {
+        fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onRefresh = () => { setRefreshing(true); fetchData(true); };
 
@@ -812,9 +1007,9 @@ export default function GridBillingScreen({ navigation }: any) {
     };
 
     const filterSummary = [
-        globalFilters.date_from && globalFilters.date_to ? `${globalFilters.date_from} - ${globalFilters.date_to}` : null,
-        globalFilters.technology ? `Tech: ${globalFilters.technology}` : null,
-        globalFilters.site_id ? `Site: ${globalFilters.site_id}` : null,
+        localFilters.date_from && localFilters.date_to ? `${localFilters.date_from} - ${localFilters.date_to}` : null,
+        localFilters.technology ? `Tech: ${localFilters.technology}` : null,
+        localFilters.site_id ? `Site: ${localFilters.site_id}` : null,
     ].filter(Boolean).join('  ·  ');
 
     return (
@@ -822,15 +1017,26 @@ export default function GridBillingScreen({ navigation }: any) {
             <View style={{ flex: 1, alignSelf: 'center', width: '100%', maxWidth: 650 }}>
             <AppHeader
                 title="GRID POWER ANALYTICS"
-                subtitle={filterSummary || undefined}
                 leftAction="menu"
                 onLeftPress={() => setSidebarVisible(true)}
+                hideGlobalFilter={true}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'sliders', onPress: () => setFilterVisible(true) },
                 ]}
             />
 
+
+            {/* ── Grid Filter Bar ── */}
+            <GridFilterBar
+                localFilters={localFilters}
+                setLocalFilters={setLocalFilters}
+                states={states}
+                districts={districts}
+                sites={sites}
+                onStateChange={onStateChange}
+                onApply={() => { setData(null); fetchData(); }}
+                onReset={() => setLocalFilters({ date_from: daysAgoStr(30), date_to: todayStr(), state_id: '', dist_id: '', site_id: '', technology: '' })}
+            />
             <View style={styles.tabBar}>
                 {TABS.map(tab => (
                     <TouchableOpacity
@@ -869,11 +1075,11 @@ export default function GridBillingScreen({ navigation }: any) {
                 </View>
             ) : errorMsg ? (
                 <View style={styles.emptyBox}>
-                    <AppIcon name="alert-triangle" size={40} color="#ef4444" />
-                    <Text style={[styles.emptyTxtMain, { color: '#ef4444' }]}>Error Loading Data</Text>
-                    <Text style={styles.emptyTxtSub}>{errorMsg}</Text>
-                    <TouchableOpacity style={[styles.retryBtn, { backgroundColor: '#ef4444' }]} onPress={() => fetchData()}>
-                        <Text style={styles.retryTxt}>Try Again</Text>
+                    <AppIcon name="slash" size={40} color="#cbd5e1" />
+                    <Text style={styles.emptyTxtMain}>No Data Available</Text>
+                    <Text style={styles.emptyTxtSub}>No data found for the selected filters. Try adjusting your date range or filters.</Text>
+                    <TouchableOpacity style={styles.retryBtn} onPress={() => fetchData()}>
+                        <Text style={styles.retryTxt}>Refresh</Text>
                     </TouchableOpacity>
                 </View>
             ) : !data ? (
@@ -899,16 +1105,7 @@ export default function GridBillingScreen({ navigation }: any) {
                 </View>
             )}
 
-            <FilterModal
-                visible={filterVisible}
-                onClose={() => setFilterVisible(false)}
-                initialFilters={globalFilters}
-                onApply={(f) => {
-                    setGlobalFilters(f);
-                    setFilterVisible(false);
-                    onApplyFilters();
-                }}
-            />
+            
 
             <Sidebar
                 isVisible={isSidebarVisible}
@@ -925,6 +1122,8 @@ export default function GridBillingScreen({ navigation }: any) {
         </SafeAreaView>
     );
 }
+
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#c5d4eeff' },

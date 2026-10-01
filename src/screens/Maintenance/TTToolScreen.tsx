@@ -549,6 +549,7 @@ export default function TTToolScreen({ navigation, route }: any) {
                 subtitle="Site Maintenance Tool"
                 leftAction="menu"
                 onLeftPress={() => setSidebarVisible(true)}
+                hideGlobalFilter={true}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleShare }
                 ]}

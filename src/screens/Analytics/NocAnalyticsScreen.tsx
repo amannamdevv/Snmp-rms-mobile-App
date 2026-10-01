@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import Sidebar from '../../components/Sidebar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalFilter } from '../../context/FilterContext';
 import AppHeader from '../../components/AppHeader';
 import RNFS from 'react-native-fs';
 import RNShare from 'react-native-share';
@@ -198,6 +199,7 @@ export default function NocAnalytics({ navigation }: any) {
     const [fullname, setFullname] = useState('Administrator');
     const [exporting, setExporting] = useState(false);
     const [search, setSearch] = useState('');
+    const { globalFilters } = useGlobalFilter();
 
     useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
@@ -208,13 +210,13 @@ export default function NocAnalytics({ navigation }: any) {
         if (!isRefresh) setLoading(true);
         try {
             // Fetch SMPS alarms (same endpoint as website /api/alarms/)
-            const smpsRes = await api.getAlarms();
+            const smpsRes = await api.getAlarms(globalFilters);
             const smpsData = Array.isArray(smpsRes)
                 ? smpsRes
                 : smpsRes?.data ?? smpsRes?.alarms ?? [];
 
             // Fetch TPMS alarms (same endpoint as website /api/live-fast-alarms/)
-            const tpmsRes = await api.getLiveFastAlarms();
+            const tpmsRes = await api.getLiveFastAlarms(globalFilters);
             const tpmsData = Array.isArray(tpmsRes)
                 ? tpmsRes
                 : tpmsRes?.data ?? tpmsRes?.alarms ?? [];
@@ -239,7 +241,7 @@ export default function NocAnalytics({ navigation }: any) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [JSON.stringify(globalFilters)]);
 
     const handleExport = async () => {
         if (!allAlarms.length) return Alert.alert('No data', 'Nothing to export.');

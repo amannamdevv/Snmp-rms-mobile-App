@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
@@ -9,6 +9,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../types/navigation';
 import { api } from '../../api';
 import FilterModal from '../../components/FilterModal';
+import GlobalFilterBanner from '../../components/GlobalFilterBanner';
+import { useGlobalFilter } from '../../context/FilterContext';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 import AppHeader from '../../components/AppHeader';
@@ -61,19 +63,21 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
     const [rangeLabel, setRangeLabel] = useState('All Sites');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [activeFilters, setActiveFilters] = useState<any>(range ? { range } : {});
+    const { globalFilters, setGlobalFilters, activeFilterCount: gFilterCount } = useGlobalFilter();
+    const [rangeFilter, setRangeFilter] = useState(range || 'all');
     const [filterModalVisible, setFilterModalVisible] = useState(false);
 
     // Sync filters if range changes from navigation (Sidebar)
     useEffect(() => {
         if (route.params?.range) {
-            setActiveFilters((prev: any) => ({ ...prev, range: route.params?.range }));
+            setRangeFilter(route.params.range);
         }
     }, [route.params?.range]);
 
     useEffect(() => {
+        setData([]);
         fetchData(1, true);
-    }, [activeFilters]);
+    }, [rangeFilter, JSON.stringify(globalFilters)]);
 
     const fetchData = async (pageNum = 1, isRefresh = false) => {
         if (loading && !isRefresh) return;
@@ -81,24 +85,34 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
         try {
             // Choose API based on source param from Sidebar vs Dashboard tab selector
             const src = (route.params as any)?.source || '';
-            const r   = (activeFilters.range || range || '');
+            const r   = (rangeFilter || range || '');
             let res: any = null;
+            
+            const reqFilters = { ...globalFilters };
+            if (r && r !== 'all') reqFilters.range = r;
 
             if (src === 'sidebar') {
                 // Sidebar: use dedicated high-detail APIs
-                if      (r === 'low')     res = await api.getSitesAtRisk(activeFilters, pageNum);
-                else if (r === 'critical') res = await api.getCriticalSites(activeFilters, pageNum);
-                else if (r === 'normal')  res = await api.getOperationalSites(activeFilters, pageNum);
-                else if (r === 'noncomm') res = await api.getSiteNonComm(activeFilters, pageNum);
-                else                      res = await api.getSiteVitals(activeFilters, pageNum);
+                if      (r === 'low')     res = await api.getSitesAtRisk(reqFilters, pageNum);
+                else if (r === 'critical') res = await api.getCriticalSites(reqFilters, pageNum);
+                else if (r === 'normal')  res = await api.getOperationalSites(reqFilters, pageNum);
+                else if (r === 'noncomm') res = await api.getSiteNonComm(reqFilters, pageNum);
+                else                      res = await api.getSiteVitals(reqFilters, pageNum);
             } else {
                 // Dashboard tab: simple /api/site-vitals-details/ for all ranges
-                res = await api.getSiteVitals(activeFilters, pageNum);
+                res = await api.getSiteVitals(reqFilters, pageNum);
             }
 
             if (res && res.sites) {
-                if (isRefresh) setData(res.sites);
-                else setData(prev => [...prev, ...res.sites]);
+                if (isRefresh) {
+                    setData(res.sites);
+                } else {
+                    setData(prev => {
+                        const existingIds = new Set(prev.map(s => s.imei || s.site_id));
+                        const newSites = res.sites.filter((s: any) => !existingIds.has(s.imei || s.site_id));
+                        return [...prev, ...newSites];
+                    });
+                }
 
                 setTotalSites(res.total_sites ?? res.total ?? 0);
                 setRangeLabel(res.range_label ?? res.category ?? 'Sites');
@@ -117,7 +131,9 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
         setExporting(true);
         try {
             // Fetch a comprehensive set for export to respect "Download All"
-            const res = await api.getSiteVitals(activeFilters, 1, 10000);
+            const reqFilters = { ...globalFilters };
+            if (rangeFilter && rangeFilter !== 'all') reqFilters.range = rangeFilter;
+            const res = await api.getSiteVitals(reqFilters, 1, 10000);
             if (res && res.sites) {
                 if (res.sites.length === 0) {
                     Alert.alert("No Data", "There is no data to export with the current filters.");
@@ -339,27 +355,23 @@ export default function SiteVitalsScreen({ route, navigation }: Props) {
                 onLeftPress={() => navigation.goBack()}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'filter', onPress: () => setFilterModalVisible(true), badge: Object.keys(activeFilters).length > 0 },
+                    
                 ]}
             />
+            
 
-            <FilterModal
-                visible={filterModalVisible}
-                onClose={() => setFilterModalVisible(false)}
-                onApply={(f: any) => { setActiveFilters(f); setFilterModalVisible(false); }}
-                initialFilters={activeFilters}
-            />
+            
 
             {/* Range Filters */}
             <View style={styles.filterBar}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: moderateScale(8) }}>
                     {displayRanges.map((r) => {
-                        const isActive = (activeFilters.range || 'all') === r.value;
+                        const isActive = rangeFilter === r.value;
                         return (
                             <TouchableOpacity
                                 key={r.value}
                                 style={[styles.filterPill, isActive && styles.filterPillActive]}
-                                onPress={() => setActiveFilters((prev: any) => ({ ...prev, range: r.value }))}
+                                onPress={() => setRangeFilter(r.value)}
                                 activeOpacity={0.7}
                             >
                                 <AppIcon
