@@ -75,14 +75,14 @@ export default function DashboardScreen({ navigation }: Props) {
       if (fCtmids.customer_id) { fCtmids.ctmids = fCtmids.customer_id; delete fCtmids.customer_id; }
 
       let results = await Promise.all([
-        api.getSiteHealth(f, 1, 1).then(r => r ? r.kpi_data || r : null).catch((e) => { console.log('Err getSiteHealth fallback', e); return null; }),
+        api.getSiteHealth(fCtmids, 1, 1).then(r => r ? r.kpi_data || r : null).catch((e) => { console.log('Err getSiteHealth fallback', e); return null; }),
         api.getBatteryVitalsCounts(fCtmids).catch((e) => { console.log('Err getBatteryVitalsCounts', e); return null; }),
         api.getAutomationStatus(fCtmids).catch((e) => { console.log('Err getAutomationStatus', e); return null; }),
-        api.getUptimeSummary(f).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
+        api.getUptimeSummary(fCtmids).catch((e) => { console.log('Err getUptimeSummary', e); return null; }),
         api.getSiteDistributionCounts(fCtmids).catch((e) => { console.log('Err getSiteDistributionCounts', e); return null; }),
         api.getDgPresence(fCtmids).catch((e) => { console.log('Err getDgPresence', e); return null; }),
         api.getEbPresence(fCtmids).catch((e) => { console.log('Err getEbPresence', e); return null; }),
-        api.getBatteryHealthAnalytics(f).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
+        api.getBatteryHealthAnalytics(fCtmids).catch((e) => { console.log('Err getBatteryHealthAnalytics', e); return null; }),
         api.getNonCommAging(fCtmids).catch((e) => { console.log('Err getNonCommAging', e); return null; }),
       ]);
 

@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import AppIcon from '../../components/AppIcon';
@@ -33,14 +34,14 @@ const MENU_ITEMS = [
   { name: 'Mapping Of Resources', icon: 'map-pin', route: 'ResourceMapping' },
   { name: 'User Management', icon: 'users', route: 'UserManagement' },
   { name: 'History Logs', icon: 'clock', route: 'SiteLogs' },
-  { name: 'Quality Analytics', icon: 'check-circle', route: 'Overview', locked: true },
-  { name: 'Permit To Work Analytics', icon: 'user-check', route: 'Overview', locked: true },
+  // { name: 'Quality Analytics', icon: 'check-circle', route: 'Overview', locked: true },
+  // { name: 'Permit To Work Analytics', icon: 'user-check', route: 'Overview', locked: true },
 ];
 
 export default function OverviewScreen({ navigation }: any) {
   return (
-    <View style={styles.container}>
-      <AppHeader title="Overview" navigation={navigation} />
+    <SafeAreaView style={styles.container}>
+      <AppHeader title="Overview" leftAction="back" onLeftPress={() => navigation.goBack()} hideGlobalFilter={true} />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>DOORDRISHTI OVERVIEW</Text>
@@ -70,7 +71,7 @@ export default function OverviewScreen({ navigation }: any) {
           ))}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

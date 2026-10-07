@@ -1,7 +1,7 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ─── Constants & Configuration ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants & Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DJANGO_BASE_URL = 'https://snmp-rms.shrotitele.com';
 const DJANGO_AUTH_URL = `${DJANGO_BASE_URL}/api/auth`;
 
@@ -10,7 +10,7 @@ const KEYS = {
   DJANGO_SESSION_PENDING: 'djangoSessionPending',
 };
 
-// ─── Helper: extract sessionid from Set-Cookie response header ─────────────────
+// â”€â”€â”€ Helper: extract sessionid from Set-Cookie response header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const extractSessionId = (headers) => {
   const raw = headers['set-cookie'] ?? headers['Set-Cookie'];
   if (!raw) return null;
@@ -36,7 +36,7 @@ const toArray = (data, ...keys) => {
   return [];
 };
 
-// ─── Django Axios Instance ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Django Axios Instance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const attachDjangoAuth = async (config) => {
   try {
     const session = await AsyncStorage.getItem(KEYS.DJANGO_SESSION);
@@ -49,16 +49,16 @@ const attachDjangoAuth = async (config) => {
       // Clean up UI-only query params so Django doesn't throw 500 errors on certain endpoints
       if (config.params) {
         const p = { ...config.params };
-        
+
         // Some endpoints crash (500) if they receive state_name or customer_name
         // Others (like /api/alarms/) require them. Delete conditionally.
         const urlStr = config.url || '';
         if (urlStr.includes('site-health') || urlStr.includes('grid-analytics')) {
-            delete p.state_name;
-            delete p.district_name;
-            delete p.cluster_name;
-            delete p.customer_name;
-            delete p.search_type;
+          delete p.state_name;
+          delete p.district_name;
+          delete p.cluster_name;
+          delete p.customer_name;
+          delete p.search_type;
         }
 
         // Ensure ctmids, client_id, and client are populated if customer_id exists
@@ -67,12 +67,12 @@ const attachDjangoAuth = async (config) => {
           p.client_id = p.client_id || p.customer_id;
           p.client = p.client || p.customer_id;
         }
-        
+
         // Alias state_id, district_id, cluster_id just in case some APIs expect state, district, cluster
         if (p.state_id) p.state = p.state || p.state_id;
         if (p.district_id) p.district = p.district || p.district_id;
         if (p.cluster_id) p.cluster = p.cluster || p.cluster_id;
-        
+
         config.params = p;
       }
 
@@ -93,19 +93,19 @@ const djangoApi = axios.create({
 });
 djangoApi.interceptors.request.use(attachDjangoAuth, (error) => Promise.reject(error));
 
-// ──────────────────────────────────────────────────────────────────────────────
-// ─── AUTHENTICATION (Login, OTP, Logout) ──────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ AUTHENTICATION (Login, OTP, Logout) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const loginApi = async (username, password) => {
-  const djangoRes = await axios.post(`${DJANGO_AUTH_URL}/login/`, { username, password });
+  const djangoRes = await axios.post(`${DJANGO_AUTH_URL}/login/`, { username, password }, { timeout: 15000 });
   const sessionId = extractSessionId(djangoRes.headers);
   console.log('[loginApi] sessionId from Set-Cookie:', sessionId ? sessionId.slice(0, 8) + '...' : 'NONE');
   if (sessionId) {
     await AsyncStorage.setItem(KEYS.DJANGO_SESSION_PENDING, sessionId);
   }
   if (djangoRes.data.status === 'success' && djangoRes.data.skip_otp) {
-    // No OTP required — promote session immediately
+    // No OTP required â€” promote session immediately
     if (sessionId) {
       await AsyncStorage.setItem(KEYS.DJANGO_SESSION, sessionId);
       await AsyncStorage.removeItem(KEYS.DJANGO_SESSION_PENDING);
@@ -129,11 +129,11 @@ export const verifyOtpApi = async (otp, username) => {
   console.log('[verifyOtpApi] pendingSession:', pendingSession ? pendingSession.slice(0, 8) + '...' : 'NONE');
 
   if (newSession) {
-    // Server issued a new session after OTP verification — use it
+    // Server issued a new session after OTP verification â€” use it
     await AsyncStorage.setItem(KEYS.DJANGO_SESSION, newSession);
     console.log('[verifyOtpApi] Saved NEW session to djangoSession');
   } else if (pendingSession && djangoRes.data.status === 'success') {
-    // Server reused the same session — promote pending session to main session
+    // Server reused the same session â€” promote pending session to main session
     await AsyncStorage.setItem(KEYS.DJANGO_SESSION, pendingSession);
     console.log('[verifyOtpApi] No new session issued, promoted pendingSession to djangoSession');
   }
@@ -142,17 +142,21 @@ export const verifyOtpApi = async (otp, username) => {
 };
 
 export const logoutApi = async () => {
-  await AsyncStorage.multiRemove([KEYS.DJANGO_SESSION, KEYS.DJANGO_SESSION_PENDING]);
+  await AsyncStorage.multiRemove([KEYS.DJANGO_SESSION, KEYS.DJANGO_SESSION_PENDING, 'user_role', 'user_ptye', 'user_ctmid']);
 };
 
 
-// ──────────────────────────────────────────────────────────────────────────────
-// ─── MAIN API OBJECT (Grouped for Clarity) ────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ MAIN API OBJECT (Grouped for Clarity) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const api = {
+  getMe: async () => {
+    const response = await djangoApi.get('/api/auth/me/');
+    return response.data;
+  },
 
-  // ── HOME Related ──
+  // â”€â”€ HOME Related â”€â”€
   getSiteStatus: async (filters, page, pageSize) => {
     const response = await djangoApi.get('/api/status/', { params: { ...filters, page, page_size: pageSize } });
     return response.data;
@@ -182,7 +186,7 @@ export const api = {
     return response.data;
   },
 
-  // ── SOLAR ANALYTICS ──
+  // â”€â”€ SOLAR ANALYTICS â”€â”€
   getSolarAnalyticsMonthly: async (filters) => {
     const response = await djangoApi.get('/api/solar-report/monthly/', { params: filters });
     return response.data;
@@ -243,7 +247,7 @@ export const api = {
     return response.data;
   },
 
-  // ── DASHBOARD Related ──
+  // â”€â”€ DASHBOARD Related â”€â”€
   getSiteHealthCounts: async (filters) => {
     const response = await djangoApi.get('/api/site-health-status/', { params: filters });
     return response.data;
@@ -271,7 +275,7 @@ export const api = {
     const response = await djangoApi.get('/api/site-vitals-details/', { params: { ...filters, page, page_size: pageSize } });
     return response.data;
   },
-  // ── Sidebar specific APIs ─────────────────────────────────────────────────
+  // â”€â”€ Sidebar specific APIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   getSitesAtRisk: async (filters, page = 1, pageSize) => {
     const response = await djangoApi.get('/api/sites-at-risk/', { params: { ...filters, page, page_size: pageSize } });
     return response.data;
@@ -301,7 +305,7 @@ export const api = {
     return response.data;
   },
 
-  // ✅ FIX: SMPS alarms → /api/alarms/  (was incorrectly hitting live-fast-alarms before)
+  // âœ… FIX: SMPS alarms â†’ /api/alarms/  (was incorrectly hitting live-fast-alarms before)
   getLiveAlarmsSnmp: async (filters, pageSize = 1000) => { const response = await djangoApi.get('/api/live-alarms-snmp/', { params: { ...filters, page_size: pageSize } }); return response.data; },
 
   getSmpsAlarms: async (filters, pageSize = 1000) => {
@@ -309,7 +313,7 @@ export const api = {
     return response.data;
   },
 
-  // ✅ TPMS / RMS alarms → /api/live-fast-alarms/ (correct endpoint)
+  // âœ… TPMS / RMS alarms â†’ /api/live-fast-alarms/ (correct endpoint)
   getLiveFastAlarms: async (filters, pageSize = 100) => {
     const response = await djangoApi.get('/api/live-fast-alarms/', { params: { ...filters, page_size: pageSize } });
     return response.data;
@@ -319,7 +323,7 @@ export const api = {
     return response.data;
   },
 
-  // ── UPTIME & SLA ──
+  // â”€â”€ UPTIME & SLA â”€â”€
   getUptimeSummary: async (filters) => {
     const res = await djangoApi.get('/daily-uptime-report/', { params: filters });
     return res.data;
@@ -371,7 +375,7 @@ export const api = {
     return response.data;
   },
 
-  // ── DCEM & ENERGY ──
+  // â”€â”€ DCEM & ENERGY â”€â”€
   getDCEMAnalytics: async (params = {}) => {
     const response = await djangoApi.get('/api/dcem/analytics/', { params });
     return response.data;
@@ -393,7 +397,7 @@ export const api = {
     return response.data;
   },
 
-  // ── MAINTENANCE & TOOLS ──
+  // â”€â”€ MAINTENANCE & TOOLS â”€â”€
   getTTTools: async () => {
     const response = await djangoApi.get('/api/tt_tools/');
     return response.data;
@@ -407,7 +411,7 @@ export const api = {
     return response.data;
   },
 
-  // ── REPORTS & HISTORY ──
+  // â”€â”€ REPORTS & HISTORY â”€â”€
   getMasterReport: async (filters, page = 1, pageSize = 25) => {
     const response = await djangoApi.get('/api/rms/master-report/', { params: { ...filters, page, page_size: pageSize } });
     return response.data;
@@ -426,7 +430,7 @@ export const api = {
       const response = await djangoApi.get('/api/historical-alarms-snmp/', { params });
       console.log('API Response:', JSON.stringify(response.data).substring(0, 200));
       return response.data;
-    } catch(e) {
+    } catch (e) {
       console.log('API Error:', e.message, e.response?.data);
       throw e;
     }
@@ -443,7 +447,7 @@ export const api = {
     return response.data;
   },
 
-  // ── ANALYTICS ──
+  // â”€â”€ ANALYTICS â”€â”€
   getNocAnalytics: async (period = 'today', filter = 'all') => {
     const response = await djangoApi.get('/api/noc-analytics/', { params: { period, filter } });
     return response.data;
@@ -461,7 +465,7 @@ export const api = {
     return response.data;
   },
 
-  // ── BATTERY HEALTH ──
+  // â”€â”€ BATTERY HEALTH â”€â”€
   getBatteryHealthAnalytics: async (params = {}) => {
     const response = await djangoApi.get('/api/battery-health-analytics/', { params });
     return response.data;
@@ -475,7 +479,7 @@ export const api = {
 
 
 
-  // ── METADATA & DROPDOWNS ──
+  // â”€â”€ METADATA & DROPDOWNS â”€â”€
   getClients: async () => {
     const response = await djangoApi.get('/client-data/');
     const list = toArray(response.data, 'clients', 'client_data');
@@ -519,7 +523,7 @@ export const api = {
     return response.data;
   },
 
-  // ── ASSET HEALTH ──
+  // â”€â”€ ASSET HEALTH â”€â”€
   getAssetHealthOverview: async (params = {}) => {
     const response = await djangoApi.get('/api/asset-health/overview/', { params });
     return response.data;
@@ -549,7 +553,7 @@ export const api = {
     return response.data;
   },
 
-  // ── SUPPORT ──
+  // â”€â”€ SUPPORT â”€â”€
   submitSupportTicket: async (formData) => {
     const response = await djangoApi.post('/api/support/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -557,7 +561,7 @@ export const api = {
     return response.data;
   },
 
-  // ── ROBOTIC CALLS ──
+  // â”€â”€ ROBOTIC CALLS â”€â”€
   getRoboticCalls: async (params = {}) => {
     const response = await djangoApi.get('/api/robotic-calls/', { params });
     return response.data;
@@ -566,7 +570,7 @@ export const api = {
     return await djangoApi.get('/api/robotic-calls/export/', { params, responseType: 'arraybuffer' });
   },
 
-  // ── MQTT Related ──
+  // â”€â”€ MQTT Related â”€â”€
   getDeviceSettings: async (imei, device_type) => {
     const response = await djangoApi.get('/get_device_settings/', { params: { imei, device_type } });
     return response.data;
@@ -584,7 +588,7 @@ export const api = {
     return response.data;
   },
 
-  // ── SNMP Related ──
+  // â”€â”€ SNMP Related â”€â”€
   getSnmpSites: async (params = {}) => {
     const response = await djangoApi.get('/api/sites/', { params });
     return response.data;
@@ -606,14 +610,9 @@ export const api = {
     return response.data;
   },
 
-  // ── User Management ──
+  // â”€â”€ User Management â”€â”€
   submitUserManagementData: async (payload) => {
     const response = await djangoApi.post('/api/user-management-input/', payload);
     return response.data;
   },
 };
-
-
-
-
-

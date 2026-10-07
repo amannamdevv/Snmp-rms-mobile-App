@@ -209,14 +209,18 @@ export default function NocAnalytics({ navigation }: any) {
     const fetchAlarms = useCallback(async (isRefresh = false) => {
         if (!isRefresh) setLoading(true);
         try {
+            const apiFilters = { ...globalFilters };
+            if (apiFilters.customer_id) { apiFilters.client = apiFilters.customer_id; delete apiFilters.customer_id; }
+            if (apiFilters.state_id) { apiFilters.state = apiFilters.state_id; delete apiFilters.state_id; }
+            
             // Fetch SMPS alarms (same endpoint as website /api/alarms/)
-            const smpsRes = await api.getAlarms(globalFilters);
+            const smpsRes = await api.getAlarms(apiFilters);
             const smpsData = Array.isArray(smpsRes)
                 ? smpsRes
                 : smpsRes?.data ?? smpsRes?.alarms ?? [];
 
             // Fetch TPMS alarms (same endpoint as website /api/live-fast-alarms/)
-            const tpmsRes = await api.getLiveFastAlarms(globalFilters);
+            const tpmsRes = await api.getLiveFastAlarms(apiFilters);
             const tpmsData = Array.isArray(tpmsRes)
                 ? tpmsRes
                 : tpmsRes?.data ?? tpmsRes?.alarms ?? [];

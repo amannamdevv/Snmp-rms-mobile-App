@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View, Text, StyleSheet, Modal, TextInput, TouchableOpacity,
   ScrollView, ActivityIndicator
@@ -26,15 +27,19 @@ const formatDate = (d: Date) => {
 };
 
 // Inline Dropdown to avoid nested Modals on Android
-const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
+const Dropdown = ({ label, value, options, onSelect, placeholder, disabled, isOpen, onToggle }: {
   label: string;
   value: string;
   options: Option[];
   onSelect: (id: string, name: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const handleToggle = () => { if (disabled) return; if (onToggle) onToggle(); else setInternalOpen(!internalOpen); };
   const selectedLabel = options.find(o => String(o.id) === String(value))?.name || '';
 
   return (
@@ -42,7 +47,7 @@ const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
       <Text style={ddStyles.label}>{label}</Text>
       <TouchableOpacity
         style={[ddStyles.trigger, disabled && ddStyles.triggerDisabled]}
-        onPress={() => !disabled && setOpen(!open)}
+        onPress={handleToggle}
         activeOpacity={disabled ? 1 : 0.7}
       >
         <Text style={[ddStyles.triggerText, !selectedLabel && ddStyles.placeholder]}>
@@ -57,7 +62,7 @@ const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
           <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
             <TouchableOpacity
               style={[ddStyles.option, !value && ddStyles.optionActive]}
-              onPress={() => { onSelect('', ''); setOpen(false); }}
+              onPress={() => { onSelect('', ''); if (onToggle) onToggle(); else setInternalOpen(false); }}
             >
               <Text style={[ddStyles.optionText, !value && ddStyles.optionTextActive]}>All {label}s</Text>
             </TouchableOpacity>
@@ -72,7 +77,7 @@ const Dropdown = ({ label, value, options, onSelect, placeholder, disabled }: {
               <TouchableOpacity
                 key={o.id}
                 style={[ddStyles.option, String(value) === String(o.id) && ddStyles.optionActive]}
-                onPress={() => { onSelect(String(o.id), o.name); setOpen(false); }}
+                onPress={() => { onSelect(String(o.id), o.name); if (onToggle) onToggle(); else setInternalOpen(false); }}
               >
                 <Text style={[ddStyles.optionText, String(value) === String(o.id) && ddStyles.optionTextActive]}>
                   {o.name}
@@ -124,6 +129,9 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
   const [distLoading, setDistLoading] = useState(false);
   const [clustLoading, setClustLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isClientUser, setIsClientUser] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  
 
   const [selectedState, setSelectedState] = useState(initialFilters?.state_id || '');
   const [selectedStateName, setSelectedStateName] = useState(initialFilters?.state_name || '');
@@ -145,16 +153,57 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
 
+  // Sync local state whenever modal opens — ensures banner "Clear" is fully reflected
   useEffect(() => {
     if (visible) {
       loadInitialData();
-      if (initialFilters?.state_id) loadDistricts(initialFilters.state_id);
-      if (initialFilters?.district_id) loadClusters(initialFilters.district_id);
+      // If global filters were cleared externally (e.g. banner Clear button), reset all local selections
+      const isEmpty = !initialFilters || Object.keys(initialFilters).length === 0;
+      if (isEmpty) {
+        setSelectedState(''); setSelectedStateName('');
+        setSelectedDistrict(''); setSelectedDistrictName('');
+        setSelectedCluster(''); setSelectedClusterName('');
+        setDistricts([]); setClusters([]);
+        setSelectedClient(''); setSelectedClientName('');
+        setFromDate(null); setToDate(null);
+        setSearchBy('imei'); setSearchValue('');
+      } else {
+        // Sync selections with current initialFilters
+        setSelectedState(initialFilters?.state_id || '');
+        setSelectedStateName(initialFilters?.state_name || '');
+        setSelectedDistrict(initialFilters?.district_id || '');
+        setSelectedDistrictName(initialFilters?.district_name || '');
+        setSelectedCluster(initialFilters?.cluster_id || '');
+        setSelectedClusterName(initialFilters?.cluster_name || '');
+        setSelectedClient(initialFilters?.customer_id || '');
+        setSelectedClientName(initialFilters?.customer_name || '');
+        setSearchBy(initialFilters?.search_type || 'imei');
+        setSearchValue(
+          initialFilters?.imei || initialFilters?.site_id || initialFilters?.global_id || initialFilters?.site_name || ''
+        );
+        setFromDate(initialFilters?.date_from ? new Date(initialFilters.date_from) : null);
+        setToDate(initialFilters?.date_to ? new Date(initialFilters.date_to) : null);
+        if (initialFilters?.state_id) loadDistricts(initialFilters.state_id);
+        if (initialFilters?.district_id) loadClusters(initialFilters.district_id);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }, [visible, JSON.stringify(initialFilters)]);
 
   const loadInitialData = async () => {
+    let userRole = await AsyncStorage.getItem('user_role');
+      if (!userRole) {
+        try {
+          const meRes = await api.getMe();
+          if (meRes?.status === 'success' && meRes.role) {
+            userRole = String(meRes.role).trim();
+            await AsyncStorage.setItem('user_role', userRole);
+          }
+        } catch(e) { console.log('getMe error', e); }
+      }
+    
+      if (String(userRole || '').replace(/\s/g, '').toLowerCase() === 'superadmin') { setIsClientUser(false); } else { setIsClientUser(true); }
+      
     setLoading(true);
     setErrorMsg('');
 
@@ -317,6 +366,8 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
                   </TouchableOpacity>
                 )}
                 <Dropdown
+                  isOpen={openDropdown === 'State'}
+                  onToggle={() => setOpenDropdown(openDropdown === 'State' ? null : 'State')}
                   label="State"
                   value={selectedState}
                   options={states}
@@ -330,7 +381,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
               distLoading ? (
                 <View style={styles.loadRow}><ActivityIndicator size="small" color="#1e3c72" /></View>
               ) : (
-                <Dropdown label="District" value={selectedDistrict} options={districts} onSelect={handleDistrictChange} placeholder="Select District" />
+                <Dropdown isOpen={openDropdown === 'District'} onToggle={() => setOpenDropdown(openDropdown === 'District' ? null : 'District')} label="District" value={selectedDistrict} options={districts} onSelect={handleDistrictChange} placeholder="Select District" />
               )
             ) : null}
 
@@ -348,14 +399,16 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
               )
             ) : null}
 
-            {/* Client */}
-            <Dropdown
-              label="Client Name"
-              value={selectedClient}
-              options={clients}
-              onSelect={(id, name) => { setSelectedClient(id); setSelectedClientName(name); }}
-              placeholder="All"
-            />
+            {/* Client - Only show if user has more than 1 client (hides for normal clients, shows for Superadmin) */}
+            {(!isClientUser) && (
+              <Dropdown
+                label="Client Name"
+                value={selectedClient}
+                options={clients}
+                onSelect={(id, name) => { setSelectedClient(id); setSelectedClientName(name); }}
+                placeholder="All"
+              />
+            )}
 
             {/* Search By */}
             <Text style={styles.sectionLabel}>SEARCH BY</Text>
@@ -378,7 +431,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
               style={styles.searchInput}
               placeholder={currentSearch.placeholder}
               value={searchValue}
-              onChangeText={setSearchValue}
+              onChangeText={setSearchValue} onFocus={() => setOpenDropdown(null)}
               keyboardType={currentSearch.keyboardType as any}
               placeholderTextColor="#94a3b8"
               autoCorrect={false}
@@ -388,14 +441,14 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }: FilterM
             <View style={styles.dateRow}>
               <View style={styles.dateGroup}>
                 <Text style={ddStyles.label}>From Date</Text>
-                <TouchableOpacity style={styles.dateBtn} onPress={() => setShowFromPicker(true)}>
+                <TouchableOpacity style={styles.dateBtn} onPress={() => { setOpenDropdown(null); setShowFromPicker(true); }}>
                   <Text style={styles.dateBtnText}>{fromDate ? fromDate.toLocaleDateString() : 'mm/dd/yyyy'}</Text>
                   <Icon name="calendar" size={14} color="#64748b" />
                 </TouchableOpacity>
               </View>
               <View style={styles.dateGroup}>
                 <Text style={ddStyles.label}>To Date</Text>
-                <TouchableOpacity style={styles.dateBtn} onPress={() => setShowToPicker(true)}>
+                <TouchableOpacity style={styles.dateBtn} onPress={() => { setOpenDropdown(null); setShowToPicker(true); }}>
                   <Text style={styles.dateBtnText}>{toDate ? toDate.toLocaleDateString() : 'mm/dd/yyyy'}</Text>
                   <Icon name="calendar" size={14} color="#64748b" />
                 </TouchableOpacity>

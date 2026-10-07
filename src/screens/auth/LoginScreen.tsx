@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
   View,
@@ -42,6 +42,7 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   const handleLogin = async () => {
+    if (loading) return; // Prevent duplicate requests
     if (!username.trim() || !password.trim()) {
       setError('Please enter both username and password.');
       shake();
@@ -69,8 +70,14 @@ export default function LoginScreen({ navigation }: Props) {
         shake();
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Network error. Please check your connection.';
-      setError(msg);
+      if (err.code === 'ECONNABORTED') {
+        setError('Connection timed out. Please check your internet connection and try again.');
+      } else if (!err.response) {
+        setError('Network error. Please check your internet connection.');
+      } else {
+        const msg = err?.response?.data?.message || 'Server error. Please try again later.';
+        setError(msg);
+      }
       shake();
     } finally {
       setLoading(false);
@@ -150,7 +157,7 @@ export default function LoginScreen({ navigation }: Props) {
               </View>
             </Animated.View>
 
-            <Text style={styles.footer}>© 2026 Shroti Telecom Pvt. Ltd.</Text>
+            <Text style={styles.footer}>Â© 2026 Shroti Telecom Pvt. Ltd.</Text>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -202,3 +209,4 @@ const styles = StyleSheet.create({
   infoText: { color: '#a5b4fc', fontSize: responsiveFontSize(12), flexShrink: 1, lineHeight: 18 },
   footer: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFontSize(11), flexShrink: 1, textAlign: 'center', marginTop: verticalScale(32) },
 });
+

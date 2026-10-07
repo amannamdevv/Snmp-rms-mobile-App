@@ -132,9 +132,7 @@ const SnmpToolScreen = ({ navigation }: any) => {
     setSelectedParam(param);
     setShowParamPicker(false);
     setReadValue(null);
-    if (param) {
-      handleGet(param);
-    }
+    // if (param) { handleGet(param); } // Disabled to prevent 500 error
   };
 
   const handleGet = async (targetParam = selectedParam) => {

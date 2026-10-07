@@ -12,7 +12,7 @@
  * }
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -45,15 +45,15 @@ function daysAgoStr(n: number) {
 
 const COL_LABELS: Record<string, string> = {
     state_id: 'State', dist_id: 'District', cluster_id: 'Cluster',
-    gsm_imei_no: 'IMEI', site_name: 'Site Name', globel_id: 'Global ID',
-    companyName: 'Company', mainsVoltR: 'Mains R', mainsVoltY: 'Mains Y',
-    mainsVoltB: 'Mains B', dgVoltR: 'DG R', dgVoltY: 'DG Y', dgVoltB: 'DG B',
-    dgBattVolt: 'DG Batt', btsBattVolt: 'BTS Batt', site_id: 'Site ID',
-    kwhMains: 'kWh Mains', kwhDG1: 'kWh DG1', kwhDG2: 'kWh DG2',
-    kwhOperator1: 'kWh Op1', kwhOperator2: 'kWh Op2',
-    kwhOperator3: 'kWh Op3', kwhOperator4: 'kWh Op4',
-    room_temp: 'Temp', Mains_Frequency: 'Mains Hz',
-    dgFreq: 'DG Hz', updated_dt: 'Updated',
+    gsm_imei_no: 'IMEI', site_name: 'Site Name', globel_id: 'Globel ID',
+    companyName: 'Company', mainsVoltR: 'Mains Volt R', mainsVoltY: 'Mains Volt Y',
+    mainsVoltB: 'Mains Volt B', dgVoltR: 'DG Volt R', dgVoltY: 'DG Volt Y', dgVoltB: 'DG Volt B',
+    dgBattVolt: 'DG Battery Volt', btsBattVolt: 'BTS Battery Volt', site_id: 'Site ID',
+    kwhMains: 'KWH Mains', kwhDG1: 'KWH DG1', kwhDG2: 'KWH DG2',
+    kwhOperator1: 'KWH Operator 1', kwhOperator2: 'KWH Operator 2',
+    kwhOperator3: 'KWH Operator 3', kwhOperator4: 'KWH Operator 4',
+    room_temp: 'Room Temp', Mains_Frequency: 'Mains Frequency',
+    dgFreq: 'DG Frequency', updated_dt: 'Last Updated',
 };
 
 function colLabel(col: string): string {
@@ -91,7 +91,7 @@ const SUMMARY_COLS = [
 ];
 
 // ─── Log Card ─────────────────────────────────────────────────
-function LogCard({ row, columns }: { row: any; columns: string[] }) {
+function LogCard({ row, columns, globalFilters }: { row: any; columns: string[]; globalFilters?: any }) {
     const [open, setOpen] = useState(false);
     const mainV = (parseFloat(row.mainsVoltR) || parseFloat(row.mainsVoltY) || 0);
     const mainColor = mainV > 200 ? '#10b981' : mainV > 0 ? '#f59e0b' : '#ef4444';
@@ -102,7 +102,8 @@ function LogCard({ row, columns }: { row: any; columns: string[] }) {
             <View style={LC.top}>
                 <View style={{ flex: 1 }}>
                     <Text style={LC.name} numberOfLines={1}>{row.site_name || '—'}</Text>
-                    <Text style={LC.id}>Global ID: {row.global_id || row.globel_id || row.site_id}  ·  SID: {row.site_id || '—'}  ·  IMEI: {row.gsm_imei_no || '—'}</Text>
+                    <Text style={LC.globalId}>Global ID: {row.global_id || row.globel_id || row.site_id}</Text>
+                      <Text style={LC.id}>SID: {row.site_id || '—'}  •  IMEI: {row.gsm_imei_no || '—'}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
                     <View style={[LC.voltBadge, { backgroundColor: `${mainColor}18`, borderColor: mainColor }]}>
@@ -133,15 +134,17 @@ function LogCard({ row, columns }: { row: any; columns: string[] }) {
             {open && (
                 <View style={LC.detail}>
                     <View style={LC.divider} />
-                    {columns.map(col => {
-                        if (['site_name', 'site_id', 'global_id', 'globel_id', 'gsm_imei_no'].includes(col)) return null;
-                        return (
-                            <View key={col} style={LC.detailRow}>
-                                <Text style={LC.detailLabel}>{colLabel(col)}</Text>
-                                <Text style={LC.detailValue}>{fmtVal(col, row[col])}</Text>
-                            </View>
-                        );
-                    })}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 4 }}>
+                      {columns.map(col => {
+                          if (['site_name', 'site_id', 'global_id', 'globel_id', 'gsm_imei_no'].includes(col)) return null;
+                          return (
+                              <View key={col} style={{ width: '48%', backgroundColor: '#f8fafc', borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                                  <Text style={[LC.detailLabel, { fontSize: 11, marginBottom: 2, color: '#64748b' }]}>{colLabel(col)}</Text>
+                                  <Text style={[LC.detailValue, { fontSize: 13, color: '#0f172a', textAlign: 'left', maxWidth: '100%' }]}>{col === 'state_id' && globalFilters?.state_name && globalFilters.state_name !== 'All' ? globalFilters.state_name : col === 'dist_id' && globalFilters?.district_name && !globalFilters.district_name.includes('Select') ? globalFilters.district_name : col === 'cluster_id' && globalFilters?.cluster_name && !globalFilters.cluster_name.includes('Select') ? globalFilters.cluster_name : fmtVal(col, row[col])}</Text>
+                              </View>
+                          );
+                      })}
+</View>
                 </View>
             )}
         </TouchableOpacity>
@@ -151,18 +154,19 @@ const LC = StyleSheet.create({
     card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(14), marginBottom: verticalScale(8), elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3 },
     top: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(10) },
     name: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a', marginBottom: verticalScale(2) },
-    id: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontFamily: 'monospace' },
+    globalId: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#475569', fontWeight: '700', marginBottom: 2 },
+      id: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155', fontFamily: 'monospace', fontWeight: '500' },
     voltBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(3), borderRadius: 8, borderWidth: 1 },
     voltTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800' },
     quickRow: { flexDirection: 'row', backgroundColor: '#f8fafc', borderRadius: 10, padding: moderateScale(10), marginBottom: verticalScale(4) },
     quickItem: { flex: 1, alignItems: 'center' },
-    quickVal: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#0f172a' },
-    quickLab: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
+    quickVal: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#0f172a' },
+    quickLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: verticalScale(1) },
     detail: { marginTop: verticalScale(8) },
     divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: verticalScale(5), borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-    detailLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600' },
-    detailValue: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
+    detailLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '600' },
+    detailValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e293b', fontWeight: '700', maxWidth: '55%', textAlign: 'right' },
 });
 
 
@@ -183,7 +187,7 @@ export default function SiteLogsScreen({ navigation }: any) {
     const [fullname, setFullname] = useState('Administrator');
     const [error, setError] = useState('');
 
-    const { globalFilters, setGlobalFilters } = useGlobalFilter();
+    const { globalFilters, setGlobalFilters, hasActiveFilters } = useGlobalFilter();
 
     React.useEffect(() => {
         AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
@@ -193,7 +197,7 @@ export default function SiteLogsScreen({ navigation }: any) {
         if (!isRefresh) setLoading(true);
         setError('');
         try {
-            const params = { ...filters, page, page_size: 20 };
+            const params = { ...globalFilters, page, page_size: 20 };
             const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== '' && v != null));
             const res = await (api as any).getSiteLogs(clean);
 
@@ -215,6 +219,18 @@ export default function SiteLogsScreen({ navigation }: any) {
             setRefreshing(false);
         }
     }, [globalFilters]);
+
+    useEffect(() => {
+          if (hasActiveFilters) {
+              fetchData(1);
+          } else {
+              setData([]);
+              setHasLoaded(false);
+              setTotalRecords(0);
+              setCurrentPage(1);
+              setTotalPages(1);
+          }
+      }, [globalFilters, fetchData, hasActiveFilters]);
 
     const onRefresh = () => { setRefreshing(true); fetchData(currentPage, true); };
     const onApply = () => { setData([]); fetchData(1); };
@@ -265,7 +281,7 @@ export default function SiteLogsScreen({ navigation }: any) {
             <View style={{ flex: 1, alignSelf: 'center', width: '100%', maxWidth: 650 }}>
             <AppHeader
                 title="SITE LOGS"
-                subtitle={hasLoaded ? `${totalRecords} records  ·  ${dateLabel}` : 'Apply filters to load'}
+                
                 leftAction="menu"
                 onLeftPress={() => setSidebarVisible(true)}
                 rightActions={[
@@ -274,21 +290,21 @@ export default function SiteLogsScreen({ navigation }: any) {
                 ]}
             />
 
-            {!hasLoaded ? (
-                <View style={styles.emptyBox}>
-                    <AppIcon name="database" size={40} color="#cbd5e1" />
-                    <Text style={styles.emptyTxt}>Apply filters to load site logs</Text>
-                    <TouchableOpacity style={styles.filterPromptBtn} onPress={() => setFilterVisible(true)} activeOpacity={0.8}>
-                        <AppIcon name="sliders" size={14} color="#fff" />
-                        <Text style={styles.filterPromptTxt}>Open Filters</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : loading ? (
-                <View style={styles.loaderBox}>
-                    <ActivityIndicator size="large" color="#5B9BD5" />
-                    <Text style={styles.loaderTxt}>Loading site logs...</Text>
-                </View>
-            ) : (
+            {loading ? (
+                  <View style={styles.loaderBox}>
+                      <ActivityIndicator size="large" color="#5B9BD5" />
+                      <Text style={styles.loaderTxt}>Loading site logs...</Text>
+                  </View>
+              ) : !hasLoaded ? (
+                  <View style={styles.emptyBox}>
+                      <AppIcon name="database" size={40} color="#cbd5e1" />
+                      <Text style={styles.emptyTxt}>Apply filters to load site logs</Text>
+                      <TouchableOpacity style={styles.filterPromptBtn} onPress={() => setFilterVisible(true)} activeOpacity={0.8}>
+                          <AppIcon name="sliders" size={14} color="#fff" />
+                          <Text style={styles.filterPromptTxt}>Open Filters</Text>
+                      </TouchableOpacity>
+                  </View>
+              ) : (
                 <FlatList
                     data={filtered}
                     keyExtractor={(item, i) => `${item.gsm_imei_no || i}_${item.updated_dt || i}`}
@@ -319,7 +335,7 @@ export default function SiteLogsScreen({ navigation }: any) {
                             </View>
                         </View>
                     }
-                    renderItem={({ item }) => <LogCard row={item} columns={columns} />}
+                    renderItem={({ item }) => <LogCard row={item} columns={columns} globalFilters={globalFilters} />}
                     ListFooterComponent={
                         totalPages > 1 ? (
                             <View style={styles.pagination}>
@@ -368,6 +384,16 @@ export default function SiteLogsScreen({ navigation }: any) {
 
             
 
+            
+            <FilterModal
+                visible={filterVisible}
+                onClose={() => setFilterVisible(false)}
+                initialFilters={globalFilters}
+                onApply={(f) => {
+                    setGlobalFilters(f);
+                    setFilterVisible(false);
+                }}
+            />
             <Sidebar
                 isVisible={isSidebarVisible}
                 onClose={() => setSidebarVisible(false)}

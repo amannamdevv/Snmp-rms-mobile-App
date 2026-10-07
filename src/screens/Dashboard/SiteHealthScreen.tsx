@@ -71,7 +71,13 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
     setLoading(true);
     try {
       // getSiteHealth uses customer_id directly
-      const reqFilters = { ...globalFilters };
+      // getSiteHealth expects ctmids instead of customer_id (same as other StatusAPIView endpoints)
+      const reqFilters = { ...globalFilters } as any;
+      if (reqFilters.customer_id) {
+          reqFilters.ctmids = reqFilters.customer_id;
+          delete reqFilters.customer_id;
+      }
+      
       if (statusFilter !== 'all') {
          reqFilters.status = statusFilter;
       }
@@ -100,8 +106,16 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
         setHasNext(res.sites.length === 20);
         setPage(pageNum);
       }
-    } catch (e) {
-      console.error("Data load error:", e);
+    } catch (e: any) {
+      // If the backend returns 500 for a client with zero records/missing data, handle gracefully instead of crashing
+      if (e?.response?.status === 500) {
+        console.log("Handled backend 500 error for client with zero records/missing data.");
+        if (isRefresh) setData([]);
+        setCounts({ total: 0, up: 0, down: 0, non_comm: 0 });
+        setHasNext(false);
+      } else {
+        console.warn("Data load error:", e?.message || e);
+      }
     } finally {
       setLoading(false);
     }
@@ -111,7 +125,9 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
     setExporting(true);
     try {
       // Fetch larger set for export (Download All)
-      const res = await api.getSiteHealth({ status: statusFilter, ...globalFilters }, 1, 10000);
+      const exportFilters = { status: statusFilter, ...globalFilters } as any;
+      if (exportFilters.customer_id) { exportFilters.ctmids = exportFilters.customer_id; delete exportFilters.customer_id; }
+      const res = await api.getSiteHealth(exportFilters, 1, 10000);
       if (res && res.sites) {
         if (res.sites.length === 0) {
           Alert.alert("No Data", "There is no data to export with the current filters.");
