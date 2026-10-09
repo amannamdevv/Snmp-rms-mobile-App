@@ -554,6 +554,15 @@ export const api = {
   },
 
   // â”€â”€ SUPPORT â”€â”€
+  getSupportDetails: async () => {
+    try {
+      const response = await djangoApi.get('/api/support-details/');
+      return response.data;
+    } catch (e) {
+      console.warn('[getSupportDetails error]', e);
+      return null;
+    }
+  },
   submitSupportTicket: async (formData) => {
     const response = await djangoApi.post('/api/support/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

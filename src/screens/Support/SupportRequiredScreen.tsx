@@ -1,484 +1,498 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Dimensions,
-  Image, Platform
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+  RefreshControl,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '../../api';
-import { LineChart, BarChart } from 'react-native-chart-kit';
-import Sidebar from '../../components/Sidebar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import AppHeader from '../../components/AppHeader';
-import AppIcon from '../../components/AppIcon';
-import { launchImageLibrary } from 'react-native-image-picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Feather from 'react-native-vector-icons/Feather';
 
-import { 
-  scale, verticalScale, moderateScale, responsiveFontSize, 
-  SCREEN_WIDTH as screenWidth 
+import { api } from '../../api';
+import AppHeader from '../../components/AppHeader';
+import {
+  scale,
+  verticalScale,
+  moderateScale,
+  responsiveFontSize,
 } from '../../utils/responsive';
 
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+interface SupportApiData {
+  id?: number;
+  number1?: string;
+  number2?: string;
+  whatsapp?: string;
+  whatsapp_link?: string;
+  telegram_bot_name?: string;
+  email1?: string;
+  updated_at?: string;
+}
+
+const FAQS_DATA = [
+  {
+    q: 'Why is a site showing as Non-Communicating?',
+    a: 'Sites may show as non-communicating due to power outages, SIM network disconnection, or local router downtime. Check site DC power and MQTT gateway status.',
+  },
+  {
+    q: 'How frequently are SNMP alarm and telemetry logs refreshed?',
+    a: 'Logs and alarms synchronize automatically every 30 seconds via MQTT and background polling.',
+  },
+  {
+    q: 'How are Battery Health and DCEM metrics calculated?',
+    a: 'Battery Health scores evaluate discharge efficiency, voltage drop curves, and charge cycles recorded over the active window.',
+  },
+  {
+    q: 'How to request access for SNMP RMS Write Commands?',
+    a: 'Write commands require elevated authorization. Contact your administrator to enable permissions in User Management.',
+  },
+  {
+    q: 'Experiencing OTP or Login authentication issues?',
+    a: 'Ensure your registered mobile number has active network reception. You can also contact our 24/7 helpline for immediate account verification.',
+  },
+];
+
 export default function SupportRequiredScreen({ navigation }: any) {
-  const [loading, setLoading] = useState(false);
-  const [isSidebarVisible, setSidebarVisible] = useState(false);
-  const [fullname, setFullname] = useState('Administrator');
-  const [email, setEmail] = useState('');
+  const [supportData, setSupportData] = useState<SupportApiData | null>(null);
+  const [loadingSupport, setLoadingSupport] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
 
-  // Tab states for each card
-  const [portalTab, setPortalTab] = useState<'analytics' | 'form'>('analytics');
-  const [fixTab, setFixTab] = useState<'analytics' | 'form'>('analytics');
-
-  // Form states
-  const [portalData, setPortalData] = useState({
-    name: '',
-    email: '',
-    issue_category: '',
-    description: '',
-    screenshot: null as any
-  });
-
-  const [fixData, setFixData] = useState({
-    name: '',
-    email: '',
-    area_to_correct: '',
-    details: '',
-    attach_reference: null as any
-  });
-
-  useEffect(() => {
-    AsyncStorage.getItem('user_fullname').then(n => { if (n) setFullname(n); });
+  const fetchSupport = useCallback(async () => {
+    try {
+      const res: any = await api.getSupportDetails();
+      if (res && res.success && res.data) {
+        setSupportData(res.data);
+      } else if (res && res.data) {
+        setSupportData(res.data);
+      }
+    } catch (e) {
+      console.warn('[SupportRequiredScreen] fetch error:', e);
+    } finally {
+      setLoadingSupport(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  const handlePickImage = async (type: 'portal' | 'fix') => {
-    const options = { mediaType: 'photo' as const, quality: 0.8 as const };
-    const result = await launchImageLibrary(options);
-    if (result.assets && result.assets.length > 0) {
-      if (type === 'portal') {
-        setPortalData({ ...portalData, screenshot: result.assets[0] });
-      } else {
-        setFixData({ ...fixData, attach_reference: result.assets[0] });
-      }
-    }
+  useEffect(() => {
+    fetchSupport();
+  }, [fetchSupport]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchSupport();
   };
 
-  const handleSubmit = async (formType: 'portal' | 'fix') => {
-    setLoading(true);
+  const handleCall = (num?: string) => {
+    const targetNum = num || supportData?.number1 || '07553122002';
+    Linking.openURL('tel:' + targetNum.trim()).catch(e => console.warn('Call error:', e));
+  };
+
+  const handleEmail = (email?: string) => {
+    const targetEmail = email || supportData?.email1 || 'TPMS.Support@shrotigroup.in';
+    Linking.openURL('mailto:' + targetEmail.trim()).catch(e => console.warn('Email error:', e));
+  };
+
+  const openWhatsApp = async () => {
+    if (supportData?.whatsapp_link) {
+      try {
+        await Linking.openURL(supportData.whatsapp_link);
+        return;
+      } catch (_) {}
+    }
+    const phone = supportData?.whatsapp || '919755522181';
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
     try {
-      const formData = new FormData();
-      formData.append('form_type', formType);
-
-      if (formType === 'portal') {
-        if (!portalData.issue_category || !portalData.description) {
-          Alert.alert('Error', 'Please fill all required fields');
-          setLoading(false);
-          return;
-        }
-        formData.append('name', portalData.name);
-        formData.append('email', portalData.email);
-        formData.append('issue_category', portalData.issue_category);
-        formData.append('description', portalData.description);
-        if (portalData.screenshot) {
-          formData.append('screenshot', {
-            uri: portalData.screenshot.uri,
-            type: portalData.screenshot.type,
-            name: portalData.screenshot.fileName || 'screenshot.jpg',
-          } as any);
-        }
+      const waUrl = 'whatsapp://send?phone=' + cleanPhone;
+      const supported = await Linking.canOpenURL(waUrl);
+      if (supported) {
+        await Linking.openURL(waUrl);
       } else {
-        if (!fixData.area_to_correct || !fixData.details) {
-          Alert.alert('Error', 'Please fill all required fields');
-          setLoading(false);
-          return;
-        }
-        formData.append('name', fixData.name);
-        formData.append('email', fixData.email);
-        formData.append('area_to_correct', fixData.area_to_correct);
-        formData.append('details', fixData.details);
-        if (fixData.attach_reference) {
-          formData.append('attach_reference', {
-            uri: fixData.attach_reference.uri,
-            type: fixData.attach_reference.type,
-            name: fixData.attach_reference.fileName || 'reference.jpg',
-          } as any);
-        }
+        await Linking.openURL('https://wa.me/' + cleanPhone);
       }
-
-      const res = await api.submitSupportTicket(formData);
-      if (res.success) {
-        Alert.alert('Success', `Ticket #${res.ticket_id} submitted!`);
-        // Reset form and switch to analytics
-        if (formType === 'portal') {
-          setPortalData({ ...portalData, issue_category: '', description: '', screenshot: null });
-          setPortalTab('analytics');
-        } else {
-          setFixData({ ...fixData, area_to_correct: '', details: '', attach_reference: null });
-          setFixTab('analytics');
-        }
-      } else {
-        Alert.alert('Error', res.error || 'Submission failed');
-      }
-    } catch (e: any) {
-      Alert.alert('Error', 'Network error or server unavailable');
-    } finally {
-      setLoading(false);
+    } catch {
+      await Linking.openURL('https://wa.me/' + cleanPhone);
     }
   };
+
+  const openTelegram = async () => {
+    const rawTelegram = supportData?.telegram_bot_name || 'https://t.me/Shroti_Internal_Bot';
+    const botUser = rawTelegram.replace('https://t.me/', '').replace('tg://resolve?domain=', '').trim();
+    try {
+      const nativeTg = 'tg://resolve?domain=' + botUser;
+      const supported = await Linking.canOpenURL(nativeTg);
+      if (supported) {
+        await Linking.openURL(nativeTg);
+      } else {
+        await Linking.openURL('https://t.me/' + botUser);
+      }
+    } catch {
+      await Linking.openURL(rawTelegram.startsWith('http') ? rawTelegram : 'https://t.me/' + botUser);
+    }
+  };
+
+  const toggleFaq = (idx: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedFaq(expandedFaq === idx ? null : idx);
+  };
+
+  const displayPhone1 = supportData?.number1 || '07553122002';
+  const displayPhone2 = supportData?.number2 || '07553122005';
+  const displayWhatsApp = supportData?.whatsapp
+    ? ('+' + supportData.whatsapp.replace(/^(\d{2})(\d{5})(\d{5})$/, '$1 $2 $3'))
+    : '+91 9755522181';
+  const displayTelegram = supportData?.telegram_bot_name
+    ? supportData.telegram_bot_name.replace('https://t.me/', '')
+    : 'Shroti_Internal_Bot';
+  const displayEmail = supportData?.email1 || 'TPMS.Support@shrotigroup.in';
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ flex: 1, alignSelf: 'center', width: '100%', maxWidth: 650 }}>
-      <AppHeader
-        title="SUPPORT REQUIRED"
-        subtitle="REPORT ISSUES INSTANTLY"
-        leftAction="menu"
-        onLeftPress={() => setSidebarVisible(true)}
-        hideGlobalFilter={true}
-      />
+      <View style={styles.innerWrapper}>
+        <AppHeader
+          title="Help & Support"
+          leftAction="back"
+          onLeftPress={() => navigation.goBack()}
+          hideGlobalFilter={true}
+        />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.heroSection}>
-          <Text style={styles.heroTitle}>Support System</Text>
-          <Text style={styles.heroSub}>Report and resolve technical issues faster</Text>
-        </View>
-
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statVal}>24</Text>
-            <Text style={styles.statLab}>Resolved Today</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statVal}>12</Text>
-            <Text style={styles.statLab}>Pending</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statVal}>2.4h</Text>
-            <Text style={styles.statLab}>Avg. Response</Text>
-          </View>
-        </View>
-
-        {/* Card 1: Portal Issues */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBox, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
-              <AppIcon name="monitor" size={20} color="#3b82f6" />
+        <ScrollView
+          style={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
+        >
+          {/* HERO BANNER */}
+          <View style={styles.heroCard}>
+            <View style={styles.heroLeftIconCircle}>
+              <MaterialCommunityIcons name="headphones" size={34} color="#1d4ed8" />
             </View>
-            <View>
-              <Text style={styles.cardTitle}>Report Portal Issues</Text>
-              <Text style={styles.cardDesc}>Technical problems & system errors</Text>
+            <View style={styles.heroRightContent}>
+              <Text style={styles.heroTitle}>We{"'"}re Here to Help!</Text>
+              <Text style={styles.heroSubText}>
+                For any issue, query or technical support, reach out to us. We{"'"}re available <Text style={styles.heroHighlight247}>24/7</Text> to assist you.
+              </Text>
             </View>
           </View>
 
-          <View style={styles.tabs}>
-            <TouchableOpacity onPress={() => setPortalTab('analytics')} style={[styles.tab, portalTab === 'analytics' && styles.tabActive]}>
-              <Text style={[styles.tabText, portalTab === 'analytics' && styles.tabTextActive]}>Analytics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setPortalTab('form')} style={[styles.tab, portalTab === 'form' && styles.tabActive]}>
-              <Text style={[styles.tabText, portalTab === 'form' && styles.tabTextActive]}>Report Issue</Text>
-            </TouchableOpacity>
+          {/* SECTION 1: CONTACT SUPPORT CHANNELS */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleIconWrap}>
+              <MaterialCommunityIcons name="phone-in-talk" size={18} color="#0f203c" />
+            </View>
+            <Text style={styles.sectionTitleText}>Contact Support</Text>
+            {loadingSupport && <ActivityIndicator size="small" color="#1e3c72" style={{ marginLeft: 8 }} />}
           </View>
 
-          <View style={styles.panel}>
-            {portalTab === 'analytics' ? (
-              <LineChart
-                data={{
-                  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                  datasets: [{ data: [12, 18, 9, 15, 11, 7, 10] }]
-                }}
-                width={screenWidth - 60}
-                height={200}
-                chartConfig={chartConfig}
-                bezier
-                style={styles.chart}
-              />
-            ) : (
-              <View style={styles.form}>
-                <View style={styles.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputLabel}>Name</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Your name"
-                      placeholderTextColor="#94a3b8"
-                      value={portalData.name}
-                      onChangeText={t => setPortalData({ ...portalData, name: t })}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputLabel}>Email</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="you@company.com"
-                      placeholderTextColor="#94a3b8"
-                      value={portalData.email}
-                      onChangeText={t => setPortalData({ ...portalData, email: t })}
-                    />
-                  </View>
-                </View>
-
-                <Text style={styles.inputLabel}>Issue Category</Text>
-                <View style={styles.pickerWrap}>
-                  {['Login/Access', 'Performance', 'Broken Feature', 'UI/UX', 'Other'].map(cat => (
-                    <TouchableOpacity
-                      key={cat}
-                      onPress={() => setPortalData({ ...portalData, issue_category: cat })}
-                      style={[styles.chip, portalData.issue_category === cat && styles.chipActive]}
-                    >
-                      <Text style={[styles.chipText, portalData.issue_category === cat && styles.chipTextActive]}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <Text style={styles.inputLabel}>Description</Text>
-                <TextInput
-                  style={[styles.input, { height: verticalScale(80), textAlignVertical: 'top' }]}
-                  multiline
-                  placeholder="Describe the problem..."
-                  placeholderTextColor="#94a3b8"
-                  value={portalData.description}
-                  onChangeText={t => setPortalData({ ...portalData, description: t })}
-                />
-
-                <TouchableOpacity style={styles.fileBtn} onPress={() => handlePickImage('portal')}>
-                  <AppIcon name="image" size={18} color="#64748b" style={{ marginRight: moderateScale(8) }} />
-                  <Text style={styles.fileBtnText}>{portalData.screenshot ? (portalData.screenshot.fileName || 'Image Selected') : 'Attach Screenshot'}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.submitBtn} onPress={() => handleSubmit('portal')} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>Submit Ticket</Text>}
-                </TouchableOpacity>
+          <View style={styles.contactList}>
+            {/* Phone 1 */}
+            <TouchableOpacity
+              style={styles.contactRowCard}
+              activeOpacity={0.7}
+              onPress={() => handleCall(displayPhone1)}
+            >
+              <View style={[styles.contactIconBox, { backgroundColor: '#eff6ff' }]}>
+                <MaterialCommunityIcons name="phone" size={20} color="#2563eb" />
               </View>
-            )}
-          </View>
-        </View>
-
-        {/* Card 2: Instant Reporting */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBox, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-              <AppIcon name="check-circle" size={20} color="#10b981" />
-            </View>
-            <View>
-              <Text style={styles.cardTitle}>Reporting & Correction</Text>
-              <Text style={styles.cardDesc}>Quick fixes & content corrections</Text>
-            </View>
-          </View>
-
-          <View style={styles.tabs}>
-            <TouchableOpacity onPress={() => setFixTab('analytics')} style={[styles.tab, fixTab === 'analytics' && styles.tabActive]}>
-              <Text style={[styles.tabText, fixTab === 'analytics' && styles.tabTextActive]}>Analytics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setFixTab('form')} style={[styles.tab, fixTab === 'form' && styles.tabActive]}>
-              <Text style={[styles.tabText, fixTab === 'form' && styles.tabTextActive]}>Report Fix</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.panel}>
-            {fixTab === 'analytics' ? (
-              <BarChart
-                data={{
-                  labels: ['Cont', 'Comm', 'Data', 'Link', 'Img'],
-                  datasets: [{ data: [18, 7, 12, 16, 5] }]
-                }}
-                width={screenWidth - 60}
-                height={200}
-                chartConfig={chartConfig}
-                style={styles.chart}
-                yAxisLabel=""
-                yAxisSuffix=""
-              />
-            ) : (
-              <View style={styles.form}>
-                <View style={styles.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputLabel}>Name</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Your name"
-                      placeholderTextColor="#94a3b8"
-                      value={fixData.name}
-                      onChangeText={t => setFixData({ ...fixData, name: t })}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputLabel}>Email</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="you@company.com"
-                      placeholderTextColor="#94a3b8"
-                      value={fixData.email}
-                      onChangeText={t => setFixData({ ...fixData, email: t })}
-                    />
-                  </View>
-                </View>
-
-                <Text style={styles.inputLabel}>Area to Correct</Text>
-                <View style={styles.pickerWrap}>
-                  {['Content', 'Data', 'Link', 'Image', 'Other'].map(cat => (
-                    <TouchableOpacity
-                      key={cat}
-                      onPress={() => setFixData({ ...fixData, area_to_correct: cat })}
-                      style={[styles.chip, fixData.area_to_correct === cat && styles.chipActive]}
-                    >
-                      <Text style={[styles.chipText, fixData.area_to_correct === cat && styles.chipTextActive]}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <Text style={styles.inputLabel}>Details</Text>
-                <TextInput
-                  style={[styles.input, { height: verticalScale(80), textAlignVertical: 'top' }]}
-                  multiline
-                  placeholder="What needs to be corrected?"
-                  placeholderTextColor="#94a3b8"
-                  value={fixData.details}
-                  onChangeText={t => setFixData({ ...fixData, details: t })}
-                />
-
-                <TouchableOpacity style={styles.fileBtn} onPress={() => handlePickImage('fix')}>
-                  <AppIcon name="paperclip" size={18} color="#64748b" style={{ marginRight: moderateScale(8) }} />
-                  <Text style={styles.fileBtnText}>{fixData.attach_reference ? (fixData.attach_reference.fileName || 'File Selected') : 'Attach Reference'}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.submitBtn, { backgroundColor: '#10b981' }]} onPress={() => handleSubmit('fix')} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>Submit Request</Text>}
-                </TouchableOpacity>
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactLabel}>Primary Helpline (Phone 1)</Text>
+                <Text style={styles.contactValue}>{displayPhone1}</Text>
               </View>
-            )}
+              <MaterialCommunityIcons name="phone" size={18} color="#94a3b8" />
+            </TouchableOpacity>
+
+            {/* Phone 2 */}
+            <TouchableOpacity
+              style={styles.contactRowCard}
+              activeOpacity={0.7}
+              onPress={() => handleCall(displayPhone2)}
+            >
+              <View style={[styles.contactIconBox, { backgroundColor: '#f0fdf4' }]}>
+                <MaterialCommunityIcons name="phone" size={20} color="#16a34a" />
+              </View>
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactLabel}>Secondary Helpline (Phone 2)</Text>
+                <Text style={styles.contactValue}>{displayPhone2}</Text>
+              </View>
+              <MaterialCommunityIcons name="phone" size={18} color="#94a3b8" />
+            </TouchableOpacity>
+
+            {/* WhatsApp hidden */}
+
+            {/* Telegram Bot */}
+            <TouchableOpacity
+              style={styles.contactRowCard}
+              activeOpacity={0.7}
+              onPress={openTelegram}
+            >
+              <View style={[styles.contactIconBox, { backgroundColor: '#e0f2fe' }]}>
+                <FontAwesome5 name="telegram-plane" size={18} color="#0284c7" />
+              </View>
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactLabel}>Telegram Bot</Text>
+                <Text style={styles.contactValue}>{displayTelegram}</Text>
+              </View>
+              <Feather name="external-link" size={18} color="#94a3b8" />
+            </TouchableOpacity>
+
+            {/* Email */}
+            <TouchableOpacity
+              style={styles.contactRowCard}
+              activeOpacity={0.7}
+              onPress={() => handleEmail(displayEmail)}
+            >
+              <View style={[styles.contactIconBox, { backgroundColor: '#fae8ff' }]}>
+                <MaterialCommunityIcons name="email" size={20} color="#a855f7" />
+              </View>
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactLabel}>Email Support</Text>
+                <Text style={styles.contactValue}>{displayEmail}</Text>
+              </View>
+              <Feather name="external-link" size={18} color="#94a3b8" />
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={{ height: verticalScale(40) }} />
-      </ScrollView>
+          {/* SECTION 2: FAQS & GUIDES */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleIconWrap}>
+              <MaterialCommunityIcons name="book-open-page-variant" size={18} color="#0f203c" />
+            </View>
+            <Text style={styles.sectionTitleText}>Frequently Asked Questions</Text>
+          </View>
 
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setSidebarVisible(false)}
-        navigation={navigation}
-        fullname={fullname}
-        activeRoute="SupportRequired"
-        handleLogout={async () => {
-          await AsyncStorage.multiRemove(['djangoSession', 'user_fullname', 'user_email']);
-          navigation.replace('Login');
-        }}
-      />
+          <View style={styles.faqsList}>
+            {FAQS_DATA.map((item, idx) => {
+              const isExp = expandedFaq === idx;
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  style={[styles.faqRow, isExp && styles.faqRowActive]}
+                  activeOpacity={0.8}
+                  onPress={() => toggleFaq(idx)}
+                >
+                  <View style={styles.faqRowHeader}>
+                    <Text style={styles.faqNumberText}>{(idx + 1) + '.'}</Text>
+                    <Text style={styles.faqQuestionText}>{item.q}</Text>
+                    <Feather name={isExp ? 'chevron-up' : 'chevron-down'} size={18} color="#64748b" />
+                  </View>
+                  {isExp && <Text style={styles.faqAnswerText}>{item.a}</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* FOOTER */}
+          <View style={styles.pageFooter}>
+            <Text style={styles.footerBrand}>STPL SNMP-RMS</Text>
+            <Text style={styles.footerSub}>Monitoring Portal  |  App Version 1.3.0</Text>
+          </View>
+
+          <View style={{ height: verticalScale(30) }} />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
 }
 
-const chartConfig = {
-  backgroundGradientFrom: '#fff',
-  backgroundGradientTo: '#fff',
-  color: (opacity = 1) => `rgba(30, 60, 114, ${opacity})`,
-  labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`,
-  strokeWidth: 2,
-  barPercentage: 0.6,
-  useShadowColorFromDataset: false,
-  propsForDots: { r: '4', strokeWidth: '2', stroke: '#3b82f6' }
-};
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#c5d4eeff' },
-  content: { flex: 1, padding: moderateScale(16) },
-  row: { flexDirection: 'row', gap: moderateScale(10), alignItems: 'center' },
-  heroSection: { marginBottom: verticalScale(20), alignItems: 'center' },
-  heroTitle: { fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', color: '#1e293b' },
-  heroSub: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', marginTop: moderateScale(4) },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  innerWrapper: {
+    flex: 1,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 650,
+  },
+  scrollContent: {
+    flex: 1,
+    paddingHorizontal: moderateScale(16),
+    paddingTop: verticalScale(12),
+  },
 
-  statsRow: { flexDirection: 'row', gap: moderateScale(10), marginBottom: verticalScale(24) },
-  statBox: { 
-    flex: 1, 
-    backgroundColor: '#fff', 
-    padding: moderateScale(16), 
-    borderRadius: moderateScale(16), 
-    alignItems: 'center', 
-    elevation: 2, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: verticalScale(2) }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 8 
+  // HERO CARD
+  heroCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e0f2fe',
+    borderRadius: moderateScale(18),
+    padding: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    marginBottom: verticalScale(18),
   },
-  statVal: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '800', color: '#1e3c72' },
-  statLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '600', marginTop: moderateScale(4), textAlign: 'center' },
+  heroLeftIconCircle: {
+    width: scale(56),
+    height: scale(56),
+    borderRadius: scale(28),
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: moderateScale(14),
+    elevation: 2,
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  heroRightContent: {
+    flex: 1,
+  },
+  heroTitle: {
+    fontSize: responsiveFontSize(17),
+    fontWeight: '700',
+    color: '#0f203c',
+    marginBottom: 4,
+  },
+  heroSubText: {
+    fontSize: responsiveFontSize(12),
+    color: '#334155',
+    lineHeight: 18,
+  },
+  heroHighlight247: {
+    fontWeight: '700',
+    color: '#0284c7',
+  },
 
-  card: { 
-    backgroundColor: '#fff', 
-    borderRadius: moderateScale(20), 
-    padding: moderateScale(16), 
-    marginBottom: verticalScale(20), 
-    elevation: 3, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: verticalScale(4) }, 
-    shadowOpacity: 0.08, 
-    shadowRadius: 12 
+  // SECTION HEADER
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: verticalScale(6),
+    marginBottom: verticalScale(12),
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(16), gap: moderateScale(12) },
-  iconBox: { 
-    width: scale(40), 
-    height: scale(40), 
-    borderRadius: moderateScale(12), 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  sectionTitleIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
-  cardTitle: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
-  cardDesc: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
+  sectionTitleText: {
+    fontSize: responsiveFontSize(14),
+    fontWeight: '700',
+    color: '#0f203c',
+    letterSpacing: 0.2,
+  },
 
-  tabs: { 
-    flexDirection: 'row', 
-    backgroundColor: '#f1f5f9', 
-    borderRadius: moderateScale(12), 
-    padding: moderateScale(4), 
-    marginBottom: verticalScale(16) 
+  // CONTACT CHANNELS LIST
+  contactList: {
+    marginBottom: verticalScale(16),
   },
-  tab: { flex: 1, paddingVertical: verticalScale(8), alignItems: 'center', borderRadius: moderateScale(10) },
-  tabActive: { backgroundColor: '#fff', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-  tabText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#1e3c72' },
+  contactRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: moderateScale(14),
+    borderRadius: moderateScale(14),
+    marginBottom: verticalScale(10),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    elevation: 1.5,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  contactIconBox: {
+    width: scale(42),
+    height: scale(42),
+    borderRadius: scale(12),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: moderateScale(12),
+  },
+  contactInfo: {
+    flex: 1,
+  },
+  contactLabel: {
+    fontSize: responsiveFontSize(11),
+    color: '#64748b',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  contactValue: {
+    fontSize: responsiveFontSize(13.5),
+    color: '#0f203c',
+    fontWeight: '600',
+  },
 
-  panel: { minHeight: verticalScale(220) },
-  chart: { borderRadius: moderateScale(16), marginVertical: verticalScale(8), marginLeft: scale(-10) },
+  // FAQS LIST
+  faqsList: {
+    marginBottom: verticalScale(16),
+  },
+  faqRow: {
+    backgroundColor: '#ffffff',
+    borderRadius: moderateScale(12),
+    padding: moderateScale(14),
+    marginBottom: verticalScale(8),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  faqRowActive: {
+    borderColor: '#93c5fd',
+    backgroundColor: '#f8fafc',
+  },
+  faqRowHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  faqNumberText: {
+    fontSize: responsiveFontSize(13),
+    fontWeight: '700',
+    color: '#1e3c72',
+    marginRight: 6,
+  },
+  faqQuestionText: {
+    flex: 1,
+    fontSize: responsiveFontSize(13),
+    fontWeight: '600',
+    color: '#1e293b',
+    lineHeight: 18,
+    marginRight: 6,
+  },
+  faqAnswerText: {
+    fontSize: responsiveFontSize(12),
+    color: '#475569',
+    lineHeight: 18,
+    marginTop: verticalScale(8),
+    paddingTop: verticalScale(8),
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
 
-  form: { gap: moderateScale(12) },
-  inputLabel: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#475569', marginBottom: moderateScale(4) },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0', 
-    borderRadius: moderateScale(10), 
-    padding: moderateScale(12), 
-    fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e293b', 
-    backgroundColor: '#fcfcfc' 
+  // FOOTER
+  pageFooter: {
+    alignItems: 'center',
+    marginTop: verticalScale(14),
+    paddingTop: verticalScale(12),
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
   },
-  pickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: moderateScale(8) },
-  chip: { 
-    paddingHorizontal: moderateScale(12), 
-    paddingVertical: verticalScale(6), 
-    borderRadius: moderateScale(20), 
-    borderWidth: 1, 
-    borderColor: '#e2e8f0', 
-    backgroundColor: '#fff' 
+  footerBrand: {
+    fontSize: responsiveFontSize(12),
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.5,
   },
-  chipActive: { borderColor: '#1e3c72', backgroundColor: 'rgba(30, 60, 114, 0.05)' },
-  chipText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', color: '#64748b' },
-  chipTextActive: { color: '#1e3c72' },
-
-  fileBtn: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: moderateScale(12), 
-    borderRadius: moderateScale(10), 
-    borderStyle: 'dashed', 
-    borderWidth: 1, 
-    borderColor: '#cbd5e1', 
-    backgroundColor: '#f8fafc' 
+  footerSub: {
+    fontSize: responsiveFontSize(10.5),
+    color: '#94a3b8',
+    marginTop: 2,
   },
-  fileBtnText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '500' },
-  submitBtn: { 
-    backgroundColor: '#1e3c72', 
-    padding: verticalScale(14), 
-    borderRadius: moderateScale(12), 
-    alignItems: 'center', 
-    marginTop: verticalScale(8) 
-  },
-  submitBtnText: { color: '#fff', fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700' },
 });

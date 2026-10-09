@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Platform,
@@ -49,54 +49,54 @@ export default function AppHeader({
   return (
     <>
       <View style={styles.header}>
-      {/* Left button */}
-      <TouchableOpacity
-        onPress={onLeftPress}
-        style={styles.sideBtn}
-        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-      >
-        <Icon
-          name={leftAction === 'menu' ? 'menu' : 'arrow-left'}
-          size={24}
-          color="#fff"
+        {/* Left button */}
+        <TouchableOpacity
+          onPress={onLeftPress}
+          style={styles.sideBtn}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <Icon
+            name={leftAction === 'menu' ? 'menu' : 'arrow-left'}
+            size={24}
+            color="#fff"
+          />
+        </TouchableOpacity>
+
+        {/* Title */}
+        <View style={styles.titleWrap}>
+          <Text style={styles.title} numberOfLines={1}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text> : null}
+        </View>
+
+        {/* Right buttons */}
+        <View style={styles.rightWrap}>
+          {finalRightActions.length > 0 ? (
+            finalRightActions.map((a, idx) => (
+              <TouchableOpacity
+                key={idx}
+                onPress={a.onPress}
+                style={styles.sideBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+              >
+                <Icon name={a.icon} size={22} color="#fff" />
+                {a.badge && <View style={styles.badgeDot} />}
+              </TouchableOpacity>
+            ))
+          ) : (
+            /* Spacer so title stays centred */
+            <View style={{ width: 40 }} />
+          )}
+        </View>
+      </View>
+      {!hideGlobalFilter && <GlobalFilterBanner />}
+      {!hideGlobalFilter && (
+        <FilterModal
+          visible={filterModalVisible}
+          onClose={() => setFilterModalVisible(false)}
+          onApply={(f: any) => { setGlobalFilters(f); setFilterModalVisible(false); }}
+          initialFilters={globalFilters}
         />
-      </TouchableOpacity>
-
-      {/* Title */}
-      <View style={styles.titleWrap}>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text> : null}
-      </View>
-
-      {/* Right buttons */}
-      <View style={styles.rightWrap}>
-        {finalRightActions.length > 0 ? (
-          finalRightActions.map((a, idx) => (
-            <TouchableOpacity
-              key={idx}
-              onPress={a.onPress}
-              style={styles.sideBtn}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-            >
-              <Icon name={a.icon} size={22} color="#fff" />
-              {a.badge && <View style={styles.badgeDot} />}
-            </TouchableOpacity>
-          ))
-        ) : (
-          /* Spacer so title stays centred */
-          <View style={{ width: 40 }} />
-        )}
-      </View>
-    </View>
-    {!hideGlobalFilter && <GlobalFilterBanner />}
-    {!hideGlobalFilter && (
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        onApply={(f: any) => { setGlobalFilters(f); setFilterModalVisible(false); }}
-        initialFilters={globalFilters}
-      />
-    )}
+      )}
     </>
   );
 }
@@ -154,6 +154,3 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
 });
-
-
-

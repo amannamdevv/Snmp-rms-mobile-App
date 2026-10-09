@@ -40,7 +40,7 @@ const getAvatarColor = (name: string) => {
 
 export default function Sidebar({ isVisible, onClose, navigation, fullname, handleLogout, activeRoute }: SidebarProps) {
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
-  const slideAnim = React.useRef(new Animated.Value(-width * 0.75)).current;
+    const slideAnim = React.useRef(new Animated.Value(-width * 0.75)).current;
 
   // Sub-routes tracking for auto-open dropdowns
   const isSitesSubActive = ['SiteVitals', 'NonCommSites'].includes(activeRoute || '');
@@ -434,16 +434,6 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
                 <Text style={[styles.text, activeRoute === 'TTTool' && { color: '#61A5C2' }]}>TT Tool</Text>
               </TouchableOpacity>
 
-              {/* 19. SUPPORT REQUIRED */}
-              <TouchableOpacity
-                style={[styles.item, activeRoute === 'SupportRequired' && styles.itemActive]}
-                onPress={() => navigateTo('SupportRequired')}
-                activeOpacity={0.7}
-              >
-                <Icon name="life-buoy" size={20} color={activeRoute === 'SupportRequired' ? "#61A5C2" : "#fff"} style={styles.icon} />
-                <Text style={[styles.text, activeRoute === 'SupportRequired' && { color: '#61A5C2' }]}>Support Required</Text>
-              </TouchableOpacity>
-
               {/* 20. MAPPING OF RESOURCES */}
               <TouchableOpacity
                 style={[styles.item, activeRoute === 'ResourceMapping' && styles.itemActive]}
@@ -506,8 +496,24 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
 
             </ScrollView>
 
-            {/* Logout Footer */}
+            {/* Persistent Help & Support Footer */}
             <View style={styles.footer}>
+              <TouchableOpacity
+                style={[styles.supportFooterBtn, activeRoute === 'SupportRequired' && styles.supportFooterBtnActive]}
+                onPress={() => navigateTo('SupportRequired')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.supportFooterLeft}>
+                  <Icon name="headphones" size={20} color="#38bdf8" style={styles.supportIcon} />
+                  <Text style={styles.supportFooterText}>Help & Support</Text>
+                </View>
+                <View style={styles.badge247}>
+                  <Text style={styles.badge247Text}>24/7</Text>
+                </View>
+              </TouchableOpacity>
+
+              <Text style={styles.appVersionText}>App Version 1.3.0</Text>
+
               <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
                 <Icon name="log-out" size={18} color="#fff" style={styles.icon} />
                 <Text style={styles.logoutText}>Logout</Text>
@@ -516,7 +522,7 @@ export default function Sidebar({ isVisible, onClose, navigation, fullname, hand
           </SafeAreaView>
         </Animated.View>
       </View>
-    </Modal>
+          </Modal>
   );
 }
 
@@ -595,10 +601,60 @@ const styles = StyleSheet.create({
   subText: { color: '#89C2D9', fontSize: responsiveFontSize(13), flexShrink: 1, },
   activeSubText: { color: '#fff', fontWeight: 'bold' },
   footer: {
-    padding: moderateScale(20),
+    paddingHorizontal: moderateScale(16),
+    paddingTop: verticalScale(12),
+    paddingBottom: verticalScale(20),
     borderTopWidth: 1,
-    borderTopColor: '#1e3c72',
-    paddingBottom: verticalScale(30)
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#0a1629',
+  },
+  supportFooterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: verticalScale(11),
+    paddingHorizontal: moderateScale(12),
+    borderRadius: moderateScale(10),
+    marginBottom: verticalScale(10),
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+  },
+  supportFooterBtnActive: {
+    backgroundColor: '#1e3c72',
+    borderColor: '#38bdf8',
+  },
+  supportFooterLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  supportIcon: {
+    marginRight: moderateScale(12),
+  },
+  supportFooterText: {
+    color: '#ffffff',
+    fontSize: responsiveFontSize(14),
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  badge247: {
+    backgroundColor: '#38bdf8',
+    paddingHorizontal: moderateScale(8),
+    paddingVertical: verticalScale(2),
+    borderRadius: moderateScale(10),
+  },
+  badge247Text: {
+    color: '#0f203c',
+    fontSize: responsiveFontSize(10),
+    fontWeight: '800',
+  },
+  appVersionText: {
+    color: '#64748b',
+    fontSize: responsiveFontSize(11),
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: verticalScale(10),
+    letterSpacing: 0.4,
   },
   logoutBtn: {
     flexDirection: 'row',
