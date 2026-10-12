@@ -436,31 +436,31 @@ const styles = StyleSheet.create({
   emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   // Site card
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: moderateScale(16), marginBottom: verticalScale(14), elevation: 3, borderLeftWidth: 5, borderLeftColor: '#89c2d9', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(10), elevation: 3, borderLeftWidth: 5, borderLeftColor: '#89c2d9', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
   cardCritical: { borderLeftColor: '#dc2626', backgroundColor: '#fffbfb' },
 
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(12) },
-  siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72', lineHeight: 20 },
-  siteId: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(3), fontWeight: '500' },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(10) },
+  siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72', lineHeight: 22 },
+  siteId: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', marginTop: verticalScale(3), fontWeight: '700' },
   daysBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: moderateScale(9), paddingVertical: verticalScale(5), borderRadius: 20, borderWidth: 1.5 },
-  daysBadgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' },
+  daysBadgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
 
-  divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(12) },
+  divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
 
   infoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  infoCell: { width: '50%', marginBottom: verticalScale(10), paddingRight: moderateScale(8) },
+  infoCell: { width: '50%', marginBottom: verticalScale(8), paddingRight: moderateScale(8) },
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(2), gap: 4 },
-  infoLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
-  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#334155', fontWeight: '600' },
+  infoLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
+  infoValue: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '500' },
 
   durationRow: { marginTop: verticalScale(8), flexDirection: 'row', alignItems: 'center', gap: moderateScale(10) },
   durationBarBg: { flex: 1, height: verticalScale(5), backgroundColor: '#e2e8f0', borderRadius: 3, overflow: 'hidden' },
   durationBarFill: { height: '100%', borderRadius: 3 },
   durationLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', width: moderateScale(65), textAlign: 'right' },
-  alarmSec: { padding: moderateScale(10), backgroundColor: '#fff5f5', borderRadius: 8, marginTop: verticalScale(12), borderWidth: 1, borderColor: '#fee2e2' },
-  secTitle: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: verticalScale(6), letterSpacing: 0.5 },
+  alarmSec: { padding: moderateScale(10), backgroundColor: '#fff5f5', borderRadius: 8, marginTop: verticalScale(10), borderWidth: 1, borderColor: '#fee2e2' },
+  secTitle: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', marginBottom: verticalScale(6), letterSpacing: 0.5 },
   alarmRow: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(4), gap: 6 },
-  alarmName: { flex: 1, fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '600', color: '#450a0a' },
-  alarmTime: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#991b1b', fontStyle: 'italic' },
+  alarmName: { flex: 1, fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '600', color: '#450a0a' },
+  alarmTime: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#991b1b', fontStyle: 'italic' },
 });
 

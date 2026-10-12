@@ -68,7 +68,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
   const [supportData, setSupportData] = useState<SupportApiData | null>(null);
   const [loadingSupport, setLoadingSupport] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   const fetchSupport = useCallback(async () => {
     try {
@@ -162,7 +162,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <View style={styles.innerWrapper}>
         <AppHeader
-          title="Help & Support"
+          title="Help & Support (24/7)"
           leftAction="back"
           onLeftPress={() => navigation.goBack()}
           hideGlobalFilter={true}
@@ -173,18 +173,7 @@ export default function SupportRequiredScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />}
         >
-          {/* HERO BANNER */}
-          <View style={styles.heroCard}>
-            <View style={styles.heroLeftIconCircle}>
-              <MaterialCommunityIcons name="headphones" size={34} color="#1d4ed8" />
-            </View>
-            <View style={styles.heroRightContent}>
-              <Text style={styles.heroTitle}>We{"'"}re Here to Help!</Text>
-              <Text style={styles.heroSubText}>
-                For any issue, query or technical support, reach out to us. We{"'"}re available <Text style={styles.heroHighlight247}>24/7</Text> to assist you.
-              </Text>
-            </View>
-          </View>
+
 
           {/* SECTION 1: CONTACT SUPPORT CHANNELS */}
           <View style={styles.sectionHeader}>
@@ -427,7 +416,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   contactValue: {
-    fontSize: responsiveFontSize(13.5),
+    fontSize: responsiveFontSize(16),
     color: '#0f203c',
     fontWeight: '600',
   },
@@ -460,14 +449,14 @@ const styles = StyleSheet.create({
   },
   faqQuestionText: {
     flex: 1,
-    fontSize: responsiveFontSize(13),
+    fontSize: responsiveFontSize(15),
     fontWeight: '600',
     color: '#1e293b',
     lineHeight: 18,
     marginRight: 6,
   },
   faqAnswerText: {
-    fontSize: responsiveFontSize(12),
+    fontSize: responsiveFontSize(14),
     color: '#475569',
     lineHeight: 18,
     marginTop: verticalScale(8),

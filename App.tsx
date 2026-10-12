@@ -4,6 +4,8 @@ import { Platform } from 'react-native';
 import NetworkHandler from './src/components/NetworkHandler';
 import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates';
 import { NavigationContainer } from '@react-navigation/native';
+import CustomUpdateModal from './src/components/CustomUpdateModal';
+import { useState } from 'react';
 import { StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -83,25 +85,22 @@ import { RootStackParamList } from './src/types/navigation';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const inAppUpdates = new SpInAppUpdates(false);
-      inAppUpdates.checkNeedsUpdate().then((result) => {
-        if (result.shouldUpdate) {
-          inAppUpdates.startUpdate({
-            updateType: IAUUpdateKind.FLEXIBLE,
-          }).catch(console.log);
-        }
-      }).catch(console.log);
-    }
-  }, []);
+  const [currentRoute, setCurrentRoute] = useState<string>('');
+  
 
   return (
     <NetworkHandler>
     <FilterProvider>
       <SafeAreaProvider>
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      <NavigationContainer>
+      <NavigationContainer
+        onStateChange={(state) => {
+          if (state) {
+            const route = state.routes[state.index].name;
+            setCurrentRoute(route + Date.now()); // appending timestamp to ensure it always triggers effect
+          }
+        }}
+      >
         <Stack.Navigator
           initialRouteName="Splash"
           screenOptions={{ headerShown: false }}
@@ -161,6 +160,7 @@ export default function App() {
           <Stack.Screen name="UserManagement" component={UserManagementScreen} />
 
         </Stack.Navigator>
+        <CustomUpdateModal currentRoute={currentRoute} />
       </NavigationContainer>
     </SafeAreaProvider>
     </FilterProvider>

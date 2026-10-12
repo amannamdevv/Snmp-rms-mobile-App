@@ -425,19 +425,19 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
   emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
-  card: { backgroundColor: '#fff', padding: moderateScale(16), borderRadius: 12, marginBottom: verticalScale(12), elevation: 2 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12) },
-  siteId: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1e293b' },
+  card: { backgroundColor: '#fff', padding: moderateScale(12), borderRadius: 12, marginBottom: verticalScale(10), elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(8) },
+  siteId: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
   badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
   activeBadge: { backgroundColor: '#d1fae5' },
   downBadge: { backgroundColor: '#fee2e2' },
   badgeText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '600', color: '#333' },
-  siteName: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', marginBottom: verticalScale(12), color: '#64748b' },
+  siteName: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', marginBottom: verticalScale(8), color: '#334155' },
 
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(8) },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(6) },
   infoCol: { flex: 1 },
-  infoLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '500' },
+  infoLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  infoValue: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '500' },
 
   // Expanded Section Styles
   expandedContainer: { marginTop: verticalScale(12), paddingTop: verticalScale(12), borderTopWidth: 1, borderTopColor: '#eee' },
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   noDataText: { textAlign: 'center', color: '#888', fontSize: responsiveFontSize(13), flexShrink: 1, marginVertical: verticalScale(10) },
 
   // Action Buttons Row
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: verticalScale(16), gap: moderateScale(10) },
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: verticalScale(12), gap: moderateScale(10) },
   actionBtnOutline: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, borderWidth: 1, borderColor: '#64748b', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
   actionBtnOutlineText: { color: '#475569', fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600' },
   actionBtnSolid: { flex: 1, paddingVertical: verticalScale(10), borderRadius: 8, backgroundColor: '#1e3c72', alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },

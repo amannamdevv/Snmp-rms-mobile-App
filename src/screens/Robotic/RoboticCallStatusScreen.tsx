@@ -314,24 +314,31 @@ export default function RoboticCallStatusScreen({ navigation }: Props) {
         )}
       </View>
 
-      <FlatList
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => (item.id || index).toString()}
-        contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        onEndReached={() => hasNext && fetchData(page + 1)}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={
-          !loading && filteredData.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <AppIcon name="search" size={scale(48)} color="#cbd5e1" />
-              <Text style={styles.emptyText}>No Data Found</Text>
-              <Text style={styles.emptySubtitle}>Try searching with different criteria.</Text>
-            </View>
-          ) : null
-        }
-      />
+      {loading && !refreshing && page === 1 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: verticalScale(60) }}>
+          <ActivityIndicator size="large" color="#1e3c72" />
+          <Text style={{ marginTop: verticalScale(12), fontSize: responsiveFontSize(14), color: '#64748b', fontWeight: '500' }}>Loading calls...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => (item.id || index).toString()}
+          contentContainerStyle={styles.listContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          onEndReached={() => hasNext && fetchData(page + 1)}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={
+            !loading && filteredData.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <AppIcon name="search" size={scale(48)} color="#cbd5e1" />
+                <Text style={styles.emptyText}>No Data Found</Text>
+                <Text style={styles.emptySubtitle}>Try searching with different criteria.</Text>
+              </View>
+            ) : null
+          }
+        />
+      )}
       <Sidebar
         isVisible={isSidebarVisible}
         onClose={() => setSidebarVisible(false)}

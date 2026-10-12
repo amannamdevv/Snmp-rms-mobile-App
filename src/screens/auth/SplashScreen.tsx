@@ -7,15 +7,42 @@ import * as Animatable from 'react-native-animatable';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 const SplashScreen = ({ navigation }: Props) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('Login');
-    }, 3000);
+    let isMounted = true;
 
-    return () => clearTimeout(timer);
+    const checkSessionAndNavigate = async () => {
+      try {
+        const [session, fullname] = await Promise.all([
+          AsyncStorage.getItem('djangoSession'),
+          AsyncStorage.getItem('user_fullname'),
+        ]);
+
+        // Keep the splash animation visible for 2.5 to 3 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+
+        if (!isMounted) return;
+
+        if (session) {
+          navigation.replace('Home', { fullname: fullname || 'User' });
+        } else {
+          navigation.replace('Login');
+        }
+      } catch (e) {
+        if (!isMounted) return;
+        navigation.replace('Login');
+      }
+    };
+
+    checkSessionAndNavigate();
+
+    return () => {
+      isMounted = false;
+    };
   }, [navigation]);
 
   return (

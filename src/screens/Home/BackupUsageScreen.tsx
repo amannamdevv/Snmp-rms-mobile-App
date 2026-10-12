@@ -197,8 +197,8 @@ export default function BackupUsageScreen({ navigation }: Props) {
               <StatCard icon="bar-chart-2" label="Total Sites" value={total} color="#3498db" pct={null} />
               <StatCard icon="zap" label="Sites on DG" value={dgCount} color="#e67e22" pct={pct(dgCount)} />
               <StatCard icon="battery-charging" label="Sites on Battery" value={battCount} color="#f39c12" pct={pct(battCount)} />
-              <StatCard icon="activity" label="Both DG & Battery" value={bothCount} color="#9b59b6" pct={pct(bothCount)} />
-              <StatCard icon="check-circle" label="Total with Backup" value={backupTotal} color="#27ae60" pct={pct(backupTotal)} />
+              <StatCard icon="activity" label="Both DG & Batt" value={bothCount} color="#9b59b6" pct={pct(bothCount)} />
+              <StatCard icon="check-circle" label="Total with Backup" value={backupTotal} color="#27ae60" pct={pct(backupTotal)} fullWidth={true} />
             </View>
 
             {/* ── Tabs ── */}
@@ -287,8 +287,8 @@ const colorMap: Record<string, string> = {
   dg: '#e67e22', battery: '#f39c12', both: '#9b59b6', total: '#27ae60',
 };
 
-const StatCard = ({ icon, label, value, color, pct }: any) => (
-  <View style={[styles.statBox, { borderTopColor: color }]}>
+const StatCard = ({ icon, label, value, color, pct, fullWidth }: any) => (
+  <View style={[styles.statBox, { borderTopColor: color }, fullWidth && { width: '100%' }]}>
     <View style={styles.statHeader}>
       <Text style={styles.statLabel}>{label}</Text>
       <AppIcon name={icon} size={18} color={color} />
@@ -336,13 +336,13 @@ const styles = StyleSheet.create({
   applyBtnTxt: { color: '#fff', fontWeight: '700', fontSize: responsiveFontSize(13), flexShrink: 1, },
 
   // Stats
-  statsGrid: { paddingHorizontal: moderateScale(12), paddingBottom: verticalScale(10) },
-  statBox: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), elevation: 2, borderTopWidth: 4, marginBottom: verticalScale(10) },
-  statHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(6) },
-  statLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '800', textTransform: 'uppercase' },
-  statValue: { fontSize: responsiveFontSize(24), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(8) },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: moderateScale(12), paddingBottom: verticalScale(8) },
+  statBox: { width: '48.5%', backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(10), elevation: 2, borderTopWidth: 4, marginBottom: verticalScale(8) },
+  statHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(4) },
+  statLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '800', textTransform: 'uppercase' },
+  statValue: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '800', marginBottom: verticalScale(4) },
   pctBar: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pctFill: { height: verticalScale(4), borderRadius: 2, flex: 1 },
+  pctFill: { height: verticalScale(3), borderRadius: 2, flex: 1 },
   pctTxt: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', fontWeight: '700' },
 
   // Tabs
@@ -356,17 +356,17 @@ const styles = StyleSheet.create({
   section: { marginHorizontal: moderateScale(12) },
 
   // Site cards
-  siteCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(14), marginBottom: verticalScale(10), elevation: 2 },
+  siteCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(10), elevation: 2 },
   siteCardAlt: { backgroundColor: '#FAFCFF' },
   siteCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(6) },
-  siteId: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#475569' },
+  siteId: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1e293b' },
   typeBadge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(3), borderRadius: 12 },
   typeBadgeTxt: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
-  siteName: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#2980b9', fontWeight: '700', textDecorationLine: 'underline', marginBottom: verticalScale(10) },
-  durGrid: { gap: 5 },
+  siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#1e3c72', fontWeight: '700', marginBottom: verticalScale(8) },
+  durGrid: { gap: verticalScale(6) },
   durRow: { flexDirection: 'row', alignItems: 'center' },
-  durLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '600', marginRight: moderateScale(4) },
-  durVal: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  durLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', fontWeight: '600', marginRight: moderateScale(4), textTransform: 'uppercase' },
+  durVal: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '600', fontVariant: ['tabular-nums'] },
 
   // Empty
   emptyBox: { alignItems: 'center', paddingVertical: verticalScale(40) },

@@ -231,7 +231,7 @@ export default function UptimeDetailsScreen({ route, navigation }: any) {
                 onLeftPress={() => navigation.goBack()}
                 rightActions={[
                     { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-                    { icon: 'refresh-cw', onPress: fetchUptime }
+
                 ]}
             />
 
@@ -342,42 +342,42 @@ const styles = StyleSheet.create({
 
     summaryOverview: { flexDirection: 'row', backgroundColor: '#fff', margin: moderateScale(12), borderRadius: 12, padding: moderateScale(10), elevation: 2, alignItems: 'center', justifyContent: 'space-around' },
     overviewItem: { alignItems: 'center', flex: 1 },
-    overviewVal: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
-    overviewLab: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(2) },
+    overviewVal: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: 'bold', color: '#1e3c72' },
+    overviewLab: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', textTransform: 'uppercase', marginTop: verticalScale(2) },
     overviewDivider: { width: 1, height: verticalScale(25), backgroundColor: '#e2e8f0' },
 
     tabSection: { paddingHorizontal: moderateScale(12), marginBottom: verticalScale(8) },
     tabContainer: { flexDirection: 'row', backgroundColor: '#e2e8f0', borderRadius: 8, padding: moderateScale(2) },
     compactTab: { flex: 1, paddingVertical: verticalScale(5), alignItems: 'center', borderRadius: 6 },
     compactTabActive: { backgroundColor: '#fff', elevation: 1 },
-    compactTabText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold', color: '#64748b' },
+    compactTabText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: 'bold', color: '#64748b' },
     compactTabTextActive: { color: '#1e3c72' },
 
     scrollList: { paddingHorizontal: moderateScale(12), paddingBottom: verticalScale(20) },
-    compactCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(10), elevation: 1, borderLeftWidth: 4 },
+    compactCard: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(10), marginBottom: verticalScale(10), elevation: 1, borderLeftWidth: 4 },
     cardHeader: { flexDirection: 'row', alignItems: 'center' },
     siteInfo: { flex: 1 },
-    siteIdText: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: 'bold', color: '#334155' },
-    imeiText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8' },
+    siteIdText: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold', color: '#334155' },
+    imeiText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8' },
     uptimeCol: { alignItems: 'flex-end', paddingRight: moderateScale(10) },
-    cardUpVal: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: 'bold' },
-    metBadgeText: { fontSize: responsiveFontSize(8), flexShrink: 1, fontWeight: 'bold', marginTop: verticalScale(2) },
+    cardUpVal: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: 'bold' },
+    metBadgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold', marginTop: verticalScale(2) },
 
     expandedContent: { marginTop: verticalScale(12) },
     divider: { height: 1, backgroundColor: '#f1f5f9', marginBottom: verticalScale(10) },
     portalMetricsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(12), paddingHorizontal: moderateScale(5) },
     portalMetricItem: { flex: 1 },
-    portalMetricLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', marginBottom: verticalScale(2) },
-    portalMetricValue: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: 'bold', color: '#334155' },
+    portalMetricLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', marginBottom: verticalScale(2) },
+    portalMetricValue: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: 'bold', color: '#334155' },
 
     downtimeSection: { backgroundColor: '#f8fafc', padding: moderateScale(10), borderRadius: 10, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
     downtimeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: verticalScale(8), gap: 5 },
-    downtimeTitle: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold', color: '#475569' },
+    downtimeTitle: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: 'bold', color: '#475569' },
     downtimeItem: { backgroundColor: '#fff', borderRadius: 8, padding: moderateScale(8), marginBottom: verticalScale(6), elevation: 0.5 },
     downtimeMain: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(2) },
-    downtimeCause: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
-    durationText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#ef4444', fontWeight: 'bold' },
-    timeText: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b' },
+    downtimeCause: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: 'bold', color: '#1e293b' },
+    durationText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#ef4444', fontWeight: 'bold' },
+    timeText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b' },
 
     noDowntime: { padding: moderateScale(8), alignItems: 'center', backgroundColor: '#f0fdf4', borderRadius: 6 },
     noDowntimeText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#15803d', fontWeight: 'bold' },

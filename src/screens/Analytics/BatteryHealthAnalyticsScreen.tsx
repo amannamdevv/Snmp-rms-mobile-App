@@ -514,13 +514,14 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
             
 
             <View style={styles.filterBar}>
-                <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     {['all', 'vrla', 'lithium'].map(type => (
                         <TouchableOpacity
                             key={type}
                             style={[
                                 styles.typeTab,
-                                activeBatteryFilter === type && styles.typeTabActive
+                                activeBatteryFilter === type && styles.typeTabActive,
+                                { flex: 1, marginHorizontal: 2, alignItems: 'center' }
                             ]}
                             onPress={() => {
                                 setActiveBatteryFilter(type);
@@ -538,25 +539,15 @@ export default function BatteryHealthAnalyticsScreen({ navigation }: any) {
                 </View>
 
                 {activeCategoryFilter !== 'all' && (
-                    <View style={[styles.filterPill, { backgroundColor: CATEGORY_CONFIG[activeCategoryFilter]?.bg, borderColor: CATEGORY_CONFIG[activeCategoryFilter]?.color }]}>
+                    <View style={[styles.filterPill, { backgroundColor: CATEGORY_CONFIG[activeCategoryFilter]?.bg, borderColor: CATEGORY_CONFIG[activeCategoryFilter]?.color, width: '100%', marginTop: 8, justifyContent: 'center' }]}>
                         <Text style={[styles.filterPillText, { color: CATEGORY_CONFIG[activeCategoryFilter]?.color }]}>
                             {CATEGORY_CONFIG[activeCategoryFilter]?.label}
                         </Text>
-                        <TouchableOpacity onPress={() => setActiveCategoryFilter('all')} style={{ marginLeft: moderateScale(6) }}>
+                        <TouchableOpacity onPress={() => setActiveCategoryFilter('all')} style={{ marginLeft: moderateScale(6), padding: 4 }}>
                             <Text style={{ color: CATEGORY_CONFIG[activeCategoryFilter]?.color, fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '900' }}>×</Text>
                         </TouchableOpacity>
                     </View>
                 )}
-
-                <View style={{ flex: 1 }} />
-                
-                <TouchableOpacity
-                    style={[styles.filterBtn, { borderColor: 'rgba(220,38,38,0.2)' }]}
-                    onPress={() => { setActiveBatteryFilter('all'); setActiveCategoryFilter('all'); setSearchQuery(''); }}
-                >
-                    <Text style={[styles.filterBtnText, { color: '#dc2626' }]}>Reset</Text>
-                </TouchableOpacity>
-
             </View>
 
             {/* Search Bar */}
@@ -627,92 +618,92 @@ const styles = StyleSheet.create({
     filterBtnText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
 
     // Type Tabs
-    typeTab: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(6), borderRadius: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dde4f0' },
+    typeTab: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(8), borderRadius: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dde4f0' },
     typeTabActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-    typeTabText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#64748b' },
+    typeTabText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
     typeTabTextActive: { color: '#fff' },
 
     // KPI
-    kpiGrid: { padding: moderateScale(14), gap: moderateScale(10) },
-    kpiRow: { flexDirection: 'row', gap: moderateScale(10) },
-    kpiCard: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), borderTopWidth: 4, borderWidth: 1, borderColor: 'rgba(228,232,239,0.8)', elevation: 2, shadowColor: '#1a2440', shadowOpacity: 0.1, shadowOffset: { width: 0, height: verticalScale(2) }, shadowRadius: 6, position: 'relative', overflow: 'hidden' },
-    kpiValue: { fontSize: responsiveFontSize(26), flexShrink: 1, fontWeight: '900', lineHeight: 30 },
-    kpiLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#64748b', fontWeight: '700', marginTop: verticalScale(4), textTransform: 'uppercase', lineHeight: 13 },
-    activeDot: { position: 'absolute', top: 8, right: 8, width: moderateScale(8), height: verticalScale(8), borderRadius: 4 },
+    kpiGrid: { padding: moderateScale(12), gap: moderateScale(8) },
+    kpiRow: { flexDirection: 'row', gap: moderateScale(8) },
+    kpiCard: { flex: 1, backgroundColor: '#fff', borderRadius: 10, padding: moderateScale(8), borderTopWidth: 4, borderWidth: 1, borderColor: 'rgba(228,232,239,0.8)', elevation: 2, shadowColor: '#1a2440', shadowOpacity: 0.1, shadowOffset: { width: 0, height: verticalScale(2) }, shadowRadius: 6, position: 'relative', overflow: 'hidden' },
+    kpiValue: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '900', lineHeight: 24 },
+    kpiLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#64748b', fontWeight: '700', marginTop: verticalScale(2), textTransform: 'uppercase', lineHeight: 14 },
+    activeDot: { position: 'absolute', top: 6, right: 6, width: moderateScale(8), height: verticalScale(8), borderRadius: 4 },
 
     // Results
     resultsBar: { paddingHorizontal: moderateScale(16), paddingBottom: verticalScale(8) },
     resultsText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b', fontWeight: '500' },
 
     // Site Card
-    siteCard: { backgroundColor: '#fff', marginHorizontal: moderateScale(14), marginBottom: verticalScale(16), borderRadius: 16, borderLeftWidth: 4, elevation: 3, shadowColor: '#1a2440', shadowOpacity: 0.12, shadowOffset: { width: 0, height: verticalScale(3) }, shadowRadius: 8, overflow: 'hidden' },
-    scHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: moderateScale(14), backgroundColor: '#eef2f9', borderBottomWidth: 1, borderBottomColor: '#e4e8ef', gap: moderateScale(10) },
-    scName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1a2540', marginBottom: verticalScale(3) },
+    siteCard: { backgroundColor: '#fff', marginHorizontal: moderateScale(12), marginBottom: verticalScale(12), borderRadius: 12, borderLeftWidth: 4, elevation: 3, shadowColor: '#1a2440', shadowOpacity: 0.12, shadowOffset: { width: 0, height: verticalScale(3) }, shadowRadius: 8, overflow: 'hidden' },
+    scHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: moderateScale(10), backgroundColor: '#eef2f9', borderBottomWidth: 1, borderBottomColor: '#e4e8ef', gap: moderateScale(8) },
+    scName: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#1a2540', marginBottom: verticalScale(2) },
     scMeta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
-    scMetaText: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#8a96b0', fontWeight: '500' },
-    scMetaDot: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#c8d0e0' },
-    scBadge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 20, borderWidth: 1, flexShrink: 0, maxWidth: 140 },
-    scBadgeText: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
+    scMetaText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#8a96b0', fontWeight: '500' },
+    scMetaDot: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#c8d0e0' },
+    scBadge: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(2), borderRadius: 16, borderWidth: 1, flexShrink: 0, maxWidth: 120 },
+    scBadgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
 
-    scBody: { padding: moderateScale(14), gap: moderateScale(12) },
+    scBody: { padding: moderateScale(10), gap: moderateScale(8) },
 
     // Info boxes
-    row3: { flexDirection: 'row', gap: 8 },
-    infoBox: { flex: 1, backgroundColor: '#f4f7fc', borderWidth: 1, borderColor: '#dde4f0', borderRadius: 8, padding: moderateScale(10) },
-    ibLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '700', color: '#8a96b0', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(3) },
-    ibValue: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#1a2540' },
-    subNote: { fontSize: responsiveFontSize(9), flexShrink: 1, color: '#8a96b0', marginTop: verticalScale(2) },
-    ageBadge: { marginTop: verticalScale(4), paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 8, alignSelf: 'flex-start' },
-    ageBadgeText: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800' },
+    row3: { flexDirection: 'row', gap: 6 },
+    infoBox: { flex: 1, backgroundColor: '#f4f7fc', borderWidth: 1, borderColor: '#dde4f0', borderRadius: 8, padding: moderateScale(6) },
+    ibLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#8a96b0', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(1) },
+    ibValue: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1a2540' },
+    subNote: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#8a96b0', marginTop: verticalScale(1) },
+    ageBadge: { marginTop: verticalScale(2), paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 8, alignSelf: 'flex-start' },
+    ageBadgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' },
 
     // Status bar
     statusBar: { flexDirection: 'row', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, gap: 8, alignItems: 'flex-start' },
-    statusIcon: { fontSize: responsiveFontSize(16), flexShrink: 1, marginTop: verticalScale(1) },
-    statusTitle: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(2) },
-    statusMsg: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#4a5878', lineHeight: 16 },
+    statusIcon: { fontSize: responsiveFontSize(18), flexShrink: 1, marginTop: verticalScale(1) },
+    statusTitle: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: verticalScale(2) },
+    statusMsg: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#4a5878', lineHeight: 18 },
     statusMetrics: { flexDirection: 'row', marginTop: verticalScale(8), paddingTop: verticalScale(8), borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)', gap: 4 },
     smBox: { flex: 1, alignItems: 'center' },
-    smVal: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#1a2540' },
-    smLbl: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: verticalScale(1) },
+    smVal: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1a2540' },
+    smLbl: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: verticalScale(1) },
 
     // Section label
-    sectionLabel: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800', color: '#8a96b0', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: verticalScale(8) },
+    sectionLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#8a96b0', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: verticalScale(8) },
 
     // Rates
     rateRow: { flexDirection: 'row', gap: 8, marginBottom: verticalScale(8) },
     rateBox: { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, gap: 8 },
     rateDischarge: { backgroundColor: 'rgba(220,38,38,0.05)', borderColor: 'rgba(220,38,38,0.18)' },
     rateCharge: { backgroundColor: 'rgba(22,163,74,0.05)', borderColor: 'rgba(22,163,74,0.18)' },
-    rateIcon: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '900' },
-    rateLbl: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
-    rateVal: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '800', marginTop: verticalScale(1) },
+    rateIcon: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '900' },
+    rateLbl: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
+    rateVal: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '800', marginTop: verticalScale(1) },
     rateBadge: { paddingHorizontal: moderateScale(6), paddingVertical: verticalScale(2), borderRadius: 8 },
-    rateBadgeText: { fontSize: responsiveFontSize(9), flexShrink: 1, fontWeight: '800' },
+    rateBadgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' },
 
     // Voltage
     voltRow: { flexDirection: 'row', backgroundColor: 'rgba(42,111,151,0.06)', borderRadius: 8, padding: moderateScale(10), borderWidth: 1, borderColor: 'rgba(42,111,151,0.18)', gap: moderateScale(12) },
     voltItem: { flex: 1 },
-    voltLabel: { fontSize: responsiveFontSize(8), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
-    voltValue: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#1a4f70', marginTop: verticalScale(2) },
+    voltLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#8a96b0', textTransform: 'uppercase', letterSpacing: 0.4 },
+    voltValue: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '800', color: '#1a4f70', marginTop: verticalScale(2) },
 
     // Conditions
     condGrid: { flexDirection: 'row', gap: 6 },
     condItem: { flex: 1, borderRadius: 8, padding: moderateScale(7), borderWidth: 1, alignItems: 'center', gap: 3 },
     condMet: { backgroundColor: 'rgba(22,163,74,0.06)', borderColor: 'rgba(22,163,74,0.3)' },
     condUnmet: { backgroundColor: 'rgba(220,38,38,0.04)', borderColor: 'rgba(220,38,38,0.15)' },
-    condText: { fontSize: responsiveFontSize(8), flexShrink: 1, fontWeight: '700', textAlign: 'center' },
+    condText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700', textAlign: 'center' },
 
     // Expand
     expandBtn: { padding: moderateScale(10), borderWidth: 1, borderColor: '#e4e8ef', borderRadius: 8, alignItems: 'center', backgroundColor: 'transparent' },
-    expandBtnText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700', color: '#4a5878' },
+    expandBtnText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#4a5878' },
 
     // Recommendations
     recBox: { backgroundColor: 'rgba(202,138,4,0.06)', borderWidth: 1, borderColor: 'rgba(202,138,4,0.18)', borderRadius: 8, padding: moderateScale(12) },
-    recTitle: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', color: '#92400e', marginBottom: verticalScale(8) },
+    recTitle: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '800', color: '#92400e', marginBottom: verticalScale(8) },
     recItem: { flexDirection: 'row', gap: 6, marginBottom: verticalScale(4) },
-    recArrow: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#ca8a04', fontWeight: '900' },
-    recText: { flex: 1, fontSize: responsiveFontSize(11), flexShrink: 1, color: '#4a5878', lineHeight: 16 },
-    recEmpty: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#8a96b0' },
+    recArrow: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#ca8a04', fontWeight: '900' },
+    recText: { flex: 1, fontSize: responsiveFontSize(13), flexShrink: 1, color: '#4a5878', lineHeight: 18 },
+    recEmpty: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#8a96b0' },
 
     // Empty
     emptyBox: { alignItems: 'center', marginTop: verticalScale(80), gap: moderateScale(12) },

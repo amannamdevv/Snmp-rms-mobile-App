@@ -79,12 +79,10 @@ export default function HomeScreen({ navigation, route }: any) {
     manageFullname();
   }, [route?.params?.fullname]);
 
-  // ── Refresh on tab focus ──────────────────────────────────────
-  useFocusEffect(
-    useCallback(() => {
-      fetchDashboardData();
-    }, [JSON.stringify(globalFilters)])
-  );
+  // ── Refresh on mount or filter change ──────────────────────────
+  useEffect(() => {
+    fetchDashboardData();
+  }, [JSON.stringify(globalFilters)]);
 
   // ── Fetch ─────────────────────────────────────────────────────
   const fetchDashboardData = async () => {
@@ -263,10 +261,13 @@ export default function HomeScreen({ navigation, route }: any) {
 
 
 
-          {loading && (
-            <ActivityIndicator color="#1e3c72" style={{ marginVertical: verticalScale(20) }} />
-          )}
         </ScrollView>
+        {loading && (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 999 }]}>
+            <ActivityIndicator size="large" color="#1e3c72" />
+            <Text style={{ marginTop: 10, color: '#1e3c72', fontWeight: 'bold' }}>Loading Data...</Text>
+          </View>
+        )}
       </SafeAreaView>
     </>
   );

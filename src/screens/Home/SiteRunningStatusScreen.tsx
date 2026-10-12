@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../types/navigation';
@@ -46,6 +46,7 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
     total_slrbt: 0
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,8 +106,12 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
     fetchData(activeFilters);
   }, [activeFilters]);
 
-  const fetchData = async (currentFilters = {}) => {
-    setLoading(true);
+  const fetchData = async (currentFilters = {}, isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const res = await api.getSiteRunningStatus(currentFilters);
       // Logic Fix: Django returns the object directly, not wrapped in 'success'
@@ -121,7 +126,12 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
       Alert.alert("Connection Error", "Could not fetch running status data.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    fetchData(activeFilters, true);
   };
 
   const applyLocalTabFilter = (allData: any[], tab: string, query: string) => {
@@ -271,12 +281,8 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightActions={[
           { icon: exporting ? 'loader' : 'download', onPress: handleExport },
-          
         ]}
       />
-
-      
-      
 
         <View style={styles.kpiContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.kpiScrollContainer}>
@@ -341,8 +347,6 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
         )}
       </View>
 
-
-
       {loading ? (
         <ActivityIndicator size="large" color="#1e3c72" style={{ marginTop: verticalScale(50) }} />
       ) : (
@@ -351,6 +355,9 @@ export default function SiteRunningStatusScreen({ navigation }: Props) {
           keyExtractor={(item, index) => (item.imei || item.site_id || index).toString()}
           renderItem={renderCard}
           contentContainerStyle={{ padding: moderateScale(16) }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1e3c72']} />
+          }
           ListEmptyComponent={
             filteredData.length === 0 ? (
               <View style={styles.emptyContainer}>
@@ -435,22 +442,22 @@ const styles = StyleSheet.create({
   tabTextActive: { color: '#fff' },
 
   card: { backgroundColor: '#fff', padding: moderateScale(10), borderRadius: 10, marginBottom: verticalScale(8), elevation: 2, borderLeftWidth: 4 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: verticalScale(6) },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: verticalScale(8) },
   siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
-  imei: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#666', marginTop: verticalScale(2) },
+  imei: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#475569', marginTop: verticalScale(2), fontWeight: 'bold' },
   badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(4), borderRadius: 12 },
   badgeText: { color: '#fff', fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' },
 
-  row: { flexDirection: 'row', marginTop: verticalScale(5) },
+  row: { flexDirection: 'row', marginTop: verticalScale(6) },
   col: { flex: 1 },
-  label: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', textTransform: 'uppercase', marginBottom: verticalScale(2) },
-  val: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '600' },
+  label: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', textTransform: 'uppercase', marginBottom: verticalScale(2) },
+  val: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#475569', fontWeight: '600' },
 
   // Voltage rows (full-width label : value)
   voltDivider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(6) },
-  voltRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(3) },
-  voltLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
-  voltVal: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
+  voltRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(4) },
+  voltLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
+  voltVal: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#1e3c72', fontWeight: '700', fontVariant: ['tabular-nums'] },
 
   // Alarm description
   alarmBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fff7ed', borderRadius: 8, padding: moderateScale(8), marginTop: verticalScale(10), gap: 6, borderLeftWidth: 3, borderLeftColor: '#f97316' },

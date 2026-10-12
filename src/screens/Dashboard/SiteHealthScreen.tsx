@@ -180,7 +180,9 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
             }}
           >
             <Text style={styles.siteName}>{item.site_name}</Text>
-            <Text style={styles.subText}>Global ID: {item.global_id || item.site_global_id || item.site_id || '—'} | ID: {item.site_id}</Text>
+            <Text style={styles.subText}>
+              <Text style={{ color: '#111', fontWeight: '700' }}>Global ID: {item.global_id || item.site_global_id || item.site_id || '—'}</Text> | ID: {item.site_id}
+            </Text>
           </TouchableOpacity>
           <View style={[styles.badge, { backgroundColor: color + '15', borderColor: color }]}>
             <Text style={[styles.badgeText, { color: color }]}>{item.status}</Text>
@@ -269,7 +271,7 @@ export default function SiteHealthScreen({ route, navigation }: Props) {
               >
                 <AppIcon name={t.icon as any} size={13} color={isActive ? '#fff' : t.color} style={{ marginRight: moderateScale(6) }} />
                 <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
-                  {t.label} <Text style={{ fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '700' }}>({t.count})</Text>
+                  {t.label} <Text style={{ fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '700' }}>({t.count})</Text>
                 </Text>
               </TouchableOpacity>
             );
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0' 
   },
   filterPillActive: { backgroundColor: '#1e3c72', borderColor: '#1e3c72' },
-  filterText: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', color: '#64748b' },
+  filterText: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '700', color: '#64748b' },
   filterTextActive: { color: '#fff' },
 
   searchContainer: {
@@ -367,14 +369,14 @@ const styles = StyleSheet.create({
     padding: moderateScale(0),
   },
   emptyContainer: { alignItems: 'center', marginTop: verticalScale(50) },
-  emptyText: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
-  emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
+  emptyText: { fontSize: responsiveFontSize(20), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
+  emptySubtitle: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
   card: { 
     backgroundColor: '#fff', 
-    padding: moderateScale(16), 
+    padding: moderateScale(12), 
     borderRadius: moderateScale(12), 
-    marginBottom: verticalScale(12), 
+    marginBottom: verticalScale(10), 
     elevation: 2, 
     borderLeftWidth: 5 
   },
@@ -382,27 +384,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'flex-start', 
-    marginBottom: verticalScale(12) 
+    marginBottom: verticalScale(8) 
   },
-  siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
-  subText: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#666', marginTop: verticalScale(2) },
+  siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+  subText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#666', marginTop: verticalScale(2) },
   badge: { 
-    paddingHorizontal: moderateScale(10), 
+    paddingHorizontal: moderateScale(8), 
     paddingVertical: verticalScale(4), 
     borderRadius: moderateScale(12), 
-    borderWidth: 1 
+    borderWidth: 1,
+    marginLeft: moderateScale(8)
   },
-  badgeText: { fontSize: responsiveFontSize(10), flexShrink: 1, fontWeight: '800' },
-  infoRow: { flexDirection: 'row', marginBottom: verticalScale(8) },
-  infoCol: { flex: 1 },
+  badgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800' },
+  infoRow: { flexDirection: 'row', marginBottom: verticalScale(4) },
+  infoCol: { flex: 1, paddingRight: moderateScale(4) },
   infoLabel: { 
-    fontSize: responsiveFontSize(10), flexShrink: 1, color: '#888', 
+    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', 
     textTransform: 'uppercase', 
-    marginBottom: verticalScale(2) 
+    marginBottom: verticalScale(0) 
   },
-  infoValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#333', fontWeight: '600' },
-  dividerSmall: { height: 1, backgroundColor: '#f0f4f8', marginVertical: verticalScale(10) },
+  infoValue: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#333', fontWeight: '600' },
+  dividerSmall: { height: 1, backgroundColor: '#f0f4f8', marginVertical: verticalScale(6) },
   cardFooter: { gap: verticalScale(4) },
-  footerLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#888', fontWeight: '600' },
+  footerLabel: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#888', fontWeight: '600' },
   footerValue: { color: '#4b5563', fontWeight: '600' }
 });

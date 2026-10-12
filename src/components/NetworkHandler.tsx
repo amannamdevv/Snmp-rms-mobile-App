@@ -33,22 +33,25 @@ export default function NetworkHandler({ children }: { children: React.ReactNode
         });
     };
 
-    if (isInternetReachable === false) {
-        return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.content}>
-                    <AppIcon name="wifi-off" size={64} color="#94a3b8" />
-                    <Text style={styles.title}>No Internet Connection</Text>
-                    <Text style={styles.subtitle}>Please check your internet connection and try again.</Text>
-                    <TouchableOpacity style={styles.btn} onPress={handleRetry} activeOpacity={0.8}>
-                        <Text style={styles.btnText}>Retry</Text>
-                    </TouchableOpacity>
+    return (
+        <View style={{ flex: 1 }}>
+            {children}
+            {isInternetReachable === false && (
+                <View style={[StyleSheet.absoluteFill, { zIndex: 99999, elevation: 99999, backgroundColor: '#f8fafc' }]}>
+                    <SafeAreaView style={styles.container}>
+                        <View style={styles.content}>
+                            <AppIcon name="wifi-off" size={64} color="#94a3b8" />
+                            <Text style={styles.title}>No Internet Connection</Text>
+                            <Text style={styles.subtitle}>Please check your internet connection and try again.</Text>
+                            <TouchableOpacity style={styles.btn} onPress={handleRetry} activeOpacity={0.8}>
+                                <Text style={styles.btnText}>Retry</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </SafeAreaView>
                 </View>
-            </SafeAreaView>
-        );
-    }
-
-    return <>{children}</>;
+            )}
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

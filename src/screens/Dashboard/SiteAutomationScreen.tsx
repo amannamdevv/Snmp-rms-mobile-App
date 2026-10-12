@@ -168,7 +168,9 @@ export default function SiteAutomationScreen({ navigation }: any) {
                     <View style={styles.cardHeader}>
                         <View style={{ flex: 1, marginRight: moderateScale(8) }}>
                             <Text style={styles.siteName}>{item.site_name}</Text>
-                            <Text style={styles.subText}>Global ID: {item.global_id || item.site_id || '—'} | ID: {item.site_id}</Text>
+                            <Text style={styles.subText}>
+                                <Text style={{ color: '#334155', fontWeight: 'bold' }}>Global ID: {item.global_id || item.site_id || '—'}</Text> | ID: {item.site_id}
+                            </Text>
                         </View>
                         <View style={[styles.tag, item.is_automated ? styles.tagAuto : styles.tagNotAuto]}>
                             <Text style={[styles.tagText, { color: item.is_automated ? '#4caf50' : '#f44336' }]}>
@@ -341,12 +343,12 @@ const styles = StyleSheet.create({
     emptyTextMain: { fontSize: responsiveFontSize(18), flexShrink: 1, fontWeight: '700', color: '#334155', marginTop: verticalScale(12) },
     emptySubtitle: { fontSize: responsiveFontSize(14), flexShrink: 1, color: '#94a3b8', marginTop: verticalScale(4) },
 
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(16), marginBottom: verticalScale(12), elevation: 3 },
+    card: { backgroundColor: '#fff', borderRadius: 12, padding: moderateScale(12), marginBottom: verticalScale(12), elevation: 3 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    siteName: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
-    subText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#475569', marginTop: verticalScale(2) },
+    siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72' },
+    subText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#475569', marginTop: verticalScale(2) },
     locRow: { marginTop: verticalScale(4) },
-    locText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b' },
+    locText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#64748b' },
     tag: { paddingHorizontal: moderateScale(8), paddingVertical: verticalScale(4), borderRadius: 6 },
     tagAuto: { backgroundColor: 'rgba(76, 175, 80, 0.1)' },
     tagNotAuto: { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
@@ -354,10 +356,10 @@ const styles = StyleSheet.create({
     divider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: verticalScale(12) },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     infoCol: { flex: 1 },
-    label: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748b', textTransform: 'uppercase' },
-    val: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: '700', marginTop: verticalScale(1) },
+    label: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#64748b', textTransform: 'uppercase' },
+    val: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', marginTop: verticalScale(1) },
     expandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: moderateScale(5) },
-    expandText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#2196f3', fontWeight: '600' },
+    expandText: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#2196f3', fontWeight: '600' },
     detailsContainer: { marginTop: verticalScale(15), padding: moderateScale(12), backgroundColor: '#f8fafc', borderRadius: 8, borderTopWidth: 1, borderTopColor: '#eee' },
     analysisTitle: { fontSize: responsiveFontSize(12), flexShrink: 1, fontWeight: 'bold', color: '#475569', marginBottom: verticalScale(5) },
     feedbackText: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', lineHeight: 18 },

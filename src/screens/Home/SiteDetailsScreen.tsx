@@ -50,7 +50,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
 
       const res = await api.getSiteDetails(fetchId);
       if (res) {
-      const siteData = res.sites?.[0] || res[0] || res.data?.[0] || res.data || res;
+        const siteData = res.sites?.[0] || res[0] || res.data?.[0] || res.data || res;
         setData(siteData);
       } else {
         setData(null);
@@ -77,7 +77,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#01497C" />
-        <Text style={styles.loadingText}>Loading Site Dashboard...</Text>
+        <Text style={styles.loadingText}>Loading Site Details...</Text>
       </View>
     );
   }
@@ -149,7 +149,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
               const timestamp = a.timestamp ? new Date(a.timestamp).toLocaleString([], {
                 day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
               }) : '--';
-              
+
               return (
                 <View key={i} style={styles.alarmRowCard}>
                   <View style={styles.alarmCardHead}>
@@ -197,7 +197,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
                       <Text style={styles.badgeText}>CLOSED</Text>
                     </View>
                   </View>
-                  
+
                   <View style={styles.alarmCardDetails}>
                     <View style={styles.alarmCardInfo}>
                       <Icon name="clock" size={12} color="#64748B" />
@@ -228,19 +228,19 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
   // ─── TECHNICAL ───────────────────────────────────────────────────────────────
   const renderTechnical = () => (
     <View style={styles.tabContent}>
-      
+
 
       <SectionCard title="Mains Details">
         <DetailRow label="Voltage R-Phase (Vac)" value={data.mains_parameters?.voltage_r} label2="Voltage Y-Phase (Vac)" value2={data.mains_parameters?.voltage_y} />
         <DetailRow label="Voltage B-Phase (Vac)" value={data.mains_parameters?.voltage_b} label2="EB Frequency (Hz)" value2={data.mains_parameters?.frequency} />
-                        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.mains} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.mains} />
+        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.mains} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.mains} />
         <DetailRow label="Cumulative Energy (KWH)" value={data.mains_parameters?.cumulative_energy} label2="Cumulative Run Hours" value2={data.cumulative_run_hours?.eb_formatted || "--"} />
       </SectionCard>
 
       <SectionCard title="DG Parameters">
         <DetailRow label="Voltage R-Phase (Vac)" value={data.dg_parameters?.voltage_r} label2="Voltage Y-Phase (Vac)" value2={data.dg_parameters?.voltage_y} />
         <DetailRow label="Voltage B-Phase (Vac)" value={data.dg_parameters?.voltage_b} label2="DG Frequency (Hz)" value2={data.dg_parameters?.frequency} />
-                        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.dg} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.dg} />
+        <DetailRow label="Energy Today (KWH)" value={data.energy_consumption?.today?.dg} label2="Energy Yesterday (KWH)" value2={data.energy_consumption?.yesterday?.dg} />
         <DetailRow label="Cumulative Energy (KWH)" value={data.dg_parameters?.cumulative_energy} label2="Cumulative Run Hours" value2={data.cumulative_run_hours?.dg_formatted || "--"} />
       </SectionCard>
 
@@ -285,7 +285,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         <StaticRow label="Antenna" value={data.antenna == 1 ? 'Available' : 'Not Available'} />
         <StaticRow label="Hooter" value={data.hooter == 1 ? 'Available' : 'Not Available'} />
         <StaticRow label="SOW Status" value={data.sow_status} />
-              </SectionCard>
+      </SectionCard>
 
       <SectionCard title="Real Time Status">
         <StaticRow label="System Status" value={data.status?.includes('Non') ? 'Offline' : 'Online'} />
@@ -308,7 +308,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
         </View>
       </SectionCard>
 
-      
+
     </View>
   );
 
@@ -439,7 +439,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
             <Text style={[styles.thCell, { flex: 1 }]}>OPCO3</Text>
             <Text style={[styles.thCell, { flex: 1 }]}>OPCO4</Text>
           </View>
-          {[ 
+          {[
             { label: 'Load Energy Today (KWH)', v1: opcoLoad.today?.opco1, v2: opcoLoad.today?.opco2, v3: opcoLoad.today?.opco3, v4: opcoLoad.today?.opco4 },
             { label: 'Load Energy Yesterday (KWH)', v1: opcoLoad.yesterday?.opco1, v2: opcoLoad.yesterday?.opco2, v3: opcoLoad.yesterday?.opco3, v4: opcoLoad.yesterday?.opco4 },
             { label: 'Load Cumulative Energy (KWH)', v1: opcoLoad.cumulative?.opco1, v2: opcoLoad.cumulative?.opco2, v3: opcoLoad.cumulative?.opco3, v4: opcoLoad.cumulative?.opco4 },
@@ -454,7 +454,7 @@ export default function SiteDetailsScreen({ route, navigation }: Props) {
           ))}
         </SectionCard>
 
-        
+
       </View>
     );
   };
@@ -640,59 +640,59 @@ const styles = StyleSheet.create({
 
   // Alarm Cards Styling
   alarmListContainer: { gap: moderateScale(12) },
-  alarmRowCard: { 
-    backgroundColor: '#F8FAFC', 
-    borderRadius: 12, 
-    padding: moderateScale(12), 
-    borderWidth: 1, 
-    borderColor: '#E2EBF4' 
+  alarmRowCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: moderateScale(12),
+    borderWidth: 1,
+    borderColor: '#E2EBF4'
   },
-  alarmCardHead: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: verticalScale(10) 
+  alarmCardHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(10)
   },
-  alarmCardName: { 
-    fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700', 
-    color: '#1C2F3E', 
-    flex: 1, 
-    marginRight: moderateScale(10) 
+  alarmCardName: {
+    fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '700',
+    color: '#1C2F3E',
+    flex: 1,
+    marginRight: moderateScale(10)
   },
-  alarmCardDetails: { 
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
-    gap: moderateScale(15), 
-    marginBottom: verticalScale(8) 
+  alarmCardDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: moderateScale(15),
+    marginBottom: verticalScale(8)
   },
-  alarmCardInfo: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
+  alarmCardInfo: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
-  alarmCardInfoTxt: { 
-    fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748B', 
-    fontWeight: '600' 
+  alarmCardInfoTxt: {
+    fontSize: responsiveFontSize(12), flexShrink: 1, color: '#64748B',
+    fontWeight: '600'
   },
-  alarmCardTimeline: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#fff', 
-    borderRadius: 8, 
-    padding: moderateScale(8), 
+  alarmCardTimeline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: moderateScale(8),
     marginTop: verticalScale(4),
     borderWidth: 1,
     borderColor: '#F1F5F9'
   },
   timelinePoint: { flex: 1 },
-  timelineLabel: { 
-    fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94A3B8', 
-    fontWeight: '800', 
-    letterSpacing: 0.5, 
-    marginBottom: verticalScale(2) 
+  timelineLabel: {
+    fontSize: responsiveFontSize(9), flexShrink: 1, color: '#94A3B8',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: verticalScale(2)
   },
-  timelineVal: { 
-    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155', 
-    fontWeight: '700' 
+  timelineVal: {
+    fontSize: responsiveFontSize(11), flexShrink: 1, color: '#334155',
+    fontWeight: '700'
   },
 
   // Empty

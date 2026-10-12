@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { responsiveFontSize, moderateScale, verticalScale } from '../../utils/responsive';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity,
@@ -447,9 +447,11 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#e2e8f0',
     },
-    filterBar: { paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8, flexGrow: 1 },
+    filterBar: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: moderateScale(12), paddingVertical: verticalScale(10), gap: 8, flexGrow: 1 },
     filterBtn: {
-        paddingHorizontal: moderateScale(16),
+        flex: 1,
+        alignItems: 'center',
+        paddingHorizontal: moderateScale(10),
         paddingVertical: verticalScale(8),
         borderRadius: 20,
         backgroundColor: '#f1f5f9',
@@ -481,30 +483,30 @@ const styles = StyleSheet.create({
     // Card
     card: {
         backgroundColor: '#fff',
-        borderRadius: 14,
-        padding: moderateScale(16),
-        marginBottom: verticalScale(12),
+        borderRadius: 12,
+        padding: moderateScale(12),
+        marginBottom: verticalScale(10),
         borderLeftWidth: 5,
-        elevation: 3,
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: verticalScale(2) },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: verticalScale(1) },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
     },
-    cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(8) },
-    siteName: { fontSize: responsiveFontSize(13), flexShrink: 1, fontWeight: '600', color: '#64748b' },
-    siteId: { fontSize: responsiveFontSize(16), flexShrink: 1, color: '#1e293b', marginTop: verticalScale(2), fontWeight: '800' },
+    cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: verticalScale(6) },
+    siteName: { fontSize: responsiveFontSize(16), flexShrink: 1, fontWeight: '700', color: '#1e3c72', marginBottom: verticalScale(2) },
+    siteId: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#475569', fontWeight: '700' },
     badge: { paddingHorizontal: moderateScale(10), paddingVertical: verticalScale(5), borderRadius: 8 },
     badgeText: { fontSize: responsiveFontSize(11), flexShrink: 1, fontWeight: '800', letterSpacing: 0.3 },
 
-    alarmDesc: { fontSize: responsiveFontSize(14), flexShrink: 1, fontWeight: '500', color: '#475569', lineHeight: 20, marginBottom: verticalScale(12) },
+    alarmDesc: { fontSize: responsiveFontSize(15), flexShrink: 1, fontWeight: '600', color: '#334155', lineHeight: 20, marginBottom: verticalScale(10) },
 
     // Meta grid
     metadataContainer: {
         backgroundColor: '#f8fafc',
         borderRadius: 10,
-        padding: moderateScale(12),
-        gap: moderateScale(10),
+        padding: moderateScale(10),
+        gap: moderateScale(8),
         borderWidth: 1,
         borderColor: '#e2e8f0',
     },
@@ -512,11 +514,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         borderBottomWidth: 1,
         borderBottomColor: '#e2e8f0',
-        paddingBottom: verticalScale(10),
+        paddingBottom: verticalScale(8),
     },
     metaCol: { flex: 1, gap: 4 },
-    metaLabel: { fontSize: responsiveFontSize(10), flexShrink: 1, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
-    metaValue: { fontSize: responsiveFontSize(12), flexShrink: 1, color: '#334155', fontWeight: '700' },
+    metaLabel: { fontSize: responsiveFontSize(11), flexShrink: 1, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
+    metaValue: { fontSize: responsiveFontSize(13), flexShrink: 1, color: '#475569', fontWeight: '700' },
 
     siteStatusBadge: {
         paddingHorizontal: moderateScale(8),

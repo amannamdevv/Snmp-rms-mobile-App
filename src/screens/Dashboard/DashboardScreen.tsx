@@ -62,9 +62,9 @@ export default function DashboardScreen({ navigation }: Props) {
     loadName();
   }, []);
 
-  useFocusEffect(
-    useCallback(() => { fetchDashboardData(); }, [JSON.stringify(globalFilters)])
-  );
+  useEffect(() => {
+    fetchDashboardData();
+  }, [JSON.stringify(globalFilters)]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -267,8 +267,13 @@ export default function DashboardScreen({ navigation }: Props) {
             </View>
           </TouchableOpacity>
 
-          {loading && <ActivityIndicator color="#1e3c72" style={{ marginVertical: verticalScale(20) }} />}
         </ScrollView>
+        {loading && (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 999 }]}>
+            <ActivityIndicator size="large" color="#1e3c72" />
+            <Text style={{ marginTop: 10, color: '#1e3c72', fontWeight: 'bold' }}>Loading Data...</Text>
+          </View>
+        )}
       </SafeAreaView>
     </>
   );
